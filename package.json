@@ -3,14 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@tanstack/react-table": "^8.20.6",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
     "@types/jest": "^29.5.14",
     "@types/react": "^19.0.2",
     "@types/testing-library__react": "^10.0.1",
+    "bootstrap": "^5.3.3",
     "cra-template-typescript": "1.2.0",
     "react": "^19.0.0",
+    "react-bootstrap": "^2.10.7",
     "react-dom": "^19.0.0",
+    "react-icons": "^5.4.0",
     "react-scripts": "5.0.1"
   },
   "scripts": {
