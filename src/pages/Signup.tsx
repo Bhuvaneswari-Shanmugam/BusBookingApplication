@@ -33,21 +33,22 @@ const Signup = () => {
     });
 
     const onSubmit = async (data: SignupFormInputs) => {
-        console.log('Form data submitted: ', data);
         try {
-            await signup(data).unwrap();
-            toast.success('SignUp done Successfully', {
+            const result = await signup(data).unwrap();
+            toast.success(result?.data?.message || 'SignUp done Successfully', {
                 autoClose: 500,
                 onClose: () => navigate('/'),
             });
             reset();
         } catch (err) {
             const error = err as RTKQueryError;
-            console.error('Signup Error: ', error);
             const errorMessage = error?.data?.message || 'Signup failed. Please try again.';
-            toast.error(errorMessage);
+            toast.error(errorMessage, {
+                autoClose: 500,
+            });
         }
     };
+    
 
     return (
         <div className="home-container">

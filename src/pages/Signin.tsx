@@ -49,24 +49,23 @@ const SignIn = () => {
                 sessionStorage.setItem('FirstName', firstName);
                 sessionStorage.setItem('Role', role);
     
-                toast.success('Login successful!', { autoClose: 1000 });
+                toast.success(result?.data?.message || 'Login successful!', { autoClose: 1000 });
     
                 if (role === 'ADMIN') {
-                    console.log('Navigating to admin page'); 
                     setTimeout(() => navigate('/admin'), 1000);  
                 } else {
-                    console.log('Navigating to home page');
                     setTimeout(() => navigate('/home'), 1000);  
                 }
-    
+
                 reset();
             } else {
                 toast.error(result?.data?.message || 'Login failed. Please try again.', { autoClose: 1000 });
             }
-        } catch (error:any) {
-            toast.error(error.message || 'An error occurred during submission. Please try again.', {
-                autoClose: 500,
-            });
+        } catch (error: any) {
+            toast.error(
+                error?.response?.data?.message || error?.message || 'An error occurred during submission. Please try again.',
+                { autoClose: 500 }
+            );
         }
     };
     
