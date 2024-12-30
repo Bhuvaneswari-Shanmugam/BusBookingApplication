@@ -1,30 +1,27 @@
 import React from 'react';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Link, useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-toastify/dist/ReactToastify.css';
+import { FetchBaseQueryError } from '@reduxjs/toolkit/dist/query';
 import { useSignupMutation } from '../redux/services/SignupApi';
 import { getSignupValidationSchema } from '../utils/schema/SignupValidationSchema';
 import Form from '../components/Form';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import { FormFields } from '../constants/Index';
+import {SignupFormInputs} from '../utils/CommonInterfaceFile/SignupInterface';
 
-type SignupFormInputs = {
-    firstName: string;
-    lastName: string;
-    email: string;
-    password: string;
-    role: string;
-    termsAccepted: boolean;
+type RTKQueryError = FetchBaseQueryError & {
+    data?: { message?: string };
 };
 
-const Signup: React.FC = () => {
+const Signup = () => {
     const validationSchema = getSignupValidationSchema();
     const navigate = useNavigate();
-    const [signup] = useSignupMutation();
+    const [signup, { isLoading }] = useSignupMutation();
 
     const {
         register,
@@ -35,7 +32,7 @@ const Signup: React.FC = () => {
         resolver: yupResolver(validationSchema),
     });
 
-    const onSubmit: SubmitHandler<SignupFormInputs> = async (data) => {
+    const onSubmit = async (data: SignupFormInputs) => {
         console.log('Form data submitted: ', data);
         try {
             await signup(data).unwrap();
@@ -45,8 +42,10 @@ const Signup: React.FC = () => {
             });
             reset();
         } catch (err) {
-            console.error('Signup Error: ', err);
-            toast.error('Signup failed. Please try again.');
+            const error = err as RTKQueryError;
+            console.error('Signup Error: ', error);
+            const errorMessage = error?.data?.message || 'Signup failed. Please try again.';
+            toast.error(errorMessage);
         }
     };
 
@@ -64,7 +63,6 @@ const Signup: React.FC = () => {
                         <Form
                             onSubmit={handleSubmit(onSubmit)}
                             className="d-flex flex-column align-items-center w-100"
-                            
                         >
                             {FormFields.map((field, index) => (
                                 <div key={index} className="mb-3 w-100">
@@ -103,9 +101,14 @@ const Signup: React.FC = () => {
                                 <Button
                                     type="submit"
                                     className="btn w-100"
-                                    style={{ margin: 0, padding: '0.6rem 1rem', border: 'none', }}
-                                    >
-                                    Sign Up
+                                    style={{
+                                        margin: 0,
+                                        padding: '0.6rem 1rem',
+                                        border: 'none',
+                                    }}
+                                    disabled={isLoading}
+                                >
+                                    {isLoading ? 'Signing Up...' : 'Sign Up'}
                                 </Button>
                             </div>
                         </Form>

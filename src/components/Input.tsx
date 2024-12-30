@@ -13,6 +13,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   required?: boolean; 
   autoFocus?: boolean;
   autoComplete?: "on" | "off"; 
+  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void; 
 }
 
 const Input: React.FC<InputProps> = ({
@@ -28,8 +29,15 @@ const Input: React.FC<InputProps> = ({
   required = false,
   autoFocus = false,
   autoComplete = "off",
+  onChange, 
   ...rest
 }) => {
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (onChange) {
+      onChange(event); 
+    }
+  };
+
   return (
     <div className="input-wrapper">
       {label && <label htmlFor={name} className="input-label">{label}</label>}
@@ -45,6 +53,7 @@ const Input: React.FC<InputProps> = ({
         required={required}
         autoFocus={autoFocus}
         autoComplete={autoComplete}
+        onChange={handleChange} 
         {...rest} 
       />
     </div>

@@ -9,22 +9,17 @@ import { jwtDecode } from 'jwt-decode';
 import '../App.css';
 import { useSigninMutation } from '../redux/services/SignupApi';
 import { getLoginValidationSchema } from '../utils/schema/LoginValidationSchema';
-// import HomeBus from '../assets/homeBus.png';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import Form from '../components/Form';
+import {colors} from '../constants/Palette';
+import {loginJwtPayload} from '../utils/CommonInterfaceFile/loginInterface';
 
-interface loginJwtPayload {
-    FirstName?: string; 
-    Role?: string;
-    [key: string]: any; 
-  }
 const SignIn = () => {
     const validationSchema = getLoginValidationSchema();
     const navigate = useNavigate();
     const [signin] = useSigninMutation();
 
- 
     const {
         register,
         handleSubmit,
@@ -45,8 +40,7 @@ const SignIn = () => {
             if (result?.data?.statusCode === 200) {
                 const { accessToken, refreshToken } = result.data.data;
                 const decodedToken = jwtDecode<loginJwtPayload>(accessToken);
-                console.log('Decoded Token:', decodedToken);
-    
+         
                 const firstName = decodedToken.FirstName || 'User';
                 const role= decodedToken.Role?.toUpperCase() || 'GUEST'; 
     
@@ -76,15 +70,9 @@ const SignIn = () => {
         }
     };
     
-    
 
     return (
         <div className="home-container">
-
-            {/* <div className="right-img-container">
-                <img src={HomeBus} alt="Sign In" />
-            </div> */}
-            
            <div className="customer-container d-flex justify-content-start align-items-start ">
                 <div className="card border-0 shadow-lg bg-light mx-auto" style={{ marginTop: '180px'}} >
                     <div className="card-body">
@@ -114,7 +102,7 @@ const SignIn = () => {
                                     type="button"
                                     className="btn btn-link p-0"
                                     onClick={() => navigate('/forgot-password')}
-                                    style={{ textDecoration: 'none', color: '#0066b8' }}
+                                    style={{textDecoration: 'none', color: colors.primary }}
                                 >
                                     Forgot Password?
                                 </Button>
