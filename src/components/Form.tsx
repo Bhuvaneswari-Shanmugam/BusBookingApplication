@@ -3,7 +3,7 @@ import { Form as BootstrapForm } from "react-bootstrap";
 
 interface FormProps {
   className?: string;
-  onSubmit: (e: React.FormEvent) => void;
+  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   children: React.ReactNode;
 }
 

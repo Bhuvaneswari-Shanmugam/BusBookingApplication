@@ -5,20 +5,17 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-toastify/dist/ReactToastify.css';
-import { FetchBaseQueryError } from '@reduxjs/toolkit/dist/query';
 import { useSignupMutation } from '../redux/services/SignupApi';
 import { getSignupValidationSchema } from '../utils/schema/SignupValidationSchema';
 import Form from '../components/Form';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import { FormFields } from '../constants/Index';
-import {SignupFormInputs} from '../utils/CommonInterfaceFile/SignupInterface';
+import { SignupFormInputs } from '../utils/entity/SignupInterface';
+import { colors } from '../constants/Palette';
+import bg from '../assets/bg.jpg';
 
-type RTKQueryError = FetchBaseQueryError & {
-    data?: { message?: string };
-};
-
-const Signup = () => {
+const Signup: React.FC = () => {
     const validationSchema = getSignupValidationSchema();
     const navigate = useNavigate();
     const [signup, { isLoading }] = useSignupMutation();
@@ -41,23 +38,46 @@ const Signup = () => {
             });
             reset();
         } catch (err) {
-            const error = err as RTKQueryError;
-            const errorMessage = error?.data?.message || 'Signup failed. Please try again.';
-            toast.error(errorMessage, {
+            toast.error((err as any)?.data?.message || 'Signup failed. Please try again.', {
                 autoClose: 500,
             });
         }
     };
-    
 
     return (
-        <div className="home-container">
-            <div
-                className="customer-container d-flex justify-content-center align-items-center"
-                style={{ marginTop: '-50px' }}
-            >
+        <div style={{
+            minHeight: '100vh',
+            width: '100%',
+            position: 'relative',
+            overflow: 'hidden',
+        }}>
+            <div style={{
+                content: "''",
+                backgroundImage: "url('./assets/bg.jpg')",
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                filter: 'blur(7px)',
+            }} />
+
+            <div style={{
+                position: 'absolute',
+                top: '90px',
+                color: '#f5f5f5',
+                width: '500px',
+                height: 'auto',
+                left: '300px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '100px',
+            }}>
                 <ToastContainer />
-                <div className="card border-0 shadow-lg bg-light" style={{ margin: '0px' }}>
+                <div className="card border-0 shadow-lg bg-light" style={{ margin: '0px', width: '100%', maxWidth: '400px' }}>
                     <div className="card-body flex-column justify-content-between">
                         <h2 className="text-center font-italic p-4">Customer Signup</h2>
 
@@ -106,6 +126,8 @@ const Signup = () => {
                                         margin: 0,
                                         padding: '0.6rem 1rem',
                                         border: 'none',
+                                        backgroundColor: colors.primary,
+                                        color: '#fff',
                                     }}
                                     disabled={isLoading}
                                 >

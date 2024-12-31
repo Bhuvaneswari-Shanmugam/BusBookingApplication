@@ -1,15 +1,16 @@
 import React from "react";
 import { Button as BootstrapButton, Container, Spinner } from "react-bootstrap";
+import {colors} from '../constants/Palette';
 
 export type ButtonProps = {
   onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void; 
-  children?: React.ReactNode; 
+  children:String ; 
   type?: "button" | "submit" | "reset"; 
-  color?: "primary" | "secondary";
+  color?: keyof typeof colors; 
   disabled?: boolean; 
   className?: string; 
   variant?: string; 
-  size?: "sm" | "lg" | undefined; 
+  size?: "sm" | "lg"; 
   style?: React.CSSProperties; 
   icon?: React.ReactNode; 
   loading?: boolean; 
@@ -30,7 +31,8 @@ const Button = ({
   ...props
 }: ButtonProps) => {
   return (
-    <Container>
+ 
+    
       <BootstrapButton
         className={className}
         onClick={onClick}
@@ -55,10 +57,8 @@ const Button = ({
         {icon && !loading && <span className="me-2">{icon}</span>}
         {children}
       </BootstrapButton>
-    </Container>
-  );
-};
 
-Button.displayName = "Button";
+  );
+}
 
 export default Button;
