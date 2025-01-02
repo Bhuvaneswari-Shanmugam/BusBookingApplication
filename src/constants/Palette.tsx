@@ -1,4 +1,4 @@
-
+import React from "react";
 
 export const colors = {
     primary: "#007bff",
@@ -15,9 +15,8 @@ export const colors = {
     cardBackground: "#f1f3f5",
     hoverEffect: "#f0f0f0",
     buttonBorder: "#ccc",
-    backgroundColor:"#732988",
     
-    
+    // Light colors
     lightText: "#f8f9fa",  
     lightBackground: "#e9ecef", 
     lightCardBackground: "#fdfdfe",
@@ -26,7 +25,7 @@ export const colors = {
     lightButton: "#e0e0e0",
     lightShade: "#f0f0f0",  
     
-    
+    // Dark colors
     darkText: "#343a40",   
     darkBackground: "#212529",  
     darkCardBackground: "#343a40", 
@@ -45,12 +44,19 @@ export const size={
 };
 
 export const space = {
-    small: "2px",    
-    medium: "4px",   
-    large: "6px",   
-    extraLarge: "8px", 
-    doubleExtraLarge: "10px", 
-    tripleExtraLarge: "12px", 
-    quadrupleExtraLarge: "14px", 
-    quintupleExtraLarge: "16px", 
+   
+        small: "2px",
+        medium: "4px",
+        large: "6px",
+        extraLarge: "8px",
+        doubleExtraLarge: "10px",
+        tripleExtraLarge: "12px",
+        quadrupleExtraLarge: "14px",
+        quintupleExtraLarge: "16px",
+        xxl: "32px", 
+        xxxl: "48px", 
+        xxxxl: "64px", 
+        gigantic: "128px",
+   
+     
 };

@@ -1,11 +1,16 @@
-import React from "react";
+import { configureStore } from '@reduxjs/toolkit';
+import { SignupApi } from '../redux/services/SignupApi';
 
-const Index: React.FC = () => {
-  return (
-    <div>
-      <h1>inside store-file</h1>
-    </div>
-  );
-};
 
-export default Index;
+
+const store = configureStore({
+  reducer:{
+    [SignupApi.reducerPath]:SignupApi.reducer,
+
+   
+},
+    middleware:(getDefaultMiddleware)=>
+    getDefaultMiddleware({}).concat([SignupApi.middleware])
+})
+
+export default store;
