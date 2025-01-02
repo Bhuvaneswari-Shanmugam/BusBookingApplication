@@ -1,5 +1,6 @@
 import React from 'react';
 import { CheckboxProps } from '../utils/entity/CommonEntity';
+import {colors}  from '../constants/Palette';
 
 const Checkbox: React.FC<CheckboxProps> = ({ label, checked, type, onChange }) => {
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -14,7 +15,7 @@ const Checkbox: React.FC<CheckboxProps> = ({ label, checked, type, onChange }) =
                     onChange={handleChange}
                     className="form-check-input"
                     style={{
-                        backgroundColor: checked ? '#732988' : '',
+                        backgroundColor: checked ? colors.backgroundColor : '',
                     }}
                 />
                 {label}

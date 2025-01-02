@@ -11,7 +11,7 @@ const Toast: React.FC<ToastProps> = ({ message, type = 'info', duration = 3000, 
   if (type === 'success') toastClass = 'toast show align-items-center text-bg-success border-0';
   else if (type === 'error') toastClass = 'toast show align-items-center text-bg-danger border-0';
   return (
-    <div className="position-fixed   top end-0 p-3" style={{ zIndex: 11 }}>
+    <div className="position-fixed   top end-0 p-3">
       <div className={toastClass} role="alert" aria-live="assertive" aria-atomic="true">
         <div className="d-flex">
           <div className="toast-body">

@@ -3,7 +3,7 @@ import { CardProps } from '../utils/entity/CommonEntity';
 
 const CardComponent: React.FC<CardProps> = ({ header, title, description, content, footer, className, ...props }) => {
   return (
-    <div className={`card shadow-lg rounded-3 p-3 mb-5 bg-white ${className}`} style={{ width: '50rem', backgroundColor: '#ffffff', color: '#000000', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }} {...props}>
+    <div className={`card shadow-lg rounded-3 p-3 mb-5 bg-white ${className}`}{...props}>
       {header && <div className="card-header border-0 bg-white">{header}</div>}
       <div className="card-body bg-white">
         {title && <h5 className="card-title bg-white">{title}</h5>}

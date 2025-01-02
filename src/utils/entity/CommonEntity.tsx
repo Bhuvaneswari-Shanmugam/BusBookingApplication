@@ -20,22 +20,21 @@ export interface ToastProps {
   onClose: () => void; 
 }
 
-export interface TableProps<TData> {
-  data: TData[];
-  columns: any[];
-  onRowClick?: (row: TData) => void;
-}
-
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   header?: string;
   description?: string;
   title: string;
-  content: any;
-  footer?: any;
+  content: string;
+  footer?: string;
 }
 export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
   label: string;
   icon?: React.ReactNode;
-  type?: 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'light' | 'dark';
+  color?: 'primary' | 'secondary' | 'success' | 'danger' | 'warning' | 'info' | 'light' | 'dark';
 }
 
+
+export interface LayoutProps {
+  NavbarComponent?: React.ComponentType;
+  FooterComponent?: React.ComponentType;
+}
