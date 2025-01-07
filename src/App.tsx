@@ -1,26 +1,29 @@
-import React from 'react';
 
-import './App.css';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import store  from '../src/redux/store'; 
+import MissMatch from './pages/MissMatch';
+import Home from './pages/Home'
+import AvailableBuses from './pages/booking/AvailableBuses';
+import Filters from './pages/filters/Filters';
+import PickUpPoints from './pages/filters/PickUpPoints';
+import DroppingPoints from './pages/filters/DroppingPoints';
 
-function App() {
+const App = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-       
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Provider store={store}>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Home />}/>
+          <Route path="/buses" element={<AvailableBuses />} />
+          <Route path="/filters" element={<Filters />} />
+          <Route path="/pickup" element={<PickUpPoints onClose={() => {}} />}/>
+          <Route path="/dropin" element={<DroppingPoints onClose={()=>{}} />} />
+          <Route path="*" element={<MissMatch/>} />
+        </Routes>
+      </BrowserRouter>
+    </Provider>
   );
-}
+};
 
 export default App;

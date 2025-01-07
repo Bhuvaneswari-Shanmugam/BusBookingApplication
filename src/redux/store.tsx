@@ -1,11 +1,16 @@
-import React from "react";
+import { configureStore } from '@reduxjs/toolkit';
+import { TripApi } from './services/TripApi';
+import {BusApi} from '../redux/services/BusApi';
 
-const Index: React.FC = () => {
-  return (
-    <div>
-      <h1>inside store-file</h1>
-    </div>
-  );
-};
+const store = configureStore({
+  reducer: {
+    [TripApi.reducerPath]: TripApi.reducer,
+    [BusApi.reducerPath]:BusApi.reducer
+  },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware()
+      .concat(TripApi.middleware)
+      .concat(BusApi.middleware),
+});
 
-export default Index;
+export default store;
