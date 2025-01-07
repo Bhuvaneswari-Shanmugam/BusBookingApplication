@@ -3,7 +3,8 @@ import { Provider } from 'react-redux';
 import Signup from './pages/Signup';
 import Signin from '../src/pages/Signin';
 import store  from '../src/redux/store'; 
-
+import PassengerDetailsForm from './pages/PassengerDetails';
+import Ticket from './pages/Ticket';
 
 
 
@@ -15,6 +16,8 @@ const App = () => {
           <Route path="/" element={<Signin />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="*" element={<h1>Page not found</h1>} />
+          <Route path="/ticket" element={<Ticket/>}/>
+          <Route path="passenger-details" element={<PassengerDetailsForm />}/>
         </Routes>
       </BrowserRouter>
     </Provider>

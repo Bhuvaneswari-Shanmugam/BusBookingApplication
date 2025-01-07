@@ -2,7 +2,6 @@ import React from "react";
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string; 
-  type?: "text" | "password" | "email" | "number" | "tel" | "url" | "search" | "checkbox"; 
   placeholder?: string; 
   name?: string; 
   disabled?: boolean; 
@@ -54,6 +53,7 @@ const Input: React.FC<InputProps> = ({
         autoFocus={autoFocus}
         autoComplete={autoComplete}
         onChange={handleChange} 
+        id={name} 
         {...rest} 
       />
     </div>

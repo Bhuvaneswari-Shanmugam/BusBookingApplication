@@ -13,7 +13,7 @@ import Button from '../components/Button';
 import Form from '../components/Form';
 import { colors } from '../constants/Palette';
 import { loginJwtPayload, SigninResponse } from '../utils/entity/loginInterface';
-import bg from '../assets/bg.jpg';
+//import bg from '../assets/bg.jpg';
 
 const SignIn: React.FC = () => {
     const validationSchema = getLoginValidationSchema();
@@ -78,7 +78,7 @@ const SignIn: React.FC = () => {
         }}>
             <div style={{
                 content: "''",
-                backgroundImage: "url('./assets/bg.jpg')",
+                //backgroundImage: "url('./assets/bg.jpg')",
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',

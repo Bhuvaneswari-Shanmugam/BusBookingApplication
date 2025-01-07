@@ -13,7 +13,7 @@ import Button from '../components/Button';
 import { FormFields } from '../constants/Index';
 import { SignupFormInputs } from '../utils/entity/SignupInterface';
 import { colors } from '../constants/Palette';
-import bg from '../assets/bg.jpg';
+//import bg from '../assets/bg.jpg';
 
 const Signup: React.FC = () => {
     const validationSchema = getSignupValidationSchema();
@@ -53,7 +53,7 @@ const Signup: React.FC = () => {
         }}>
             <div style={{
                 content: "''",
-                backgroundImage: "url('./assets/bg.jpg')",
+              //  backgroundImage: "url('./assets/bg.jpg')",
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',
