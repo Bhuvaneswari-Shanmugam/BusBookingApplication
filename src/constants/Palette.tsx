@@ -15,6 +15,7 @@ export const colors = {
     cardBackground: "#f1f3f5",
     hoverEffect: "#f0f0f0",
     buttonBorder: "#ccc",
+    backgroundColor:"#9932CC",
     
     // Light colors
     lightText: "#f8f9fa",  

@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import Button from '../../components/Button';
 
 const Header: React.FC = () => {
   return (
@@ -14,7 +15,7 @@ const Header: React.FC = () => {
           height="60"
           className="d-inline-block align-text-top ms-3"
         />
-        <button
+        <Button
           className="navbar-toggler"
           type="button"
           data-bs-toggle="collapse"
@@ -24,7 +25,7 @@ const Header: React.FC = () => {
           aria-label="Toggle navigation"
         >
           <span className="navbar-toggler-icon"></span>
-        </button>
+        </Button>
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
            
@@ -65,7 +66,7 @@ const Header: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <button className="dropdown-item">Signout</button>
+                <Button className="dropdown-item">Signout</Button>
               </li>
             </ul>
           </div>

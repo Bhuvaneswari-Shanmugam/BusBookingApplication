@@ -1,6 +1,6 @@
 import {Field} from "../utils/entity/FormFieldInterface";
 
-export const BASE_URL = "http://localhost:8081/api/v1/auth/";
+export const BASE_URL = "http://localhost:8080/auth/";
   
 
 export const FormFields: Field[] = [

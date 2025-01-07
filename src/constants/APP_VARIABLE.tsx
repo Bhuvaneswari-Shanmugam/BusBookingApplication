@@ -1,5 +1,4 @@
-export const AdminRoute = {
-    ADMIN: "/admin",
+export const ROUTE = {
     CUSTOMER_DETAILS: "/customer-details",
     BUS_DETAILS: "/bus-details",
     TRIP_DETAILS: "/trip-details",
@@ -7,10 +6,8 @@ export const AdminRoute = {
     SEAT_MANAGEMENT: "/seat",
     TRIP: "/trip",
     LOGIN: "/login",
+    SIGNUP:"/signup",
     MISSMATCH:"/missmatch",
-};
-
-export const CustomerRoute = {
     HOME: "/home",
     PROFILE: "/profile",
     BOOKING: "/booking",
@@ -22,5 +19,7 @@ export const CustomerRoute = {
     USER_PROFILE: "/profile/:userId",
     FOOTER: "/footer",
     BOOKING_DETAILS: "/booking-details",
-    MISSMATCH:"./missmatch",
+   
 };
+
+

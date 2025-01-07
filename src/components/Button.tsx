@@ -1,20 +1,7 @@
 import React from "react";
 import { Button as BootstrapButton, Container, Spinner } from "react-bootstrap";
-import {colors} from '../constants/Palette';
+import { ButtonProps } from "../utils/entity/CommonEntity";
 
-export type ButtonProps = {
-  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void; 
-  children:String ; 
-  type?: "button" | "submit" | "reset"; 
-  color?: keyof typeof colors; 
-  disabled?: boolean; 
-  className?: string; 
-  variant?: string; 
-  size?: "sm" | "lg"; 
-  style?: React.CSSProperties; 
-  icon?: React.ReactNode; 
-  loading?: boolean; 
-};
 
 const Button = ({
   className,
@@ -31,9 +18,7 @@ const Button = ({
   ...props
 }: ButtonProps) => {
   return (
- 
-    
-      <BootstrapButton
+ <BootstrapButton
         className={className}
         onClick={onClick}
         type={type}

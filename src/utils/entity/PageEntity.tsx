@@ -13,3 +13,38 @@ export interface DecodedToken {
     UserId: string;
     Role: string;
 }
+
+export interface SignupFormInputs {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+    role: string;
+    termsAccepted: boolean;
+}
+
+export interface Bus {
+    name: string;
+    type: string;
+    departureTime: string;
+    departureLocation: string;
+    duration: string;
+    arrivalTime: string;
+    arrivalLocation: string;
+    rating: string;
+    originalPrice: number;
+    discountedPrice: number;
+    busId: number;
+  }
+
+export interface BookingDetails {
+    pickupPoint: string;
+    destinationPoint: string;
+    pickupTime: string;
+    busNumber: number;
+    busType: string;
+    bookedNoOfSeats: number[];
+    perSeatAmount: number;
+    totalAmount: number;
+  }
+  

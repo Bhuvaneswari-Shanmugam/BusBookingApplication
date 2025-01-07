@@ -10,10 +10,10 @@ import { getSignupValidationSchema } from '../utils/schema/SignupValidationSchem
 import Form from '../components/Form';
 import Input from '../components/Input';
 import Button from '../components/Button';
-import { FormFields } from '../constants/Index';
-import { SignupFormInputs } from '../utils/entity/SignupInterface';
+import { FormFields } from '../constants/index'
+import { SignupFormInputs } from '../utils/entity/PageEntity';
 import { colors } from '../constants/Palette';
-import bg from '../assets/bg.jpg';
+// import bg from '../assets/bg.jpg';
 
 const Signup: React.FC = () => {
     const validationSchema = getSignupValidationSchema();

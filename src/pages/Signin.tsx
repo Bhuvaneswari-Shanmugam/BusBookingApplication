@@ -13,7 +13,7 @@ import Button from '../components/Button';
 import Form from '../components/Form';
 import { colors } from '../constants/Palette';
 import { loginJwtPayload, SigninResponse } from '../utils/entity/loginInterface';
-import bg from '../assets/bg.jpg';
+// import bg from '../assets/bg.jpg';
 
 const SignIn: React.FC = () => {
     const validationSchema = getLoginValidationSchema();
@@ -50,12 +50,13 @@ const SignIn: React.FC = () => {
                 sessionStorage.setItem('Role', role);
 
                 toast.success(result.data.message || 'Login successful!', { autoClose: 1000 });
+                setTimeout(()=> navigate('/home'),1000)
 
-                if (role === 'ADMIN') {
-                    setTimeout(() => navigate('/admin'), 1000);
-                } else {
-                    setTimeout(() => navigate('/home'), 1000);
-                }
+                // if (role === 'ADMIN') {
+                //     setTimeout(() => navigate('/admin'), 1000);
+                // } else {
+                //     setTimeout(() => navigate('/home'), 1000);
+                // }
 
                 reset();
             } else {
