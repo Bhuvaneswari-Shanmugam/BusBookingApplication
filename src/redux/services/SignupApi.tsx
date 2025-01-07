@@ -1,8 +1,9 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+
 export const SignupApi = createApi({
   reducerPath: "signupApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: process.env.AUTH_URL,
+    baseUrl: process.env.REACT_APP_AUTH_URL,
     prepareHeaders: (headers) => {
       const token = sessionStorage.getItem("Token");
       if (token) {
