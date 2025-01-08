@@ -2,8 +2,6 @@ import React from 'react';
 import { useLocation, Outlet } from 'react-router-dom';
 import { LayoutProps } from '../../utils/entity/CommonEntity';
 
-
-
 const Layout: React.FC<LayoutProps> = ({ NavbarComponent, FooterComponent }) => {
   const location = useLocation();
   const showNavbar = ['/home'];

@@ -1,4 +1,4 @@
-import { jwtDecode } from "jwt-decode";
+import  jwtDecode  from "jwt-decode";
 
 export const getAccessRole = () => {
     const token = localStorage.getItem("ACCESS_TOKEN");

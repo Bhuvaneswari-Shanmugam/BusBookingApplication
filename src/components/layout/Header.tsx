@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-
+import { navLinks } from '../../context/Index';
 
 const Header: React.FC = () => {
   return (
@@ -27,21 +27,15 @@ const Header: React.FC = () => {
           <span className="navbar-toggler-icon"></span>
         </button>
         <div className="collapse navbar-collapse" id="navbarNav">
-          <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-           
-            <li className="nav-item">
-              <Link className="nav-link mx-3" to="/home">Home</Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link mx-3" to="/about">About</Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link mx-3" to="/contact">Contact</Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link mx-3" to="/services">Services</Link>
-            </li>
-          </ul>
+        <ul className="navbar-nav me-auto mb-2 mb-lg-0">
+      {navLinks.map(({ name, path }, index) => (
+        <li className="nav-item" key={index}>
+          <Link className="nav-link mx-3" to={path}>
+            {name}
+          </Link>
+        </li>
+      ))}
+    </ul>
           <span className="dropdown-item-end py-2 px-2"></span>
           <div className="dropdown">
             <button

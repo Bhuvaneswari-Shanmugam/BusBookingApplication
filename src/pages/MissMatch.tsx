@@ -15,8 +15,6 @@ const MissMatch: React.FC = () => {
       }}
     >
       <div>
-        {/* Uncomment the line below if you want to use the image */}
-        {/* <img src={imageFile} alt="404" style={{ width: '150px', marginBottom: '20px' }} /> */}
         <p
           className="mt-3"
           style={{

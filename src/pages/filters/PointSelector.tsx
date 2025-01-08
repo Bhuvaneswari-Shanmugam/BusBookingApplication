@@ -6,10 +6,10 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 interface PointsSelectorProps {
   title: string;
   points: { id: number, name: string }[];
-  onClose: () => void;
+  
 }
 
-const PointsSelector: React.FC<PointsSelectorProps> = ({ title, points, onClose }) => {
+const PointsSelector: React.FC<PointsSelectorProps> = ({ title, points, }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPoints, setSelectedPoints] = useState<Set<number>>(new Set());
 
@@ -31,16 +31,16 @@ const PointsSelector: React.FC<PointsSelectorProps> = ({ title, points, onClose 
 
   const handleApply = () => {
     console.log('Selected Points:', Array.from(selectedPoints));
-    onClose();
+  
   };
 
   const handleCancel = () => {
     setSelectedPoints(new Set());
-    onClose();
+    
   };
 
   return (
-    <Modal show onHide={onClose} centered size="lg">
+    <Modal show  centered size="lg">
       <Modal.Header closeButton>
         <Modal.Title>{title}</Modal.Title>
       </Modal.Header>

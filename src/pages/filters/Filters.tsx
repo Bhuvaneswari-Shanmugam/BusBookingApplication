@@ -135,11 +135,11 @@ const Filters: React.FC = () => {
       </div>
 
       {showPickUpPoints && (
-        <PickUpPoints onClose={() => setShowPickUpPoints(false)} />
+        <PickUpPoints />
       )}
 
       {showDropOffPoints && (
-        <DroppingPoints onClose={() => setShowDropOffPoints(false)} />
+        <DroppingPoints  />
       )}
     </div>
   );

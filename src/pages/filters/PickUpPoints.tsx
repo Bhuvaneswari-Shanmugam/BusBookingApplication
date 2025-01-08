@@ -2,7 +2,7 @@ import React from 'react';
 import { useFetchPickUpPointsQuery } from '../../redux/services/TripApi';
 import PointsSelector from '../filters/PointSelector';
 
-const PickUpPoints: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+const PickUpPoints: React.FC = ()=> {
 
   const { data: pickupPoints, error, isLoading } = useFetchPickUpPointsQuery({
     pickupPoint: 'Coimbatore',
@@ -23,7 +23,7 @@ const PickUpPoints: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     <PointsSelector
       title="PICKUP POINTS"
       points={validPickupPoints}
-      onClose={onClose}
+      
     />
   );
 };

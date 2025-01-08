@@ -1,29 +1,24 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '../components/layout/Header';
-
+import '../App.css';
 import { useSearchTripsMutation } from '../redux/services/TripApi';
-// import HomeBus from '../assets/homeBus.png';
-// import bus1 from '../assets/cat-bus1.png';
-// import bus2 from '../assets/cat-bus2.png';
-// import bus3 from '../assets/cat-bus3.jpg';
 import Footer from '../components/layout/Footer'
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'; 
-
+import { validationSchema } from '../context/Index';
 const Home = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const bookingDetails = location.state?.bookingDetails;
-
-  const [pickupPoint, setPickupPoint] = useState('');
-  const [destinationPoint, setDestinationPoint] = useState('');
-  const [pickupDate, setPickupDate] = useState('');
-  const [ticket, setTicket] = useState(null);
+  const [pickupPoint, setPickupPoint] = useState<string>('');
+  const [destinationPoint, setDestinationPoint] = useState<string>('');
+  const [pickupDate, setPickupDate] = useState<string>('');
+  const [ticket, setTicket] = useState<null>(null);
   const [searchTrips] = useSearchTripsMutation();
-  const locations = ['Salem', 'Namakkal', 'Chennai', 'Coimbatore', 'Bangalore'];
-
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+  const locations = ['Salem', 'Namakkal', 'Chennai', 'Coimbatore', 'Bangalore'];
 
   useEffect(() => {
     if (bookingDetails) {
@@ -31,35 +26,26 @@ const Home = () => {
     }
   }, [bookingDetails]);
 
-  const [isLoading, setIsLoading] = useState(false);
-
+  
   const handleBookNowClick = async () => {
-    if (!pickupPoint || !destinationPoint || !pickupDate) {
-      toast.error('Please fill in all fields.');
-      return;
-    }
-
-    if (pickupPoint === destinationPoint) {
-      toast.error('Pickup and destination points cannot be the same.');
-      return;
-    }
-
-    navigate('/pickup', {
-      state: { from: pickupPoint, to: destinationPoint, date: pickupDate } 
-    });
-
-    setIsLoading(true);
+    const values = { pickupPoint, destinationPoint, pickupDate };
+  
     try {
-      const tripExists = await searchTrips({
+      await validationSchema.validate(values);
+    } catch (validationError) {
+      return;
+    }
+   setIsLoading(true);
+    try {
+      const {data,error} = await searchTrips({
         pickupPoint,
         destinationPoint,
         pickupTime: pickupDate,
       }).unwrap();
-
+  
       setIsLoading(false);
-
-      if (tripExists) {
-        toast.success('Trips found!');
+  
+      if (data) {
         navigate('/buses', {
           state: {
             from: pickupPoint,
@@ -67,15 +53,21 @@ const Home = () => {
             date: pickupDate,
           },
         });
-      } else {
-        toast.error('No trips available for the given criteria.');
+        if (error) { 
+          toast.error(error || 'Failed to search for trips. Please try again.'); 
+        }
       }
     } catch (error) {
       setIsLoading(false);
-      console.error('Failed to search for trips:', error);
-      toast.error((error as any)?.message || 'Failed to search for trips. Please try again.');
+      if (error instanceof Error) {
+        toast.error(error.message || 'Failed to search for trips. Please try again.');
+      } else {
+        toast.error('Failed to search for trips. Please try again.');
+      }
+      
     }
   };
+  
 
   const scrollToSearchContainer = () => {
     if (searchContainerRef.current) {
