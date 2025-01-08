@@ -2,7 +2,10 @@ import React, { useRef } from "react";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import { useLocation } from "react-router-dom";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { PassengerForTicket, Customer } from '../utils/entity/PageEntity';
+import { colors } from "../constants/Palette";
 
 const Ticket: React.FC = () => {
     const ticketRef = useRef<HTMLDivElement | null>(null);
@@ -35,16 +38,16 @@ const Ticket: React.FC = () => {
                 });
 
                 if (response.ok) {
-                    alert("Email sent successfully!");
+                    toast.success("Email sent successfully!");
                 } else {
-                    alert("Failed to send email.");
+                    toast.error("Failed to send email.");
                 }
             } catch (error) {
-                alert("Error sending email.");
+                toast.error("Error sending email.");
             }
         }
     };
-
+     // i put these data as static because now i didn't integrate with avaliable and booking page with this ticket so for test this whether is working or not i put as static data here
     const from = "City X";
     const to = "City Y";
     const date = "2025-02-15";
@@ -66,7 +69,7 @@ const Ticket: React.FC = () => {
 
     }));
 
-    const textStyle = { color: "#343a40" };
+    const textStyle = { color: colors.secondary };
 
     return (
         <div className="d-flex justify-content-center align-items-center" style={{ backgroundColor: "#f8f9fa" }}>

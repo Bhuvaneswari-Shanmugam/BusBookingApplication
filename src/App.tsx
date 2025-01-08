@@ -1,10 +1,11 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import Signup from './pages/Signup';
-import Signin from '../src/pages/Signin';
-import store  from '../src/redux/store'; 
 import PassengerDetailsForm from './pages/PassengerDetails';
 import Ticket from './pages/Ticket';
+import Signin from '../src/pages/Signin';
+import store  from '../src/redux/store'; 
+
 
 
 

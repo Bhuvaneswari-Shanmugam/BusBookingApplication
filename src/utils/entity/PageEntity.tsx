@@ -19,7 +19,11 @@ export interface PassengerField {
     email: string; 
     phoneNumber: string;
   }
-  
+  export interface CommonBackgroundProps {
+    children: React.ReactNode;
+}
+
+
   export interface FormData {
     passengers?: {
       firstName: string;

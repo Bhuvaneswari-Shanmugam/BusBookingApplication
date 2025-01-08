@@ -1,10 +1,7 @@
-import {Field} from "../utils/entity/FormFieldInterface";
+import {SignupFormField} from "../utils/entity/SignupInterface";
 import {PassengerField,GenderOption} from '../utils/entity/PageEntity';
 
-export const BASE_URL = "http://localhost:8081/api/v1/auth/";
-  
-
-export const FormFields: Field[] = [
+export const SignupFormFields: SignupFormField[] = [
   { name: 'firstName', placeholder: 'First name', type: 'text', className: 'w-48 me-2', id: 'firstName' },
   { name: 'lastName', placeholder: 'Last name', type: 'text', className: 'w-48', id: 'lastName' },
   { name: 'email', placeholder: 'Email', type: 'email', className: 'w-100', id: 'email' },

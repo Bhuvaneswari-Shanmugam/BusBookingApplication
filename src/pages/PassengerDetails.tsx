@@ -1,6 +1,8 @@
 import React from "react";
 import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { genderOptions ,} from "../constants/Index";
 import { useNavigate, } from "react-router-dom";import Button from "../components/Button";
 import Input from "../components/Input";
@@ -44,7 +46,7 @@ const PassengerDetailsForm: React.FC = () => {
   });
 
   const onSubmit = (data: FormData) => {
-    alert("Form Submitted Successfully!");
+    toast.success("Form Submitted Successfully!");
     navigate("/ticket", { state: data });
   };
 
@@ -59,7 +61,7 @@ const PassengerDetailsForm: React.FC = () => {
         <h1 className="text-center">Passenger Details</h1>
 
       
-        <div className="profile-info d-flex align-items-center mb-3">
+        <div className=" d-flex align-items-center mb-3">
           <img
             src="https://cdn-icons-png.flaticon.com/512/5464/5464651.png"
             alt="Passenger Icon"
@@ -166,7 +168,7 @@ const PassengerDetailsForm: React.FC = () => {
           </div>
         ))}
 
-        <div className="contact-info d-flex align-items-center mb-3">
+        <div className=" d-flex align-items-center mb-3">
           <img
             src="https://cdn4.iconfinder.com/data/icons/green-shopper/1049/email.png"
             alt="Contact Icon"
@@ -211,7 +213,7 @@ const PassengerDetailsForm: React.FC = () => {
         </div>
 
         <hr />
-        <div className="info-section mt-4">
+        <div className="mt-4">
           <p>
             <strong>Note:</strong> You will receive your ticket details on the provided email. Ensure
             accuracy.
@@ -219,7 +221,6 @@ const PassengerDetailsForm: React.FC = () => {
           <p>Once payment is confirmed, tickets will be available for download.</p>
         </div>
 
-        {/* Total and Submit */}
         <div className="d-flex justify-content-between mt-4">
           <div>
             <p>

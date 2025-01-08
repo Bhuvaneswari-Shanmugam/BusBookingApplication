@@ -1,4 +1,5 @@
 import React from "react";
+import Label from '../components/Label';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string; 
@@ -12,7 +13,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   required?: boolean; 
   autoFocus?: boolean;
   autoComplete?: "on" | "off"; 
-  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void; 
+  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void; 
 }
 
 const Input: React.FC<InputProps> = ({
@@ -39,7 +40,7 @@ const Input: React.FC<InputProps> = ({
 
   return (
     <div className="input-wrapper">
-      {label && <label htmlFor={name} className="input-label">{label}</label>}
+      {label && <Label htmlFor={name} className="input-label">{label}</Label>}
       <input
         type={type}
         placeholder={placeholder}

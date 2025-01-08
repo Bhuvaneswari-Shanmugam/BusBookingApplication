@@ -13,8 +13,8 @@ export const getPassengerDetailsValidationSchema = Yup.object().shape({
       gender: Yup.string().required("Gender is required"),
     })
   ),
-  email: Yup.string().email("Invalid email").required("Email is required"),
+  email: Yup.string().required("Email is required").email("Invalid email"),
   phoneNumber: Yup.string()
-    .matches(/^\d{10}$/, "Phone number must be 10 digits")
-    .required("Phone number is required"),
+    .required("Phone number is required")
+    .matches(/^\d{10}$/, "Phone number must be 10 digits"),
 });
