@@ -8,7 +8,7 @@ const Toast: React.FC<ToastProps> = ({ message, type = 'info', duration = 3000, 
     return () => clearTimeout(timer);
   }, [duration, onClose]);
 
-  let toastClass = `toast show align-items-center text-bg-light border-0 ${type === 'success' ? 'text-bg-success' : type === 'error' ? 'text-bg-danger' : ''}`;
+  let toastClass = `toast show align-items-center border-0 ${type === 'success' ? 'text-bg-success' : type === 'error' ? 'text-bg-danger' : 'text-bg-light'}`;
 
 return (
     <div className="position-fixed top end-0 p-3">
