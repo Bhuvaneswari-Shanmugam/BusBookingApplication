@@ -118,8 +118,8 @@ const AvailableBuses = () => {
         <strong>{from}</strong> - <strong>{to}</strong> on <strong>{date}</strong>
       </h5>
 
-      <div className="buses-container" style={{ width: '100%', marginTop: '-750px' }}>
-        {busData.map((bus) => (
+      <div className="buses-container w-100 mt-n5">
+      {busData.map((bus) => (
           <div key={bus.busId} className="card p-4 mb-2" style={{ marginLeft: '5 px', marginRight: '0px' }}>
             <div className="card-content d-flex justify-content-between align-items-center">
               <div>

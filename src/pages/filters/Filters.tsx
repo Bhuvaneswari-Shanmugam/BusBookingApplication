@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import Checkbox from '../../components/CheckBox';
 import PickUpPoints from './PickUpPoints';
 import DroppingPoints from '../filters/DroppingPoints';
+import Checkbox from '../../components/CheckBox';
 
 const Filters: React.FC = () => {
   const [checkedState, setCheckedState] = useState({ before6AM: false, sixTo12PM: false, twelveTo6PM: false, after6PM: false });

@@ -1,12 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
+import  { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import 'react-toastify/dist/ReactToastify.css';
 import Header from '../components/layout/Header';
-import '../App.css';
 import { useSearchTripsMutation } from '../redux/services/TripApi';
 import Footer from '../components/layout/Footer'
 import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css'; 
-import { validationSchema } from '../context/Index';
+import { validationSchema } from '../schema/validationSchema';
+import { locations } from '../constants';
+import {busDetails} from '../constants';
+
+import '../App.css';
 const Home = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -18,7 +21,6 @@ const Home = () => {
   const [searchTrips] = useSearchTripsMutation();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
-  const locations = ['Salem', 'Namakkal', 'Chennai', 'Coimbatore', 'Bangalore'];
 
   useEffect(() => {
     if (bookingDetails) {
@@ -27,46 +29,30 @@ const Home = () => {
   }, [bookingDetails]);
 
   
-  const handleBookNowClick = async () => {
+     const handleBookNowClick = async () => {
     const values = { pickupPoint, destinationPoint, pickupDate };
-  
-    try {
-      await validationSchema.validate(values);
-    } catch (validationError) {
-      return;
-    }
-   setIsLoading(true);
-    try {
-      const {data,error} = await searchTrips({
-        pickupPoint,
-        destinationPoint,
-        pickupTime: pickupDate,
-      }).unwrap();
-  
-      setIsLoading(false);
+    await validationSchema.validate(values);
+    const { data, error } = await searchTrips({
+      pickupPoint,
+      destinationPoint,
+      pickupTime: pickupDate,
+    }).unwrap();
   
       if (data) {
-        navigate('/buses', {
-          state: {
-            from: pickupPoint,
-            to: destinationPoint,
-            date: pickupDate,
-          },
-        });
-        if (error) { 
-          toast.error(error || 'Failed to search for trips. Please try again.'); 
-        }
+      navigate('/buses', {
+        state: {
+          from: pickupPoint,
+          to: destinationPoint,
+          date: pickupDate,
+        },
+      });
+    } else {
+      if (error) {
+        toast.error(error || 'Failed to search for trips. Please try again.');
       }
-    } catch (error) {
-      setIsLoading(false);
-      if (error instanceof Error) {
-        toast.error(error.message || 'Failed to search for trips. Please try again.');
-      } else {
-        toast.error('Failed to search for trips. Please try again.');
-      }
-      
     }
   };
+  
   
 
   const scrollToSearchContainer = () => {
@@ -111,7 +97,7 @@ const Home = () => {
               onChange={(e) => setPickupPoint(e.target.value)}
             >
               <option value="" disabled>
-                From
+                Select Location
               </option>
               {locations.map((location, index) => (
                 <option key={index} value={location}>
@@ -127,7 +113,7 @@ const Home = () => {
               onChange={(e) => setDestinationPoint(e.target.value)}
             >
               <option value="" disabled>
-                To
+                Select Destinatin
               </option>
               {locations.map((location, index) => (
                 <option key={index} value={location}>
@@ -167,29 +153,17 @@ const Home = () => {
             <h2 className="text-center my-2">Available Buses</h2>
             <div className="bus-container">
               <div className="row g-4 d-flex flex-column align-items-center">
-                <div className="col d-flex align-items-center mb-3" style={{ width: '80%' }}>
-                  <img src="" alt="bus" width="200px" height="110px" className="me-4" />
-                  <div>
-                    <h5 className="mb-2">Luxury Travel</h5>
-                    <p>As India's infrastructure continues to evolve, the demand for comfortable and efficient travel options is on the rise. Whether it's long-distance travel, corporate commuting, or tourist excursions, Bigtraze Travels provides the perfect solution.</p>
-                  </div>
-                </div>
-                <div className="col d-flex align-items-center mb-3" style={{ width: '80%' }}>
-                  <img src="" alt="bus" width="200px" height="110px" className="me-4" />
-                  <div>
-                    <h5 className="mb-2">AC Bus Travel</h5>
-                    <p>Bus air conditioners are indispensable for providing a comfortable and enjoyable journey for passengers. Understanding the benefits and maintenance tips associated with bus air conditioners can enhance passenger experience.</p>
-                  </div>
-                </div>
-                <div className="col d-flex align-items-start mb-3" style={{ width: '80%' }}>
-                  <img src="" alt="bus" width="330px" height="150px" className="me-4" />
-                  <div>
-                    <h5 className="mb-2">Non-AC Bus Travel</h5>
-                    <p>The all-new BS VI Range of Starbus comes with unmatched features of excellent seating comfort with wider seats, armrests, mobile chargers, more leg space, reclining seats, improved suspension and reduced NVH, making it convenient and comfortable for passengers.</p>
-                  </div>
-                </div>
-              </div>
+                  {busDetails.map((bus, index) => (
+                   <div key={index} className={`col d-flex align-items-${bus.alignment} mb-3`} style={{ width: '80%' }}>
+                    <img src={bus.imgSrc} alt="bus" width={bus.imgWidth} height={bus.imgHeight} className="me-4" />
+                   <div>
+              <h5 className="mb-2">{bus.title}</h5>
+              <p>{bus.description}</p>
             </div>
+          </div>
+        ))}
+      </div>
+    </div>
           </div>
         </div>
 

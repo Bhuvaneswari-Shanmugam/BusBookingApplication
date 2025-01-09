@@ -1,5 +1,7 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { countries } from '../../context/Index';
+import { countries } from '../../constants/index';
+import { contactDetails } from '../../constants/index';
+import { services } from '../../constants/index';
 const Footer = () => {
     return (
         <footer className="bg-light text-center text-lg-start mt-5">
@@ -16,17 +18,20 @@ const Footer = () => {
                         </div>
                         <div className="col-md-3 col-sm-6 mb-3">
                             <h5 className="text-uppercase mb-3">Contact Us</h5>
-                            <p className="mb-2">Email: support@bigtrazetravels.com</p>
-                            <p className="mb-2">Phone: +1 (234) 567-890</p>
-                            <p className="mb-0">Address: 123 Bigtraze Travels Ave, City, State, ZIP</p>
+                            {contactDetails.map((contact, index) => (
+                                <p key={index} className={index === 2 ? 'mb-0' : 'mb-2'}>
+                                    {contact.label}: {contact.value}
+                                </p>
+                            ))}
                         </div>
-
                         <div className="col-md-3 col-sm-6 mb-3">
                             <h5 className="text-uppercase mb-3">Services</h5>
                             <ul className="list-unstyled mb-0">
-                                <li className="mb-2">Sleeper Bus Service</li>
-                                <li className="mb-2">AC and Non-AC Service</li>
-                                <li className="mb-0">Luxury Bus Services</li>
+                                {services.map((service, index) => (
+                                    <li key={index} className={index === services.length - 1 ? 'mb-0' : 'mb-2'}>
+                                        {service}
+                                    </li>
+                                ))}
                             </ul>
                         </div>
 

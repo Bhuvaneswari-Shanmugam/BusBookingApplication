@@ -30,9 +30,9 @@ const PointsSelector: React.FC<PointsSelectorProps> = ({ title, points, }) => {
   };
 
   const handleApply = () => {
-    console.log('Selected Points:', Array.from(selectedPoints));
-  
+    return Array.from(selectedPoints);
   };
+  
 
   const handleCancel = () => {
     setSelectedPoints(new Set());
