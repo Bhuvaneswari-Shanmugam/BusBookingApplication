@@ -1,3 +1,6 @@
+import { FieldErrors } from 'react-hook-form';
+
+
 export interface PassengerField {
     id: string;
     label: string;
@@ -50,4 +53,26 @@ export interface TicketState {
   passengers: PassengerForTicket[];
   email: string;
   phoneNumber: string;
+}
+
+export interface FieldConfig {
+  id: string;
+  name: string;
+  type: string;
+  placeholder?: string;
+  label?: string;
+  isCheckbox?: boolean;
+  className?: string;
+}
+
+export interface CommonFormProps {
+  title:String;
+  fields: FieldConfig[];
+  errors: FieldErrors;
+  register: any;
+  onSubmit: () => void;
+  isLoading?: boolean;
+  submitButtonText: string;
+  forgotPasswordButton?: React.ReactNode;
+  signUpLink?: React.ReactNode;
 }

@@ -7,13 +7,11 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-toastify/dist/ReactToastify.css';
 import { useSignupMutation } from '../redux/services/SignupApi';
 import { getSignupValidationSchema } from '../utils/schema/SignupValidationSchema';
-import Form from '../components/Form';
-import Input from '../components/Input';
-import Button from '../components/Button';
 import { SignupFormFields } from '../constants/Index';
 import { SignupFormInputs, SignupErrorResponse } from '../utils/entity/SignupInterface';
 import { colors } from '../constants/Palette';
 import { CommonBackground } from '../assets/bgcommonprops/commonBgProps';
+import CommonForm from './auth/CommonForm';
 
 const Signup: React.FC = () => {
     const validationSchema = getSignupValidationSchema();
@@ -47,71 +45,21 @@ const Signup: React.FC = () => {
     return (
         <CommonBackground>
             <ToastContainer />
-            <div
-                className="card border-0 shadow-lg bg-light"
-                style={{ margin: '0 auto', width: '100%', maxWidth: '400px' }}
-            >
-                <div className="card-body d-flex flex-column justify-content-between">
-                    <h2 className="text-center font-italic p-4">Customer Signup</h2>
-                    <Form
-                        onSubmit={handleSubmit(onSubmit)}
-                        className="d-flex flex-column align-items-center w-100"
-                    >
-                        {SignupFormFields.map((field, index) => (
-                            <div key={index} className="mb-3 w-100">
-                                {!field.isCheckbox ? (
-                                    <>
-                                        <Input
-                                            {...register(field.name as keyof SignupFormInputs)}
-                                            type={field.type}
-                                            placeholder={field.placeholder}
-                                            className="form-control w-100"
-                                            id={field.id}
-                                        />
-                                        <span className="error text-danger">
-                                            {errors[field.name as keyof SignupFormInputs]?.message}
-                                        </span>
-                                    </>
-                                ) : (
-                                    <div className="form-check w-100">
-                                        <Input
-                                            type="checkbox"
-                                            {...register(field.name as keyof SignupFormInputs)}
-                                            className={field.className}
-                                            id={field.id}
-                                        />
-                                        <label className="form-check-label" htmlFor={field.id}>
-                                            {field.label}
-                                        </label>
-                                        <span className="error text-danger">
-                                            {errors[field.name as keyof SignupFormInputs]?.message}
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                        <div className="justify-content-center mt-3 w-100">
-                            <Button
-                                type="submit"
-                                className="btn w-100"
-                                style={{
-                                    margin: 0,
-                                    padding: '0.6rem 1rem',
-                                    border: 'none',
-                                    backgroundColor: colors.primary,
-                                    color: '#fff',
-                                }}
-                                disabled={isLoading}
-                            >
-                                {isLoading ? 'Signing Up...' : 'Sign Up'}
-                            </Button>
-                        </div>
-                    </Form>
-                    <p className="text-center mt-3">
-                        Already have an account? <Link to="/">Sign In</Link>
-                    </p>
-                </div>
-            </div>
+                <CommonForm
+                    title="Sign Up"
+                    fields={SignupFormFields}
+                    errors={errors}
+                    register={register}
+                    onSubmit={handleSubmit(onSubmit)}
+                    isLoading={isLoading}
+                    submitButtonText="Sign Up"
+                    signUpLink={
+                        <p className="text-center mt-3">
+                            Already have an account? <Link to="/">Sign In</Link>
+                        </p>
+                    }
+                />
+            
         </CommonBackground>
     );
 };

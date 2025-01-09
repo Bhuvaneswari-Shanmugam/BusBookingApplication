@@ -3,7 +3,7 @@ import { Provider } from 'react-redux';
 import Signup from './pages/Signup';
 import PassengerDetailsForm from './pages/PassengerDetails';
 import Ticket from './pages/Ticket';
-import Signin from '../src/pages/Signin';
+import Signin from './pages/auth/Signin';
 import store  from '../src/redux/store'; 
 
 

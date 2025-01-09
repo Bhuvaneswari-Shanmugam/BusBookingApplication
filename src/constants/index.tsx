@@ -10,6 +10,11 @@ export const SignupFormFields: SignupFormField[] = [
   { name: 'termsAccepted', label: 'I accept the Terms and Conditions', type: 'checkbox', className: 'form-check-input', id: 'termsAccepted', isCheckbox: true },
 ];
 
+export const LoginFormFields = [
+  { id: 'email', name: 'email', type: 'email', placeholder: 'Email' },
+  { id: 'password', name: 'password', type: 'password', placeholder: 'Password' },
+];
+
 export const fields: PassengerField[] = [
   { id: 'firstName', label: 'First Name', type: 'text', placeholder: 'Enter first name' },
   { id: 'lastName', label: 'Last Name', type: 'text', placeholder: 'Enter last name' },
