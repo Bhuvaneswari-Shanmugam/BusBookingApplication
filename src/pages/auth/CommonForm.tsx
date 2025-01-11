@@ -1,6 +1,7 @@
 import React from 'react';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
+import Form from '../../components/Form';
 import { FieldConfig, CommonFormProps } from '../../utils/entity/PageEntity';
 
 const CommonForm: React.FC<CommonFormProps> = ({
@@ -20,7 +21,7 @@ const CommonForm: React.FC<CommonFormProps> = ({
             style={{ margin: '0 auto', width: 'auto', height: 'auto' }}
         >
             <div className="card-body d-flex flex-column justify-content-between">
-                <form onSubmit={onSubmit} className="d-flex flex-column align-items-center ">
+                <Form onSubmit={onSubmit} className="d-flex flex-column align-items-center ">
                     <h3>{title}</h3> 
                     {fields.map((field) => (
                         <div key={field.id} className="mb-3 w-100">
@@ -69,7 +70,7 @@ const CommonForm: React.FC<CommonFormProps> = ({
                     </div>
                     
                     {signUpLink}
-                </form>
+                </Form>
             </div>
         </div>
     );

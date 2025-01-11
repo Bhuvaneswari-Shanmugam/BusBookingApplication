@@ -8,7 +8,7 @@ export const CommonBackground: React.FC<CommonBackgroundProps> = ({ children }) 
             overflow: 'hidden',
         }}>
             <div style={{
-                //backgroundImage: "url('./assets/bg.jpg')",
+                backgroundImage: "url('./assets/bg.jpg')",
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',
