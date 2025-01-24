@@ -2,9 +2,11 @@ import React from 'react';
 
 
 export interface DropdownProps {
-  label: string;
+  label?: string;
   options: string[];
+  text:string;
   onChange: (selected: string) => void;
+  className:string;
 }
 
 export interface CheckboxProps {
@@ -26,6 +28,7 @@ export interface CardProps extends React.HTMLProps<HTMLDivElement> {
   description?: React.ReactNode | string;
   title?:  string ;
   footer?: React.ReactNode | string;
+  
 }
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {

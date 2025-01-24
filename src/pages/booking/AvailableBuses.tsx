@@ -1,24 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useGetBusesForTripQuery } from '../../redux/services/TripApi';
 import Header from '../../components/layout/Header';
 import { Bus, BookingDetails } from '../../utils/entity/PageEntity';
 import Filters from '../filters/Filters';
-import Toast from '../../components/Toast'
-import { busData } from '../../constants';
+import Toast from '../../components/Toast';
+import BusCard from '../../components/BusCard';
 
 const AvailableBuses = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { bus, from, to, date } = location.state || {};
-  const busId = bus?.busId;
-  const [bookedSeats, setBookedSeats] = useState<number[]>([]);
+  const { from, to, date } = location.state || {};
+  const { data: buses, isLoading, isError } = useGetBusesForTripQuery({
+    pickupPoint: from,
+    destinationPoint: to,
+    pickupTime: date
+  });
+  const [bookedSeats, setBookedSeats] = useState<{ [busId: string]: number[] }>({});
   const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
   const [isPaymentSuccessful, setIsPaymentSuccessful] = useState<boolean>(false);
   const [selectedBus, setSelectedBus] = useState<Bus | null>(null);
   const [viewSeats, setViewSeats] = useState<boolean>(false);
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' | 'info' | undefined }>({ message: '', type: undefined });
   const [rows, setRows] = useState<(number | null)[][]>([]);
-
+  const availableBuses = buses?.filter((bus: Bus) => {
+    const isSeatsAvailable = !selectedSeats.some(seat => bookedSeats[bus.id]?.includes(seat));
+    return isSeatsAvailable;
+  });
   useEffect(() => {
     if (selectedBus?.type === 'SLEEPER') {
       setRows([
@@ -32,8 +40,8 @@ const AvailableBuses = () => {
       setRows([
         [1, 2, 3, 4, 5, 6, 7, 8],
         [9, 10, 11, 12, 13, 14, 15, 16],
-        [null, null, null, null],
-        [null, null, null, null, null, null, null, null],
+        [null, null, null, null, null, null, null, 17],
+        [null, null, null, null, null, null, null, 18],
         [19, 20, 21, 22, 23, 24, 25, 26],
         [27, 28, 29, 30, 31, 32, 33, 34],
       ]);
@@ -42,20 +50,27 @@ const AvailableBuses = () => {
 
   const toggleSeatSelection = (seatNumber: number, e: React.MouseEvent) => {
     e.stopPropagation();
-
-    if (bookedSeats.includes(seatNumber)) {
+    if (bookedSeats[selectedBus?.id || '']?.includes(seatNumber)) {
       setToast({ message: 'This seat is already booked.', type: 'error' });
       return;
     }
-
     setSelectedSeats((prevSelectedSeats) =>
-      prevSelectedSeats.includes(seatNumber)
-        ? prevSelectedSeats.filter((seat) => seat !== seatNumber)
-        : [...prevSelectedSeats, seatNumber]
+      prevSelectedSeats.includes(seatNumber) ?
+        prevSelectedSeats.filter((seat) => seat !== seatNumber) :
+        [...prevSelectedSeats, seatNumber]
     );
   };
 
   const totalPrice = selectedSeats.length * (selectedBus?.discountedPrice || 0);
+
+  const handleBusClick = (bus: Bus) => {
+    if (selectedBus?.id === bus.id) {
+      setViewSeats(!viewSeats);
+    } else {
+      setSelectedBus(bus);
+      setViewSeats(true);
+    }
+  };
 
   const handlePayment = async () => {
     if (selectedSeats.length > 0) {
@@ -64,18 +79,19 @@ const AvailableBuses = () => {
           pickupPoint: from,
           destinationPoint: to,
           pickupTime: date,
-          busNumber: selectedBus?.busId || 0,
+          busNumber: Number(selectedBus?.number) || 0,
           busType: selectedBus?.type || 'Non-AC',
           bookedNoOfSeats: selectedSeats,
           perSeatAmount: selectedBus?.discountedPrice || 0,
           totalAmount: totalPrice,
         };
-
         const response = { statusCode: 200, message: 'Booking successful' };
-
         if (response.statusCode === 200) {
           setToast({ message: `Payment Successful! Total Amount is ₹${totalPrice}`, type: 'success' });
-          setBookedSeats((prevBookedSeats) => [...prevBookedSeats, ...selectedSeats]);
+          setBookedSeats(prev => ({
+            ...prev,
+            [selectedBus?.id || '']: [...(prev[selectedBus?.id || ''] || []), ...selectedSeats]
+          }));
           setIsPaymentSuccessful(true);
           setSelectedSeats([]);
           navigate('/home');
@@ -101,131 +117,59 @@ const AvailableBuses = () => {
     }
   };
 
-  const handleBusClick = (bus: Bus) => {
-    if (selectedBus?.busId === bus.busId) {
-      setViewSeats(!viewSeats);
-    } else {
-      setSelectedBus(bus);
-      setViewSeats(true);
-    }
-  };
+  if (isLoading) {
+    return <div>Loading buses...</div>;
+  }
 
   return (
     <div>
       <Header />
-      <Filters />
-      <h5 className="text-center" style={{ marginTop: '50px' }}>
-        <strong>{from}</strong> - <strong>{to}</strong> on <strong>{date}</strong>
-      </h5>
-
-      <div className="buses-container w-100 mt-n5">
-      {busData.map((bus) => (
-          <div key={bus.busId} className="card p-4 mb-2" style={{ marginLeft: '5 px', marginRight: '0px' }}>
-            <div className="card-content d-flex justify-content-between align-items-center">
-              <div>
-                <h5>{bus.name}</h5>
-                <p>{bus.type}</p>
-              </div>
-              <div>
-                <h5>{bus.departureTime}</h5>
-                <p>{bus.departureLocation}</p>
-              </div>
-              <div>
-                <h5>{bus.duration}</h5>
-              </div>
-              <div>
-                <h5>{bus.arrivalTime}</h5>
-                <p>{bus.arrivalLocation}</p>
-              </div>
-              <div>
-                <img src="" alt="rating-icon" width="70px" height="50px" />
-                <h5>👨‍👦‍👦 {bus.rating}</h5>
-              </div>
-              <div>
-                <p>Starts from</p>
-                <p>
-                  INR <del>{bus.originalPrice}</del> <ins>{bus.discountedPrice}</ins>
-                </p>
-              </div>
-              <button
-                onClick={() => handleBusClick(bus)}
-                style={{
-                  backgroundColor: '#0080FF',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '5px',
-                  height: '30px',
-                  width: '110px',
-                }}
-              >
-                {selectedBus?.busId === bus.busId && viewSeats ? 'Close' : 'View Seats'}
-              </button>
+      <div className="container d-flex flex-column flex-md-row mt-4">
+        <div className="filters-container col-12 col-md-3 p-3">
+          <Filters />
+        </div>
+        <div className="buses-container col-12 col-md-9 p-3 mt-5">
+          <div className="d-flex justify-content-start align-items-center mb-4 ">
+            <h5 className="mb-0">
+              <strong>{from }</strong> - <strong>{to}</strong> on <strong>{date }</strong>
+            </h5>
+            <button className="btn  ms-3 text-white" style={{backgroundColor:'darkorchid'}} onClick={() => navigate('/')}>
+              Modify
+            </button>
+          </div>
+          <div>
+            <div className="d-flex align-items-center mb-4">
+              <h6 className="mb-0">Buses found</h6>
+              <strong className="ms-3">SORT BY:</strong>
+              <button className="btn  ms-4" style={{color:'darkorchid'}}>Departure</button>
+              <button className="btn  ms-3" style={{color:'darkorchid'}}>Duration</button>
+              <button className="btn  ms-3" style={{color:'darkorchid'}}>Arrival</button>
             </div>
 
-            <hr style={{ height: '2px', border: 'none', backgroundColor: 'black' }} />
-
-            {selectedBus && selectedBus.busId === bus.busId && viewSeats && (
-              <>
-                <div className="hide-content d-flex justify-content-around">
-                  <div className="card-content" style={{ paddingRight: '10px', marginLeft: '150px' }}>
-                    <h4>Booking Summary</h4>
-                    {[{ label: 'Bus ID', value: selectedBus.busId }, { label: 'From', value: from }, { label: 'To', value: to }, { label: 'Date', value: date }, { label: 'Bus Type', value: selectedBus.type }, { label: 'Selected Seats', value: selectedSeats.join(', ') || 'None' }, { label: 'Total Price', value: `₹${totalPrice}` }].map(({ label, value }) => (
-                      <div className="summary-item" key={label}>
-                        <label htmlFor={label}>{label}:</label>
-                        <input type="text" id={label} value={value} readOnly />
-                      </div>
-                    ))}
-                    <div className="btn-container d-flex justify-content-between mt-5">
-                      <button className="pay-button btn btn-primary" onClick={handlePayment}>
-                        To Pay
-                      </button>
-                      <button className="pay-button btn btn-primary" onClick={handleDownloadTicket}>
-                        Download Ticket
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="bus" style={{ flexGrow: '1', marginTop: '50px' }}>
-                    {rows.map((row, rowIndex) => (
-                      <div key={rowIndex} className="bus-row">
-                        {row.map((seatNumber, seatIndex) =>
-                          seatNumber === null ? (
-                            <div
-                              key={seatIndex}
-                              className="empty-space"
-                              style={{ width: '40px', height: '40px', margin: '3px' }}
-                            />
-                          ) : (
-                            <img
-                              key={seatNumber}
-                              src=""
-                              alt={`Seat ${seatNumber}`}
-                              className={`seat ${selectedSeats.includes(seatNumber) ? 'selected' : ''}`}
-                              onClick={(e) => toggleSeatSelection(seatNumber, e)}
-                              style={{
-                                width: '40px',
-                                height: '40px',
-                                margin: '3px',
-                                cursor: bookedSeats.includes(seatNumber) ? 'not-allowed' : 'pointer',
-                                border: selectedSeats.includes(seatNumber)
-                                  ? '2px solid green'
-                                  : bookedSeats.includes(seatNumber)
-                                  ? '2px solid red'
-                                  : '2px solid transparent',
-                              }}
-                            />
-                          )
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
           </div>
-        ))}
+          <div className="row mt-3">
+            {availableBuses?.map((bus: any) => (
+              <BusCard
+                key={bus.id}
+                bus={bus}
+                from={from}
+                to={to}
+                date={date}
+                selectedBus={selectedBus}
+                selectedSeats={selectedSeats}
+                bookedSeats={bookedSeats[bus.id] || []}
+                viewSeats={viewSeats}
+                rows={rows}
+                toggleSeatSelection={toggleSeatSelection}
+                handleBusClick={handleBusClick}
+                handlePayment={handlePayment}
+                handleDownloadTicket={handleDownloadTicket}
+                totalPrice={totalPrice}
+              />
+            ))}
+          </div>
+        </div>
       </div>
-
       {toast.message && <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '', type: undefined })} />}
     </div>
   );

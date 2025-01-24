@@ -4,9 +4,9 @@ export const BusApi = createApi({
     reducerPath: 'busApi',
     baseQuery: fetchBaseQuery({ baseUrl: process.env.REACT_APP_BOOKING_URL }), 
     endpoints: (builder) => ({
-        getAvailableSeatCount: builder.query({
-            query: ({ number, type }) => ({
-                url: `search-bus?number=${number}&type=${type}`,  
+        getAvailableBuses: builder.query({
+            query: ({ pickupPoint, destinationPoint, pickupTime, type }) => ({
+                url: `find-buses?busType=${type}&pickupPoint=${pickupPoint}&droppingPoint=${destinationPoint}&pickupTime=${pickupTime}`,
                 method: 'GET',
             }),
         }),
@@ -15,13 +15,13 @@ export const BusApi = createApi({
             query: ({ number, tripNumber, type, capacity }) => ({
                 url: 'create-bus',
                 method: 'POST',
-                body: { number, tripNumber, type, capacity }, 
+                body: { number, tripNumber, type, capacity },
             }),
         }),
 
         getAllBusDetails: builder.query({
             query: ({ page = 0, size = 10 }) => ({
-                url: `retrieve-all-bus?page=${page}&size=${size}`,  
+                url: `retrieve-all-bus?page=${page}&size=${size}`,
                 method: 'GET',
             }),
         }),
@@ -30,15 +30,15 @@ export const BusApi = createApi({
             query: ({ id, busData }) => ({
                 url: `update-bus/${id}`,
                 method: 'PUT',
-                body: busData,  
+                body: busData,
             }),
         }),
     }),
 });
 
-export const { 
-    useGetAvailableSeatCountQuery, 
-    useCreateBusMutation, 
-    useGetAllBusDetailsQuery, 
-    useUpdateBusMutation 
+export const {
+    useGetAvailableBusesQuery,  
+    useCreateBusMutation,
+    useGetAllBusDetailsQuery,
+    useUpdateBusMutation,
 } = BusApi;

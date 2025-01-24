@@ -58,7 +58,7 @@ html, body {
 
 .home-container::before {
   content: '';
-  /* background-image: url('./assets/bg.jpg'); */
+  background-image: url('./assets/bg.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -401,10 +401,6 @@ header {
   color: #123456; 
 }
 
-
-
-
-/* customerdetails */
 .customer-details {
   margin-top: 30px;
 }
@@ -432,4 +428,58 @@ header {
   margin: 0px;
   padding: 0px;
 } */
+
+
+.custom-dropdown {
+  width: 75%;
+  padding: 10;  
+  background-color: #f9f9f9;
+  color: #333;
+  font-size: 14px;
+}
+.custom-dropdown select {
+  width: 100%;
+  height: 40px;
+  padding: 10px;  
+  font-size: 16px;
+  border-radius: 5px;
+  border: 1px solid #B966E2;  
+  background-color: #ffffff; 
+  color: #333;  
+  box-sizing: border-box;  
+}
+
+
+.custom-dropdown select:focus {
+  outline: none;  
+  border-color: #9b55d8;  
+  background-color: #f9f9f9;  
+}
+.custom-search-btn {
+  background-color:#B966E2; 
+  border: 1px solid #B966E2; 
+  color: white; 
+  padding: 10px 20px; 
+  font-size: 16px; 
+  border-radius: 5px; 
+  transition: background-color 0.3s, border-color 0.3s; 
+}
+
+.custom-search-btn:hover {
+  background-color: #B966E2; 
+  border-color: #B966E2; 
+}
+
+.input-custom.custom-date {
+  width:120%;
+  border: 1px solid #B966E2;
+  padding: 12px;
+  font-size: 14px;
+  border-radius: 5px; 
+}
+
+.input-custom.custom-date:focus {
+  border-color: #B966E2; 
+  outline: none; 
+}
 

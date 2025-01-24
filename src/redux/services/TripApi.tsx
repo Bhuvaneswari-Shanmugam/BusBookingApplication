@@ -1,12 +1,11 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-
 export const TripApi = createApi({
   reducerPath: 'tripApi',
   baseQuery: fetchBaseQuery({
     baseUrl: process.env.REACT_APP_URL,
     prepareHeaders: (headers) => {
-      const token = sessionStorage.getItem('Token');
+      const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIiLCJVc2VyRW1haWwiOiIiLCJpYXQiOjE3MzUxNDI2NjYsImV4cCI6MTczNTI0ODg2NiwiRmlyc3ROYW1lIjoiTmFuZGhpbmkiLCJVc2VySWQiOiI2N2UxNGE0My03ZDUxLTQ1ZWUtYmFhZi1lMWNkNzUyNWU4YWQiLCJSb2xlIjoiQURNSU4ifQ.9_cf0yormKJk0_pL2_lhsnPoU-K_ZGDznslS60jRkzQ'; 
       if (token) {
         headers.set('Authorization', `Bearer ${token}`);
       }
@@ -61,23 +60,38 @@ export const TripApi = createApi({
         params: { pickupPoint, destinationPoint, pickupTime },
       }),
     }),
-    fetchDroppingPoints:builder.query({
-      query:({pickupPoint,destinationPoint,pickupTime})=>({
-        url:'dropping-points',
-        method:'GET',
-        params:{pickupPoint,destinationPoint,pickupTime}
-      })
-    })
+    fetchDroppingPoints: builder.query({
+      query: ({ pickupPoint, destinationPoint, pickupTime }) => ({
+        url: 'dropping-points',
+        method: 'GET',
+        params: { pickupPoint, destinationPoint, pickupTime },
+      }),
+    }),
+  
+    getBusesForTrip: builder.query({
+      query: ({ pickupPoint, destinationPoint, pickupTime, busType, timeSlot }) => ({
+        url: 'buses',
+        method: 'GET',
+        params: {
+          pickupPoint,
+          destinationPoint,
+          pickupTime,
+          busType: busType ,
+          timeSlot: timeSlot ,  
+        },
+      }),
+    }),
   }),
 });
 
-export const { 
-  useSearchTripsMutation, 
-  useCreateTripMutation, 
-  useFetchTripsQuery,  
-  useDeleteTripMutation, 
-  useUpdateTripMutation, 
+export const {
+  useSearchTripsMutation,
+  useCreateTripMutation,
+  useFetchTripsQuery,
+  useDeleteTripMutation,
+  useUpdateTripMutation,
   useRetrieveTripByIdQuery,
   useFetchPickUpPointsQuery,
   useFetchDroppingPointsQuery,
+  useGetBusesForTripQuery,  
 } = TripApi;

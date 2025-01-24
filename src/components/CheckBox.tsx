@@ -9,7 +9,7 @@ const Checkbox: React.FC<CheckboxProps> = ({ label, checked, type, onChange }) =
                     type={type}
                     checked={checked}
                     onChange={(event: React.ChangeEvent<HTMLInputElement>) => onChange(event.target.checked)}
-                    className="form-check-input"
+                    className="form-check-input "
                     style={{
                         backgroundColor: checked ? 'black' : 'white',
                     }}

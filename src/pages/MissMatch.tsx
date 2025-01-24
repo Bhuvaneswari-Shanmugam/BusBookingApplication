@@ -1,5 +1,5 @@
-import React from 'react';
-
+import React from 'react'; 
+import notFound from '../assets/notFound.jpg';
 
 const MissMatch: React.FC = () => {
   return (
@@ -14,6 +14,7 @@ const MissMatch: React.FC = () => {
         flexDirection: 'column',
       }}
     >
+      <img src={notFound} alt="Trulli" width="500" height="333"></img>
       <div>
         <p
           className="mt-3"

@@ -1,15 +1,17 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { HashLink as Link } from 'react-router-hash-link';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { navLinks } from '../../constants';
+import profile from '../../assets/profile.jpg';
+import logo from '../../assets/logo.jpg';
 
 const Header: React.FC = () => {
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light fixed-top">
       <div className="container-fluid me-5">
         <img
-          src="" 
+          src={logo} 
           alt="Logo"
           width="80"
           height="60"
@@ -27,15 +29,15 @@ const Header: React.FC = () => {
           <span className="navbar-toggler-icon"></span>
         </button>
         <div className="collapse navbar-collapse" id="navbarNav">
-        <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-      {navLinks.map(({ name, path }, index) => (
-        <li className="nav-item" key={index}>
-          <Link className="nav-link mx-3" to={path}>
-            {name}
-          </Link>
-        </li>
-      ))}
-    </ul>
+          <ul className="navbar-nav me-auto mb-2 mb-lg-0">
+            {navLinks.map(({ name, to }, index) => (
+              <li className="nav-item" key={index}>
+                <Link className="nav-link mx-3" to={to} smooth>
+                  {name}
+                </Link>
+              </li>
+            ))}
+          </ul>
           <span className="dropdown-item-end py-2 px-2"></span>
           <div className="dropdown">
             <button
@@ -45,8 +47,8 @@ const Header: React.FC = () => {
               data-bs-toggle="dropdown"
               aria-expanded="false"
             >
-           <img
-                src="" 
+              <img
+                src={profile} 
                 alt="User Profile"
                 width="30"
                 height="30"
