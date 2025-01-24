@@ -1,27 +1,27 @@
 import React from "react";
 import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { genderOptions ,} from "../constants/Index";
-import { useNavigate, } from "react-router-dom";import Button from "../components/Button";
-import Input from "../components/Input";
-import Label from "../components/Label";
-import {getPassengerDetailsValidationSchema} from '../utils/schema/PassengerValidationSchema';
-import {FormData} from '../utils/entity/PageEntity';
-import Form from "../components/Form";
+import { ToastContainer, toast } from "react-toastify";
+import { loadStripe } from "@stripe/stripe-js";
+import "react-toastify/dist/ReactToastify.css";
+import { genderOptions } from "../../constants/Index";
+import Button from "../../components/Button";
+import Input from "../../components/Input";
+import Label from "../../components/Label";
+import { getPassengerDetailsValidationSchema } from "../../utils/schema/PassengerValidationSchema";
+import { FormData } from "../../utils/entity/PageEntity";
+import Form from "../../components/Form";
+import { useCreatePassengerDetailsMutation } from '../../redux/services/PassengerDetailsApi';
 
 
-const passengers = [
-  { id: 1, seatNumber: "A1" },
- 
+const stripePromise = loadStripe("pk_test_51NDi2uSIeHGLmxdBXJaV2FhWJkT3MOwkff67QkcgQnjZCzZGnY6egJQ0jY7m9cRFMZXsAOT40U8JNVFAi4xyTClo00iZfLzxR9");
+
+const passengers = [{ id: 1, seatNumber: "A1" },
+  {id: 2, seatNumber: "A2" }
 ];
-
 const total = 1850.0;
 
-const PassengerDetailsForm: React.FC = () => {
-
-    const navigate = useNavigate();
+const PassengerDeatilsForm: React.FC = () => {
   const {
     control,
     handleSubmit,
@@ -45,23 +45,58 @@ const PassengerDetailsForm: React.FC = () => {
     name: "passengers",
   });
 
-  const onSubmit = (data: FormData) => {
-    toast.success("Form Submitted Successfully!");
-    navigate("/ticket", { state: data });
+  const [createPassengerDetails, { isLoading, isError }] = useCreatePassengerDetailsMutation();
+
+  const onSubmit = async (data: FormData) => {
+    try {
+
+      const response = await createPassengerDetails({
+        passengers: data.passengers,
+        email: data.email,
+        phoneNumber: data.phoneNumber,
+      }).unwrap();
+
+      toast.success("Form Submitted Successfully!");
+
+      const stripeResponse = await fetch("http://localhost:8082/stripe-payment/create-checkout-session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          amount: total,
+          currency: "INR",
+          description: "bus Booking Payment",
+        }),
+      });
+
+      if (!stripeResponse.ok) {
+        throw new Error("Failed to create Stripe Checkout session");
+      }
+      const { sessionId } = await stripeResponse.json();
+      const stripe = await stripePromise;
+      if (!stripe) {
+        throw new Error("Stripe.js failed to load.");
+      }
+      const { error } = await stripe.redirectToCheckout({ sessionId });
+      if (error) {
+        throw new Error(error.message);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("An error occurred while processing the payment.");
+    }
   };
 
   return (
     <Form
       onSubmit={handleSubmit(onSubmit)}
-
       className="card shadow p-3 bg-body rounded d-flex justify-content-end mt-0"
       style={{ width: "1100px" }}
     >
       <div className="card-body">
-        <h1 className="text-center">Passenger Details</h1>
-
-      
-        <div className=" d-flex align-items-center mb-3">
+        <h1 className="text-center">Passenger Form</h1>
+        <div className="d-flex align-items-center mb-3">
           <img
             src="https://cdn-icons-png.flaticon.com/512/5464/5464651.png"
             alt="Passenger Icon"
@@ -77,7 +112,6 @@ const PassengerDetailsForm: React.FC = () => {
                 Passenger {index + 1} | Seat {passengers[index].seatNumber}
               </h5>
               <div className="row">
-
                 <div className="col-md-6">
                   <Label htmlFor={`passengers.${index}.firstName`} className="form-label">
                     First Name
@@ -93,8 +127,6 @@ const PassengerDetailsForm: React.FC = () => {
                     <small className="text-danger">{errors.passengers[index].firstName?.message}</small>
                   )}
                 </div>
-
-        
                 <div className="col-md-6">
                   <Label htmlFor={`passengers.${index}.lastName`} className="form-label">
                     Last Name
@@ -111,9 +143,7 @@ const PassengerDetailsForm: React.FC = () => {
                   )}
                 </div>
               </div>
-
               <div className="row mt-3">
-            
                 <div className="col-md-6">
                   <Label htmlFor={`passengers.${index}.age`} className="form-label">
                     Age
@@ -122,19 +152,13 @@ const PassengerDetailsForm: React.FC = () => {
                     control={control}
                     name={`passengers.${index}.age`}
                     render={({ field }) => (
-                      <Input
-                        {...field}
-                        type="number"
-                        className="form-control"
-                        placeholder="Enter age"
-                      />
+                      <Input {...field} type="number" className="form-control" placeholder="Enter age" />
                     )}
                   />
                   {errors.passengers?.[index]?.age && (
                     <small className="text-danger">{errors.passengers[index].age?.message}</small>
                   )}
                 </div>
-
                 <div className="col-md-6">
                   <Label className="form-label">Gender</Label>
                   <div>
@@ -168,7 +192,7 @@ const PassengerDetailsForm: React.FC = () => {
           </div>
         ))}
 
-        <div className=" d-flex align-items-center mb-3">
+        <div className="d-flex align-items-center mb-3">
           <img
             src="https://cdn4.iconfinder.com/data/icons/green-shopper/1049/email.png"
             alt="Contact Icon"
@@ -179,7 +203,6 @@ const PassengerDetailsForm: React.FC = () => {
 
         <div className="card shadow">
           <div className="card-body">
-
             <div className="mb-3">
               <Label htmlFor="email" className="form-label">
                 Email
@@ -233,8 +256,9 @@ const PassengerDetailsForm: React.FC = () => {
           </Button>
         </div>
       </div>
+      <ToastContainer />
     </Form>
   );
 };
 
-export default PassengerDetailsForm;
+export default PassengerDeatilsForm;

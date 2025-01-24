@@ -1,10 +1,9 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-
 export const SignupApi = createApi({
   reducerPath: "signupApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: process.env.REACT_APP_BASE_URL,
+    baseUrl: "http://localhost:8080" ,
     prepareHeaders: (headers) => {
       const token = sessionStorage.getItem("Token");
       if (token) {
@@ -13,24 +12,53 @@ export const SignupApi = createApi({
       return headers;
     }
   }),
+  endpoints: (builder) => ({
+    sendOtp: builder.mutation({
+      query: ({email}: { email: string }) => ({
+        url: "/otp/send-otp",
+        method: "POST",
+        params: {email},
+      }),
+    }),
 
-
-  endpoints: (builder) => ({  
+    validateOtp: builder.mutation({
+      query: ({ email, OTP }: { email: string; OTP: string }) => ({
+        url: '/otp/validate-otp',
+        method: 'GET',
+        params: { email, OTP }, 
+      }),
+    }),
+   
     signup: builder.mutation({
       query: (data) => ({
-        url: 'sign-up',
+        url: '/auth/sign-up',
         method: 'POST',
         body: data,
       }),
     }),
-    signin: builder.mutation({  
+
+    signin: builder.mutation({
       query: (data) => ({
-        url: 'sign-in',
+        url: '/auth/sign-in',
         method: 'POST',
         body: data,
+      }),
+    }),
+  
+    forgotPassword: builder.mutation({
+      query: ({ email, password, confirmPassword }) => ({
+        url: '/auth/forgot-password',
+        method: 'POST',
+        params: { email, password, confirmPassword },
       }),
     }),
   }),
 });
 
-export const { useSignupMutation,useSigninMutation } = SignupApi;
+export const { 
+  useSignupMutation, 
+  useSigninMutation, 
+  useSendOtpMutation, 
+  useValidateOtpMutation ,
+  useForgotPasswordMutation
+} = SignupApi;

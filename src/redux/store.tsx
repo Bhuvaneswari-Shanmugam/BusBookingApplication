@@ -1,16 +1,16 @@
 import { configureStore } from '@reduxjs/toolkit';
-import { SignupApi } from '../redux/services/SignupApi';
-
-
+import { SignupApi } from './services/SignupApi';
+import { PassengerDetailsApi } from './services/PassengerDetailsApi';
 
 const store = configureStore({
-  reducer:{
+  reducer: {
     [SignupApi.reducerPath]:SignupApi.reducer,
-
-   
-},
-    middleware:(getDefaultMiddleware)=>
-    getDefaultMiddleware({}).concat([SignupApi.middleware])
-})
+    [PassengerDetailsApi.reducerPath]:PassengerDetailsApi.reducer
+  },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware()
+      .concat(SignupApi.middleware)
+      .concat(PassengerDetailsApi.middleware),
+});
 
 export default store;

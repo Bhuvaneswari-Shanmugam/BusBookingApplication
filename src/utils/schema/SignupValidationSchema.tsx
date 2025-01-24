@@ -8,7 +8,11 @@ export const getSignupValidationSchema = () => {
             .required("Last Name is required"),
         email: Yup.string()
             .required("Email is required")
-            .email("Invalid email format"),
+            .email("Invalid email format")
+            .matches(
+                /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/,
+                'Invalid email format'
+            ),
         password: Yup.string()
             .required("Password is required")
             .min(6, "Password must be at least 6 characters"),

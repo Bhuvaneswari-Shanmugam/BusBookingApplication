@@ -4,13 +4,28 @@ import html2canvas from "html2canvas";
 import { useLocation } from "react-router-dom";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { PassengerForTicket, Customer } from '../utils/entity/PageEntity';
-import { colors } from "../constants/Palette";
+import { PassengerForTicket, Customer } from '../../utils/entity/PageEntity';
+import { colors } from "../../constants/Palette";
+import logo from '../../assets/images/logo.jpg';
 
 const Ticket: React.FC = () => {
     const ticketRef = useRef<HTMLDivElement | null>(null);
     const { state } = useLocation();
     const passengers = state?.passengers || [];
+
+    const downloadTicket = async () =>{
+        if (ticketRef.current) {
+            const canvas = await html2canvas(ticketRef.current);
+            const imgData = canvas.toDataURL("image/png");
+            const pdf = new jsPDF("p", "mm", "a4");
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+    
+            pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+            pdf.save("ticket.pdf");
+            toast.success("Ticket downloaded successfully!");
+        }
+    }
 
     const generateAndSendPDF = async () => {
         if (ticketRef.current) {
@@ -26,13 +41,13 @@ const Ticket: React.FC = () => {
             window.open(blobUrl);
 
             const formData = new FormData();
-            formData.append("to", "vigneshfriends08@gmail.com");
+            formData.append("to", state.email);
             formData.append("subject", "Your Ticket");
             formData.append("body", "Here is your bus ticket.");
             formData.append("attachment", pdfBlob, "ticket.pdf");
 
             try {
-                const response = await fetch("http://localhost:8080/send-mail-with-attachment", {
+                const response = await fetch("http://localhost:8080/email/send-mail-with-attachment", {
                     method: "POST",
                     body: formData,
                 });
@@ -47,7 +62,7 @@ const Ticket: React.FC = () => {
             }
         }
     };
-     // i put these data as static because now i didn't integrate with avaliable and booking page with this ticket so for test this whether is working or not i put as static data here
+    // i put these data as static because now i didn't integrate with avaliable and booking page with this ticket so for test this whether is working or not i put as static data here
     const from = "City X";
     const to = "City Y";
     const date = "2025-02-15";
@@ -73,6 +88,7 @@ const Ticket: React.FC = () => {
 
     return (
         <div className="d-flex justify-content-center align-items-center" style={{ backgroundColor: "#f8f9fa" }}>
+            <ToastContainer />
             <div
                 className="card ticket-card shadow-lg m-4"
                 ref={ticketRef}
@@ -80,14 +96,14 @@ const Ticket: React.FC = () => {
                     width: "850px",
                     borderRadius: "10px",
                     overflow: "hidden",
-                    backgroundColor: "#ffffff",
+                    backgroundColor: colors.background,
                     height: "auto",
                 }}
             >
                 <div className="card-body" style={textStyle}>
                     <div className="ticket-head-content d-flex justify-content-between align-items-center" style={{ margin: "0 30px" }}>
                         <div>
-                            {/* logo-img*/}
+                            <img src={logo} alt="logo" width='90px' height='90x'/>
                         </div>
                         <div>
                             <p><b>Need help with your trip?</b></p>
@@ -175,17 +191,29 @@ const Ticket: React.FC = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="text-center mt-4">
-                        <button
-                            className="btn btn-primary"
-                            onClick={(event) => {
-                                event.preventDefault();
-                                generateAndSendPDF();
-                            }}
-                            style={{ fontSize: "16px" }}
-                        >
-                            Download PDF
-                        </button>
+                    <div className="text-center d-flex justify-content-center align-items-center mt-4">
+                        <div>
+                            <button
+                                className="btn btn-primary mx-4"
+                                
+                                onClick={(event)=>{event.preventDefault();
+                                                   downloadTicket();
+                                }}>
+                                Download PDF
+                            </button>
+                        </div>
+                        <div>
+                            <button
+                                className="btn btn-primary"
+                                onClick={(event) => {
+                                    event.preventDefault();
+                                    generateAndSendPDF();
+                                }}
+                                style={{ fontSize: "16px" }}
+                            >
+                                Share PDF
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
