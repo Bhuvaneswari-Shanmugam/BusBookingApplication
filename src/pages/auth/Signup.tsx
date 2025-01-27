@@ -11,7 +11,7 @@ import Input from '../../components/Input';
 import Button from '../../components/Button';
 import { useSendOtpMutation, useValidateOtpMutation, useSignupMutation } from '../../redux/services/SignupApi';
 import { getSignupValidationSchema } from '../../utils/schema/SignupValidationSchema';
-import { SignupFormFields } from '../../constants/Index';
+import { SignupFormFields } from '../../constants/index';
 import { SignupFormInputs, SignupErrorResponse } from '../../utils/entity/SignupInterface';
 import { colors } from '../../constants/Palette';
 
