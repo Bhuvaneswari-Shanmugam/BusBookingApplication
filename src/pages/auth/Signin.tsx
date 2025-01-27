@@ -9,6 +9,8 @@ import { jwtDecode } from "jwt-decode";
 import Modal from "react-bootstrap/Modal";
 import { useSigninMutation, useSendOtpMutation, useValidateOtpMutation, useForgotPasswordMutation } from "../../redux/services/SignupApi";
 import { getLoginValidationSchema } from "../../utils/schema/LoginValidationSchema";
+import { getResetPasswordValidationSchema } from '../../utils/schema/resetPasswordValidationSchema';
+import { getForgotPasswordValidationSchema } from "../../utils/schema/ForgotPasswordValidationSchema";
 import Input from "../../components/Input";
 import Button from "../../components/Button";
 import Form from "../../components/Form";
@@ -16,14 +18,13 @@ import { colors } from "../../constants/Palette";
 import { SigninResponse } from "../../utils/entity/loginInterface";
 import { LoginJwtPayload } from "../../utils/entity/loginInterface";
 
-
 const SignIn: React.FC = () => {
   const validationSchema = getLoginValidationSchema();
   const navigate = useNavigate();
-  const [signin] = useSigninMutation();
-  const [sendOtp] = useSendOtpMutation();
-  const [validateOtp] = useValidateOtpMutation();
-  const [forgotPassword] = useForgotPasswordMutation();
+  const [signin, { isLoading: isSigninLoading }] = useSigninMutation();
+  const [sendOtp, { isLoading: isOtpLoading }] = useSendOtpMutation();
+  const [validateOtp, { isLoading: isOtpVerifying }] = useValidateOtpMutation();
+  const [forgotPassword, { isLoading: isForgotPasswordLoading }] = useForgotPasswordMutation();
 
   const [otpModalVisible, setOtpModalVisible] = useState(false);
   const [OTP, setOTP] = useState("");
@@ -33,13 +34,16 @@ const SignIn: React.FC = () => {
   const [forgotPasswordMode, setForgotPasswordMode] = useState(false);
   const [resetPasswordMode, setResetPasswordMode] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm({
+  const { register, handleSubmit, formState: { errors }, reset } = useForm({
     resolver: yupResolver(validationSchema),
+  });
+
+  const { register: registerResetPassword, handleSubmit: handleSubmitResetPassword, formState: { errors: resetPasswordErrors }, reset: resetResetPassword } = useForm({
+    resolver: yupResolver(getResetPasswordValidationSchema()),
+  });
+
+  const { register: registerForgotPassword, handleSubmit: handleSubmitForgotPassword, formState: { errors: forgotPasswordErrors } } = useForm({
+    resolver: yupResolver(getForgotPasswordValidationSchema()),
   });
 
   useEffect(() => {
@@ -75,11 +79,10 @@ const SignIn: React.FC = () => {
 
   const handleForgotPassword = async () => {
     if (!email) {
-      toast.error(
-        "Please enter your email address before requesting OTP.", { autoClose: 1000 });
+      toast.error("Please enter your email address before requesting OTP.", { autoClose: 1000 });
       return;
     }
-
+  
     try {
       const response = await sendOtp({ email }).unwrap();
       if (response.statusCode === 200) {
@@ -94,6 +97,11 @@ const SignIn: React.FC = () => {
   };
 
   const handleValidateOtp = async () => {
+    if (OTP.length !== 6) {
+      toast.error("OTP must be exactly 6 digits. Please try again.", { autoClose: 1000 });
+      return;
+    }
+
     try {
       const response = await validateOtp({ email, OTP }).unwrap();
       if (response.statusCode === 200) {
@@ -109,16 +117,16 @@ const SignIn: React.FC = () => {
     }
   };
 
-  const handleResetPassword = async () => {
-    const { newPassword, confirmPassword } = newPasswordData;
+  const handleResetPassword = async (data: { resetPassword: string; confirmPassword: string }) => {
+    const { resetPassword, confirmPassword } = data;
 
-    if (newPassword !== confirmPassword) {
+    if (resetPassword !== confirmPassword) {
       toast.error("Passwords do not match. Please try again.", { autoClose: 1000 });
       return;
     }
 
     try {
-      const response = await forgotPassword({ email: String, password: String, newPassword: String, confirmPassword: String }).unwrap();
+      const response = await forgotPassword({ email, password: resetPassword, newPassword: resetPassword, confirmPassword: confirmPassword }).unwrap();
       if (response.statusCode === 200) {
         toast.success("Password reset successful. You can now log in.", { autoClose: 1000 });
         setNewPasswordData({ newPassword: "", confirmPassword: "" });
@@ -135,70 +143,76 @@ const SignIn: React.FC = () => {
 
   return (
     <div className="container">
+      {!forgotPasswordMode && !resetPasswordMode && !otpVerified && (
+        <h3 className="p-4 d-flex justify-content-center">Login</h3>
+      )}
 
-      <div>
-        {!forgotPasswordMode && !resetPasswordMode && !otpVerified && (
-          <h3 className="p-4 d-flex justify-content-center">Login</h3>
-        )}
+      {!forgotPasswordMode && !resetPasswordMode && (
+        <div className="" style={{ border: "none", boxShadow: "none" }}>
+          <Form onSubmit={handleSubmit(onSubmit)} className="d-flex flex-column align-items-center">
+            <div className="mb-3 w-100">
+              <Input
+                {...register("email")}
+                type="email"
+                placeholder="Email"
+                className="form-control"
+              />
+              <span className="error text-danger">{errors.email?.message}</span>
+            </div>
+            <div className="mb-3 w-100">
+              <Input
+                {...register("password")}
+                type="password"
+                placeholder="Password"
+                className="form-control"
+              />
+              <span className="error text-danger">{errors.password?.message}</span>
+            </div>
 
-        {!forgotPasswordMode && !resetPasswordMode && (
-          <div className="" style={{ border: "none", boxShadow: "none" }}>
-            <Form onSubmit={handleSubmit(onSubmit)} className="d-flex flex-column align-items-center">
-              <div className="mb-3 w-100">
-                <Input
-                  {...register("email")}
-                  type="email"
-                  placeholder="Email"
-                  className="form-control"
-                />
-                <span className="error text-danger">{errors.email?.message}</span>
-              </div>
-              <div className="mb-3 w-100">
-                <Input
-                  {...register("password")}
-                  type="password"
-                  placeholder="Password"
-                  className="form-control"
-                />
-                <span className="error text-danger">{errors.password?.message}</span>
-              </div>
+            <div className="text-end w-100">
+              <Button
+                type="button"
+                className="btn btn-link p-0"
+                onClick={() => setForgotPasswordMode(true)}
+                style={{ textDecoration: "none", color: colors.primary }}
+              >
+                Forgot Password?
+              </Button>
+            </div>
+            <div className="justify-content-center mt-3 w-100">
+              <Button type="submit" className="btn w-100" disabled={isSigninLoading}>
+                {isSigninLoading ? "Signing In..." : "Sign In"}
+              </Button>
+            </div>
+          </Form>
 
-              <div className="text-end w-100">
-                <Button
-                  type="button"
-                  className="btn btn-link p-0"
-                  onClick={() => setForgotPasswordMode(true)}
-                  style={{ textDecoration: "none", color: colors.primary }}
-                >
-                  Forgot Password?
-                </Button>
-              </div>
-              <div className="justify-content-center mt-3 w-100">
-                <Button type="submit" className="btn w-100">
-                  Sign In
-                </Button>
-              </div>
-            </Form>
+          <p className="text-center mt-3">
+            Don't have an account? <Link to="/signup">Sign Up</Link>
+          </p>
+        </div>
+      )}
 
-            <p className="text-center mt-3">
-              Don't have an account? <Link to="/signup">Sign Up</Link>
-            </p>
-          </div>
-        )}
-      </div>
       {forgotPasswordMode && !otpVerified && (
-        <div className="p-2 " style={{ border: "none", boxShadow: "none" }}>
+        <div className="p-3" style={{ border: "none", boxShadow: "none" }}>
           <h3 className="text-center">Forgot Password</h3>
-          <div className="d-flex flex-column align-items-center">
+          <div className="d-flex flex-column align-items-center w-100">
             <Input
+              className="form-control my-2 w-100"
+              {...registerForgotPassword("email")}
               type="email"
               placeholder="Enter Email"
-              value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="form-control my-2"
             />
-            <Button onClick={handleForgotPassword} className="btn btn-primary my-2">
-              Send OTP
+
+            {forgotPasswordErrors.email && (
+              <span className="error text-danger">{forgotPasswordErrors.email.message}</span>
+            )}
+            <Button
+              onClick={handleForgotPassword}
+              className="btn btn-primary my-2 w-100"
+              disabled={isOtpLoading}
+            >
+              {isOtpLoading ? "Sending..." : "Send OTP"}
             </Button>
             <Button
               onClick={() => setForgotPasswordMode(false)}
@@ -210,64 +224,58 @@ const SignIn: React.FC = () => {
           </div>
         </div>
       )}
-    
+
       <Modal show={otpModalVisible} onHide={() => setOtpModalVisible(false)} centered className="otp-modal">
         <Modal.Header closeButton className="bg-light">
           <Modal.Title>Enter OTP</Modal.Title>
         </Modal.Header>
-        <Modal.Body className="px-4 py-3">
+        <Modal.Body>
           <Input
+            placeholder="OTP"
+            className="form-control my-2"
             type="text"
+            maxLength={6}
             value={OTP}
             onChange={(e) => setOTP(e.target.value)}
-            placeholder="Enter OTP"
-            className="form-control form-control-lg rounded"
           />
-        </Modal.Body>
-        <Modal.Footer className="border-0 d-flex justify-content-center">
-          <Button
-            type="button"
-            className="btn btn-primary btn-lg w-100 rounded"
-            onClick={handleValidateOtp}
-          >
-            Validate OTP
+          <Button onClick={handleValidateOtp} disabled={isOtpVerifying} className="btn btn-primary w-100">
+            {isOtpVerifying ? "Verifying..." : "Verify OTP"}
           </Button>
-        </Modal.Footer>
+        </Modal.Body>
       </Modal>
 
-      {resetPasswordMode && (
-        <div className="p-2 " style={{ border: "none", boxShadow: "none" }}>
+      {resetPasswordMode && otpVerified && (
+        <div className="p-3">
           <h3 className="text-center">Reset Password</h3>
-          <div className="d-flex flex-column align-items-center">
+          <Form onSubmit={handleSubmitResetPassword(handleResetPassword)} className="d-flex flex-column align-items-center">
             <Input
               type="password"
-              value={newPasswordData.newPassword}
-              onChange={(e) =>
-                setNewPasswordData((prev) => ({ ...prev, newPassword: e.target.value }))
-              }
-              placeholder="New Password"
-              className="form-control my-2"
+              {...registerResetPassword("resetPassword")}
+              placeholder="Enter new password"
+              className="form-control my-2 w-100"
             />
+            {resetPasswordErrors.resetPassword && (
+              <span className="error text-danger">{resetPasswordErrors.resetPassword.message}</span>
+            )}
+
             <Input
               type="password"
-              value={newPasswordData.confirmPassword}
-              onChange={(e) =>
-                setNewPasswordData((prev) => ({ ...prev, confirmPassword: e.target.value }))
-              }
-              placeholder="Confirm Password"
-              className="form-control my-2"
+              {...registerResetPassword("confirmPassword")}
+              placeholder="Confirm new password"
+              className="form-control my-2 w-100"
             />
-            <Button onClick={handleResetPassword} className="btn btn-primary my-2">
-              Reset Password
-            </Button>
+            {resetPasswordErrors.confirmPassword && (
+              <span className="error text-danger">{resetPasswordErrors.confirmPassword.message}</span>
+            )}
+
             <Button
-              onClick={() => setResetPasswordMode(false)}
-              className="btn btn-link text-center my-2"
-              style={{ textDecoration: "none", color: colors.primary }}
+              type="submit"
+              className="btn btn-primary my-2 w-100"
+              disabled={isForgotPasswordLoading}
             >
-              Back to Sign In
+              {isForgotPasswordLoading ? "Resetting..." : "Reset Password"}
             </Button>
-          </div>
+          </Form>
         </div>
       )}
 

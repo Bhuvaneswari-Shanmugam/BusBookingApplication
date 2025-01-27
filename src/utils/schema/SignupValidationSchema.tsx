@@ -10,7 +10,7 @@ export const getSignupValidationSchema = () => {
             .required("Email is required")
             .email("Invalid email format")
             .matches(
-                /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/,
+                /^[A-Za-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/,
                 'Invalid email format'
             ),
         password: Yup.string()

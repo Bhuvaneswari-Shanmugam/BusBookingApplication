@@ -47,7 +47,7 @@ export const SignupApi = createApi({
   
     forgotPassword: builder.mutation({
       query: ({ email, password, confirmPassword }) => ({
-        url: '/auth/forgot-password',
+        url: '/auth/reset-password',
         method: 'POST',
         params: { email, password, confirmPassword },
       }),

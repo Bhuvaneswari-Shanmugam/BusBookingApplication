@@ -7,19 +7,14 @@ import "react-toastify/dist/ReactToastify.css";
 import { genderOptions } from "../../constants/Index";
 import Button from "../../components/Button";
 import Input from "../../components/Input";
-import Label from "../../components/Label";
 import { getPassengerDetailsValidationSchema } from "../../utils/schema/PassengerValidationSchema";
 import { FormData } from "../../utils/entity/PageEntity";
 import Form from "../../components/Form";
 import { useCreatePassengerDetailsMutation } from '../../redux/services/PassengerDetailsApi';
-
+import { passengers } from "../../constants/Index";
+import { total } from "../../constants/Index";
 
 const stripePromise = loadStripe("pk_test_51NDi2uSIeHGLmxdBXJaV2FhWJkT3MOwkff67QkcgQnjZCzZGnY6egJQ0jY7m9cRFMZXsAOT40U8JNVFAi4xyTClo00iZfLzxR9");
-
-const passengers = [{ id: 1, seatNumber: "A1" },
-  {id: 2, seatNumber: "A2" }
-];
-const total = 1850.0;
 
 const PassengerDeatilsForm: React.FC = () => {
   const {
@@ -32,7 +27,7 @@ const PassengerDeatilsForm: React.FC = () => {
       passengers: passengers.map(() => ({
         firstName: "",
         lastName: "",
-        age: 0,
+        age: undefined,
         gender: "",
       })),
       email: "",
@@ -49,7 +44,6 @@ const PassengerDeatilsForm: React.FC = () => {
 
   const onSubmit = async (data: FormData) => {
     try {
-
       const response = await createPassengerDetails({
         passengers: data.passengers,
         email: data.email,
@@ -83,7 +77,6 @@ const PassengerDeatilsForm: React.FC = () => {
         throw new Error(error.message);
       }
     } catch (error) {
-      console.error("Error:", error);
       toast.error("An error occurred while processing the payment.");
     }
   };
@@ -113,14 +106,15 @@ const PassengerDeatilsForm: React.FC = () => {
               </h5>
               <div className="row">
                 <div className="col-md-6">
-                  <Label htmlFor={`passengers.${index}.firstName`} className="form-label">
-                    First Name
-                  </Label>
                   <Controller
                     control={control}
                     name={`passengers.${index}.firstName`}
                     render={({ field }) => (
-                      <Input {...field} className="form-control" placeholder="Enter first name" />
+                      <Input
+                        {...field}
+                        className="form-control"
+                        placeholder="Enter first name"
+                      />
                     )}
                   />
                   {errors.passengers?.[index]?.firstName && (
@@ -128,14 +122,15 @@ const PassengerDeatilsForm: React.FC = () => {
                   )}
                 </div>
                 <div className="col-md-6">
-                  <Label htmlFor={`passengers.${index}.lastName`} className="form-label">
-                    Last Name
-                  </Label>
                   <Controller
                     control={control}
                     name={`passengers.${index}.lastName`}
                     render={({ field }) => (
-                      <Input {...field} className="form-control" placeholder="Enter last name" />
+                      <Input
+                        {...field}
+                        className="form-control"
+                        placeholder="Enter last name"
+                      />
                     )}
                   />
                   {errors.passengers?.[index]?.lastName && (
@@ -145,14 +140,16 @@ const PassengerDeatilsForm: React.FC = () => {
               </div>
               <div className="row mt-3">
                 <div className="col-md-6">
-                  <Label htmlFor={`passengers.${index}.age`} className="form-label">
-                    Age
-                  </Label>
                   <Controller
                     control={control}
                     name={`passengers.${index}.age`}
                     render={({ field }) => (
-                      <Input {...field} type="number" className="form-control" placeholder="Enter age" />
+                      <Input
+                        {...field}
+                        type="number"
+                        className="form-control"
+                        placeholder="Enter age"
+                      />
                     )}
                   />
                   {errors.passengers?.[index]?.age && (
@@ -160,7 +157,6 @@ const PassengerDeatilsForm: React.FC = () => {
                   )}
                 </div>
                 <div className="col-md-6">
-                  <Label className="form-label">Gender</Label>
                   <div>
                     {genderOptions.map(({ id, value, label }) => (
                       <div className="form-check form-check-inline" key={id}>
@@ -177,9 +173,9 @@ const PassengerDeatilsForm: React.FC = () => {
                             />
                           )}
                         />
-                        <Label htmlFor={`${value}-${index}`} className="form-check-label">
+                        <label htmlFor={`${value}-${index}`} className="form-check-label">
                           {label}
-                        </Label>
+                        </label>
                       </div>
                     ))}
                   </div>
@@ -204,28 +200,30 @@ const PassengerDeatilsForm: React.FC = () => {
         <div className="card shadow">
           <div className="card-body">
             <div className="mb-3">
-              <Label htmlFor="email" className="form-label">
-                Email
-              </Label>
               <Controller
                 control={control}
                 name="email"
                 render={({ field }) => (
-                  <Input {...field} className="form-control" placeholder="Enter your email" />
+                  <Input
+                    {...field}
+                    className="form-control"
+                    placeholder="Enter your email"
+                  />
                 )}
               />
               {errors.email && <small className="text-danger">{errors.email?.message}</small>}
             </div>
 
             <div className="mb-3">
-              <Label htmlFor="phoneNumber" className="form-label">
-                Phone Number
-              </Label>
               <Controller
                 control={control}
                 name="phoneNumber"
                 render={({ field }) => (
-                  <Input {...field} className="form-control" placeholder="Enter your phone number" />
+                  <Input
+                    {...field}
+                    className="form-control"
+                    placeholder="Enter your phone number"
+                  />
                 )}
               />
               {errors.phoneNumber && (

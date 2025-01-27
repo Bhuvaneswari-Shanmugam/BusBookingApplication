@@ -25,6 +25,7 @@ const Signup: React.FC = () => {
     const [otpModalVisible, setOtpModalVisible] = useState(false);
     const [OTP, setOTP] = useState('');
     const [isOtpValidated, setIsOtpValidated] = useState(false);
+    const [isEmailVerified, setIsEmailVerified] = useState(false); // New state for email verification
 
     const {
         register,
@@ -39,13 +40,19 @@ const Signup: React.FC = () => {
     const email = watch('email');
 
     const handleValidateOtp = async () => {
+        if (!OTP || OTP.length !== 6 || isNaN(Number(OTP))) {
+            toast.error("Please enter a 6-digit numeric OTP.");
+            return;
+        }
+
         try {
             await validateOtp({ email, OTP }).unwrap();
-            toast.success('OTP validated successfully!');
+            toast.success("OTP validated successfully!");
             setIsOtpValidated(true);
             setOtpModalVisible(false);
+            setIsEmailVerified(true); // Email is successfully verified
         } catch (err) {
-            toast.error('Invalid OTP. Please try again.');
+            toast.error("Invalid OTP. Please try again.");
         }
     };
 
@@ -55,7 +62,7 @@ const Signup: React.FC = () => {
             toast.success(response?.data?.message || '', {
                 autoClose: 500,
             });
-            setOtpModalVisible(true); 
+            setOtpModalVisible(true);
         } catch (err) {
             const errorMessage = (err as SignupErrorResponse)?.data?.message || 'Error while sending OTP';
             toast.error(errorMessage);
@@ -82,8 +89,9 @@ const Signup: React.FC = () => {
         }
     };
 
+    // handleSendOtpWithValidation ensures the form is validated before sending the OTP. It calls handleSendOtp only if the form data is valid.
     const handleSendOtpWithValidation = (data: SignupFormInputs) => {
-        handleSubmit(() => handleSendOtp(data))(); 
+        handleSubmit(() => handleSendOtp(data))();
     };
 
     return (
@@ -96,58 +104,82 @@ const Signup: React.FC = () => {
             >
                 {SignupFormFields.map((field, index) => (
                     <div key={index} className="mb-3 w-100">
-                        {!field.isCheckbox ? (
+                        {field.type === "select" ? (
                             <>
-                                <Input
+                                <select
                                     {...register(field.name as keyof SignupFormInputs)}
-                                    type={field.type}
-                                    placeholder={field.placeholder}
-                                    className="form-control w-100"
+                                    className="form-select w-100"
                                     id={field.id}
-                                />
+                                >
+                                    <option value="" disabled selected>
+                                        {field.placeholder}
+                                    </option>
+                                    {field.options?.map((option, optIndex) => (
+                                        <option key={optIndex} value={option.value}>
+                                            {option.label}
+                                        </option>
+                                    ))}
+                                </select>
                                 <span className="error text-danger">
                                     {errors[field.name as keyof SignupFormInputs]?.message}
                                 </span>
                             </>
+                        ) : !field.isCheckbox ? (
+                        <>
+                            <Input
+                                {...register(field.name as keyof SignupFormInputs)}
+                                type={field.type}
+                                placeholder={field.placeholder}
+                                className="form-control w-100"
+                                id={field.id}
+                            />
+                            <span className="error text-danger">
+                                {errors[field.name as keyof SignupFormInputs]?.message}
+                            </span>
+                        </>
                         ) : (
-                            <div className="form-check w-100">
-                                <Input
-                                    type="checkbox"
-                                    {...register(field.name as keyof SignupFormInputs)}
-                                    className={field.className}
-                                    id={field.id}
-                                />
-                                <label className="form-check-label" htmlFor={field.id}>
-                                    {field.label}
-                                </label>
-                                <span className="error text-danger">
-                                    {errors[field.name as keyof SignupFormInputs]?.message}
-                                </span>
-                            </div>
+                        <div className="form-check w-100">
+                            <Input
+                                type="checkbox"
+                                {...register(field.name as keyof SignupFormInputs)}
+                                className={field.className}
+                                id={field.id}
+                            />
+                            <label className="form-check-label" htmlFor={field.id}>
+                                {field.label}
+                            </label>
+                            <span className="error text-danger">
+                                {errors[field.name as keyof SignupFormInputs]?.message}
+                            </span>
+                        </div>
                         )}
                     </div>
                 ))}
-                <Button
-                    type="button"
-                    className="btn btn-secondary w-100 mt-3"
-                    onClick={() => handleSendOtpWithValidation(watch())} 
-                >
-                    Send OTP
-                </Button>
-                <Button
-                    type="submit"
-                    className="btn w-100 mt-3"
-                    style={{
-                        margin: 0,
-                        padding: '0.6rem 1rem',
-                        border: 'none',
-                        backgroundColor: colors.primary,
-                    }}
-                    disabled={isLoading || !isOtpValidated}
-                >
-                    Signup
-                </Button>
+                {!isEmailVerified ? ( // Conditionally render buttons
+                    <Button
+                        type="button"
+                        className="btn btn-secondary w-100 mt-3"
+                        onClick={() => handleSendOtpWithValidation(watch())}
+                    >
+                        Verify Email
+                    </Button>
+                ) : (
+                    <Button
+                        type="submit"
+                        className="btn w-100 mt-3"
+                        style={{
+                            margin: 0,
+                            padding: "0.6rem 1rem",
+                            border: "none",
+                            backgroundColor: colors.primary,
+                        }}
+                        disabled={isLoading}
+                    >
+                        Signup
+                    </Button>
+                )}
             </Form>
+
             <p className="text-center mt-3">
                 Already have an account? <Link to="/">Sign In</Link>
             </p>

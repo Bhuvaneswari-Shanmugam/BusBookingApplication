@@ -7,6 +7,7 @@ import Signin from './pages/auth/Signin';
 import store from '../src/redux/store';
 import Layout from './components/layout/Index';
 import Signup from './pages/auth/Signup';
+import ProtectedRoute from './routes/Index';
 //import Passenger from './pages/auth/Passenger';
 //import Payment from './pages/auth/Payment';
 
@@ -16,17 +17,18 @@ const App = () => {
     <Provider store={store}>
       <BrowserRouter>
         <Routes>
-        <Route element={<Layout />}>
+          <Route element={<Layout />}>
             <Route path="/" element={<Signin />} />
             <Route path="/signup" element={<Signup />} />
           </Route>
 
-
-          <Route path="*" element={<h1>Page not found</h1>} />
-          <Route path="/ticket" element={<Ticket />} />
-          {/* <Route path="/payment" element={<Payment />}/>
-          <Route path="/passenger" element={<Passenger/>}/> */}
-          <Route path="passenger-details" element={<PassengerDetailsForm />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="*" element={<h1>Page not found</h1>} />
+            <Route path="/ticket" element={<Ticket />} />
+            {/* <Route path="/payment" element={<Payment />}/>
+            <Route path="/passenger" element={<Passenger/>}/> */}
+            <Route path="passenger-details" element={<PassengerDetailsForm />} />
+          </Route>
         </Routes>
       </BrowserRouter>
     </Provider>

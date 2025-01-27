@@ -76,3 +76,8 @@ export interface CommonFormProps {
   forgotPasswordButton?: React.ReactNode;
   signUpLink?: React.ReactNode;
 }
+export interface SeatDeatils{
+  id:Number;
+  seatNumber:String;
+
+}
