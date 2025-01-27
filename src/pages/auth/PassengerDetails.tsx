@@ -4,15 +4,15 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { ToastContainer, toast } from "react-toastify";
 import { loadStripe } from "@stripe/stripe-js";
 import "react-toastify/dist/ReactToastify.css";
-import { genderOptions } from "../../constants/Index";
+import { genderOptions } from '../../constants';
 import Button from "../../components/Button";
 import Input from "../../components/Input";
 import { getPassengerDetailsValidationSchema } from "../../utils/schema/PassengerValidationSchema";
 import { FormData } from "../../utils/entity/PageEntity";
 import Form from "../../components/Form";
 import { useCreatePassengerDetailsMutation } from '../../redux/services/PassengerDetailsApi';
-import { passengers } from "../../constants/Index";
-import { total } from "../../constants/Index";
+import { passengers } from '../../constants';
+import { total } from "../../constants";
 
 const stripePromise = loadStripe("pk_test_51NDi2uSIeHGLmxdBXJaV2FhWJkT3MOwkff67QkcgQnjZCzZGnY6egJQ0jY7m9cRFMZXsAOT40U8JNVFAi4xyTClo00iZfLzxR9");
 
