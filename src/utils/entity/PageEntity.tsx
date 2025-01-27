@@ -1,3 +1,4 @@
+import { FieldErrors } from 'react-hook-form';
 
 export interface AccessRole {
   getdata: string | number;
@@ -83,12 +84,12 @@ export interface BusCardProps {
   totalPrice: number;
 }
 
-export interface FormData {
+export interface InputData {
   pickupPoint: string;
   destinationPoint: string;
   pickupDate: string;
 }
-import { FieldErrors } from 'react-hook-form';
+
 
 
 export interface PassengerField {

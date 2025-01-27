@@ -18,6 +18,4 @@ const store = configureStore({
       .concat(SignupApi.middleware)
       .concat(PassengerDetailsApi.middleware),
 });
-
-
 export default store;

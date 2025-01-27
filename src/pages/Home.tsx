@@ -11,7 +11,7 @@ import Card from '../components/Card';
 import homeBus from '../assets/homeBus.png';
 import Header from '../components/layout/Header';
 import Toast from '../components/Toast';
-import { FormData } from '../utils/entity/PageEntity';
+import { InputData } from '../utils/entity/PageEntity';
 import '../App.css'; 
 
 const Home = () => {
@@ -40,7 +40,7 @@ const Home = () => {
   });
   const currentDate = new Date().toISOString().split('T')[0];
 
-  const handleBookNowClick = async (data: FormData) => {
+  const handleBookNowClick = async (data: InputData) => {
     if (isLoading) return; 
     setIsLoading(true);
 
