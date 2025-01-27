@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useFetchPickUpPointsQuery } from '../../redux/services/TripApi';
-import PointsSelector from '../../components/PointSelector';
+// import {LocationPicker} from '../../components/LocationPicker';
 import { useLocation } from 'react-router-dom';
 import { PickUpPointsProps } from '../../utils/entity/PageEntity';
+import LocationPicker from '../../components/LocationPicker';
 
 const PickUpPoints: React.FC<PickUpPointsProps> = ({ onSelectionChange, onApply }) => {
   const location = useLocation();
@@ -35,7 +36,7 @@ const PickUpPoints: React.FC<PickUpPointsProps> = ({ onSelectionChange, onApply 
   };
 
   return (
-    <PointsSelector
+    <LocationPicker
       title="PICKUP POINTS"
       points={validPickupPoints}
       selectedPoints={selectedPickupPoints}

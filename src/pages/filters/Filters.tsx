@@ -98,10 +98,6 @@ const Filters: React.FC = () => {
     setSearchTerm(event.target.value);
   };
 
-  const handleBusClick = (bus: any) => {
-    setSelectedBus(bus);
-  };
-
   const toggleSeatSelection = (seatNumber: number, e: React.MouseEvent) => {
     const updatedSeats = selectedSeats.includes(seatNumber)
       ? selectedSeats.filter((seat) => seat !== seatNumber)

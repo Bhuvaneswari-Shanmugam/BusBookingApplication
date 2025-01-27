@@ -38,7 +38,6 @@ const MissMatch: React.FC = () => {
           Oops! The page you're looking for doesn't exist.
         </p>
         <a
-          href="/"
           style={{
             padding: '10px 20px',
             fontSize: '1.1rem',

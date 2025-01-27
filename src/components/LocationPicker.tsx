@@ -6,7 +6,7 @@ import {PointsSelectorProps} from '../utils/entity/PageEntity';
 
 
 
-const PointsSelector: React.FC<PointsSelectorProps> = ({
+const LocationPicker: React.FC<PointsSelectorProps> = ({
   title,
   points,
   selectedPoints,
@@ -87,4 +87,4 @@ const PointsSelector: React.FC<PointsSelectorProps> = ({
   );
 };
 
-export default PointsSelector;
+export default LocationPicker;

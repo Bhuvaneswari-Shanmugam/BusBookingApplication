@@ -83,3 +83,8 @@ export interface BusCardProps {
   totalPrice: number;
 }
 
+export interface FormData {
+  pickupPoint: string;
+  destinationPoint: string;
+  pickupDate: string;
+}

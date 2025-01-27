@@ -22,6 +22,7 @@ const TripDetailsModal: React.FC<TripDetailsModalProps> = ({ show, onClose, onPr
                 <p>
                     <strong><span className="d-inline ">Seat No:</span></strong>
                     <span className="d-inline ml-4 justify-content-end">L13, L18, L17, L14, L11, L10W</span>
+                    <span className="d-inline ml-4  justify-content-end">L13,L18, L17, L14, L11, L10W</span>
                 </p>
 
                 <hr></hr>

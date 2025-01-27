@@ -1,7 +1,13 @@
 import React from 'react';
 
 
+interface DropDownStyle {
+  container?: React.CSSProperties;
+  select?: React.CSSProperties;
+
+}
 export interface DropdownProps {
+  style:DropDownStyle;
   label?: string;
   options: string[];
   text:string;
@@ -26,7 +32,6 @@ export interface ToastProps {
 export interface CardProps extends React.HTMLProps<HTMLDivElement> {
   header?: React.ReactNode | string;
   description?: React.ReactNode | string;
-  title?:  string ;
   footer?: React.ReactNode | string;
   
 }

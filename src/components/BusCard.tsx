@@ -19,7 +19,7 @@ const BusCard: React.FC<BusCardProps> = ({
   totalPrice,
 }) => {
   return (
-    <div key={bus.number} className="card p-4 mb-2" style={{ marginLeft: '5px', marginRight: '0px' }}>
+    <div key={bus.number} className="card p-4 mb-2 w-100" style={{ marginLeft: '5px', marginRight: '0px' }}>
       <div className="card-content d-flex justify-content-between align-items-center">
         <div>
           <h5>{bus.name}</h5>

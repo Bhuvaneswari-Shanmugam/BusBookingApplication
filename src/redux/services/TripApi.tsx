@@ -1,11 +1,11 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import {token} from '../../constants/index'
 
 export const TripApi = createApi({
   reducerPath: 'tripApi',
   baseQuery: fetchBaseQuery({
     baseUrl: process.env.REACT_APP_URL,
     prepareHeaders: (headers) => {
-      const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIiLCJVc2VyRW1haWwiOiIiLCJpYXQiOjE3MzUxNDI2NjYsImV4cCI6MTczNTI0ODg2NiwiRmlyc3ROYW1lIjoiTmFuZGhpbmkiLCJVc2VySWQiOiI2N2UxNGE0My03ZDUxLTQ1ZWUtYmFhZi1lMWNkNzUyNWU4YWQiLCJSb2xlIjoiQURNSU4ifQ.9_cf0yormKJk0_pL2_lhsnPoU-K_ZGDznslS60jRkzQ'; 
       if (token) {
         headers.set('Authorization', `Bearer ${token}`);
       }

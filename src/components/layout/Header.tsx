@@ -1,10 +1,10 @@
 import React from 'react';
-import { HashLink as Link } from 'react-router-hash-link';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { navLinks } from '../../constants';
 import profile from '../../assets/profile.jpg';
 import logo from '../../assets/logo.jpg';
+import { Link } from 'react-router-dom';
 
 const Header: React.FC = () => {
   return (
@@ -32,7 +32,7 @@ const Header: React.FC = () => {
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
             {navLinks.map(({ name, to }, index) => (
               <li className="nav-item" key={index}>
-                <Link className="nav-link mx-3" to={to} smooth>
+                <Link className="nav-link mx-3" to={to}>
                   {name}
                 </Link>
               </li>

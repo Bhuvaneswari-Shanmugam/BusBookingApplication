@@ -11,12 +11,12 @@ import Card from '../components/Card';
 import homeBus from '../assets/homeBus.png';
 import Header from '../components/layout/Header';
 import Toast from '../components/Toast';
+import { FormData } from '../utils/entity/PageEntity';
 import '../App.css'; 
 
 const Home = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const bookingDetails = location.state?.bookingDetails;
   const [ticket, setTicket] = useState<null>(null);
   const [searchTrips] = useSearchTripsMutation();
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -40,7 +40,7 @@ const Home = () => {
   });
   const currentDate = new Date().toISOString().split('T')[0];
 
-  const handleBookNowClick = async (data: any) => {
+  const handleBookNowClick = async (data: FormData) => {
     if (isLoading) return; 
     setIsLoading(true);
 
@@ -67,7 +67,6 @@ const Home = () => {
         setShowToast(true);
       }
     } catch (error) {
-      console.error('Failed to search for trips:', error);
       setToastMessage('Failed to search for trips. Please try again.');
       setToastType('error');
       setShowToast(true);
@@ -75,16 +74,6 @@ const Home = () => {
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    if (bookingDetails) {
-      setTicket(bookingDetails);
-      setValue('pickupPoint', bookingDetails.pickupPoint || '');
-      setValue('destinationPoint', bookingDetails.destinationPoint || '');
-      setValue('pickupDate', bookingDetails.pickupDate || '');
-    }
-  }, [bookingDetails, setValue]);
-
   const scrollToSearchContainer = () => {
     if (searchContainerRef.current) {
       searchContainerRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -94,24 +83,24 @@ const Home = () => {
   return (
     <div>
       <Header />
-      <div className="home-container d-flex">
-        <div className="button-container">
-          <h1 style={{ color: '#B966E2' }}>
+      <div className="home-container min-vh-100 w-100 position-relative overflow-hidden">
+        <div className="button-container " style={{fontSize:'70px'}}>
+          <h1 style={{ color: '#B966E2', fontSize:'70px' }}>
             Reserve Your Bus
             <span className="ticket" style={{ color: '#B966E2' }}>
               Tickets
             </span>
             Now
           </h1>
-          <p>
+          <p style={{fontSize:'20px', color:'#f5f5f5', width:'500px'}}>
             Find and book your bus tickets with just a few clicks. We offer a wide range of bus routes and schedules to suit your needs.
           </p>
-          <div className="home-btn d-flex justify-content-between" style={{ gap: '10px' }}>
+           <div className="home-btn d-flex justify-content-between" style={{ gap: '10px',width:'250px', height:'45px', backgroundColor:'darkarChid', borderRadius:'7px',fontSize:'20px', paddingRight:'4px', color:'#f5f5f5'}}>
             <button onClick={scrollToSearchContainer}>Book Now</button>
             <button onClick={() => navigate('/booking-details')}>Booking Details</button>
           </div>
         </div>
-        <div className="right-img-container">
+          <div className="right-img-container" style={{position:'absolute', bottom:'20px',right:'20px', minHeight:'500px',minWidth:'500px'}}>
           <img src={homeBus} alt="homepage-right-img" />
         </div>
       </div>
@@ -119,21 +108,24 @@ const Home = () => {
       <div ref={searchContainerRef} className="card search-container mt-4">
         <form onSubmit={handleSubmit(handleBookNowClick)}>
           <div className="row g-3 d-flex align-items-center">
-            <div className="col-md-4">
+            <div className="col-md-4 mb-3">
               <Controller
                 name="pickupPoint"
                 control={control}
                 render={({ field }) => (
                   <DropDown
                     {...field}
-                    className="custom-dropdown"
+                    className="custom-dropdown" 
                     options={locations}
                     text="Select Pickup Point"
+                    style={{select:{width:'100px',height:'40px',padding:'10px',fontSize:'16px',borderRadius:'5px',border:'1px solid #B966E2',color:'#333',boxSizing:'border-box'}
+                    }}
                   />
                 )}
               />
-              {errors.pickupPoint && <div className="text-danger">{errors.pickupPoint?.message}</div>}
+              {errors.pickupPoint && <span className="text-danger">{errors.pickupPoint?.message}</span>}
             </div>
+
             <div className="col-md-4">
               <Controller
                 name="destinationPoint"
@@ -144,11 +136,12 @@ const Home = () => {
                     className="custom-dropdown"
                     options={locations}
                     text="Select Destination Point"
+                    style={{select:{}}}
                   />
                 )}
               />
               {errors.destinationPoint && (
-                <div className="text-danger ">{errors.destinationPoint?.message}</div>
+                <span className="text-danger ">{errors.destinationPoint?.message}</span>
               )}
             </div>
             <div className="col-md-2">
@@ -166,16 +159,20 @@ const Home = () => {
                   />
                 )}
               />
-              {errors.pickupDate && <div className="text-danger">{errors.pickupDate?.message}</div>}
+              {errors.pickupDate && <span className="text-danger">{errors.pickupDate?.message}</span>}
             </div>
+
             <div className="col-md-2">
               <button
                 className="search-btn"
                 style={{
                   width: '150px',
+                  border:'none',
+                  borderRadius:'4px',
                   height: '40px',
                   backgroundColor: 'darkorchid',
                   color: 'white',
+                  cursor:'pointer'
                 }}
                 type="submit"
                 disabled={isLoading}
@@ -233,5 +230,4 @@ const Home = () => {
     </div>
   );
 };
-
 export default Home;

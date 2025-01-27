@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useFetchDroppingPointsQuery } from '../../redux/services/TripApi';
-import PointsSelector from '../../components/PointSelector';
 import { useLocation } from 'react-router-dom';
+import LocationPicker from '../../components/LocationPicker';
 
 interface DroppingPointsProps {
   onSelectionChange: (selectedPoints: Set<string>) => void;  
@@ -39,7 +39,7 @@ const DroppingPoints: React.FC<DroppingPointsProps> = ({ onSelectionChange, onAp
   };
 
   return (
-    <PointsSelector
+    <LocationPicker
       title="DROPPING POINTS"
       points={validDroppingPoints}
       selectedPoints={selectedDroppingPoints}

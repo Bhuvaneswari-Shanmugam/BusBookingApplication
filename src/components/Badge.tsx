@@ -15,3 +15,4 @@ const Badge: React.FC<BadgeProps> = ({ label, icon, color, className, ...props }
 };
 
 export default Badge;
+
