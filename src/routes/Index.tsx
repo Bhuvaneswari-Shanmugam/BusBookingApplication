@@ -1,11 +1,10 @@
 import React from "react";
+import { Navigate, Outlet } from "react-router-dom";
 
-const Index: React.FC = () => {
-  return (
-    <div>
-      <h1>inside route-folder</h1>
-    </div>
-  );
+const ProtectedRoute = () => {
+  const isAuthenticated = sessionStorage.getItem("Token");
+
+  return isAuthenticated ? <Outlet /> : <Navigate to="/" />;
 };
 
-export default Index;
+export default ProtectedRoute;
