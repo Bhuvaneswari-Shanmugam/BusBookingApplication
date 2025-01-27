@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Provider } from 'react-redux';
-
 import PassengerDetailsForm from './pages/auth/PassengerDetails';
 import Ticket from './pages/auth/Ticket';
 import Signin from './pages/auth/Signin';
@@ -8,10 +7,9 @@ import store from '../src/redux/store';
 import Layout from './components/layout/Index';
 import Signup from './pages/auth/Signup';
 import ProtectedRoute from './routes/Index';
-//import Passenger from './pages/auth/Passenger';
-//import Payment from './pages/auth/Payment';
-
-
+import Home from './pages/Home';
+import AvailableBuses from './pages/booking/AvailableBuses';
+import MissMatch from './pages/MissMatch';
 const App = () => {
   return (
     <Provider store={store}>
@@ -23,10 +21,10 @@ const App = () => {
           </Route>
 
           <Route element={<ProtectedRoute />}>
-            <Route path="*" element={<h1>Page not found</h1>} />
+            <Route path="*" element={<MissMatch />} />
             <Route path="/ticket" element={<Ticket />} />
-            {/* <Route path="/payment" element={<Payment />}/>
-            <Route path="/passenger" element={<Passenger/>}/> */}
+            <Route path="/home" element={<Home />} />
+            <Route path="/buses" element={<AvailableBuses  />} />
             <Route path="passenger-details" element={<PassengerDetailsForm />} />
           </Route>
         </Routes>
