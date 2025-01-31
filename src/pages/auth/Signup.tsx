@@ -25,7 +25,7 @@ const Signup: React.FC = () => {
     const [otpModalVisible, setOtpModalVisible] = useState(false);
     const [OTP, setOTP] = useState('');
     const [isOtpValidated, setIsOtpValidated] = useState(false);
-    const [isEmailVerified, setIsEmailVerified] = useState(false); // New state for email verification
+    const [isEmailVerified, setIsEmailVerified] = useState(false); 
 
     const {
         register,
@@ -50,7 +50,7 @@ const Signup: React.FC = () => {
             toast.success("OTP validated successfully!");
             setIsOtpValidated(true);
             setOtpModalVisible(false);
-            setIsEmailVerified(true); // Email is successfully verified
+            setIsEmailVerified(true); 
         } catch (err) {
             toast.error("Invalid OTP. Please try again.");
         }
@@ -155,7 +155,7 @@ const Signup: React.FC = () => {
                         )}
                     </div>
                 ))}
-                {!isEmailVerified ? ( // Conditionally render buttons
+                {!isEmailVerified ? ( 
                     <Button
                         type="button"
                         className="btn btn-secondary w-100 mt-3"

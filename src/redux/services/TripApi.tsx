@@ -1,11 +1,12 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import {token} from '../../constants/index'
+
 
 export const TripApi = createApi({
   reducerPath: 'tripApi',
   baseQuery: fetchBaseQuery({
     baseUrl: process.env.REACT_APP_URL,
     prepareHeaders: (headers) => {
+      const token = sessionStorage.getItem("Token");
       if (token) {
         headers.set('Authorization', `Bearer ${token}`);
       }

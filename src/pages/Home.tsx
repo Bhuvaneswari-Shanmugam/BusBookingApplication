@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSearchTripsMutation } from '../redux/services/TripApi';
-import { locations, busDetails } from '../constants';
+import { locations, busDetails } from '../constants/index';
 import { useForm, Controller } from 'react-hook-form';
 import { validationSchema } from '../utils/schema/validationSchema';
 import Footer from '../components/layout/Footer';
@@ -95,7 +95,11 @@ const Home = () => {
           <p style={{fontSize:'20px', color:'#f5f5f5', width:'500px'}}>
             Find and book your bus tickets with just a few clicks. We offer a wide range of bus routes and schedules to suit your needs.
           </p>
-           <div className="home-btn d-flex justify-content-between" style={{ gap: '10px',width:'250px', height:'45px', backgroundColor:'darkarChid', borderRadius:'7px',fontSize:'20px', paddingRight:'4px', color:'#f5f5f5'}}>
+           <div className="home-btn d-flex justify-content-between" style={{ gap: '10px',width:'250px', height:'45px', border:'none',
+                  borderRadius:'4px',
+                  backgroundColor: 'darkorchid',
+                  color: 'white',
+                  cursor:'pointer'}}>
             <button onClick={scrollToSearchContainer}>Book Now</button>
             <button onClick={() => navigate('/booking-details')}>Booking Details</button>
           </div>

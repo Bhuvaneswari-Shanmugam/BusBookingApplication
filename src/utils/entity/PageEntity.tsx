@@ -132,13 +132,13 @@ export interface PassengerField {
   export interface PassengerForTicket {
     firstName: string;
     lastName: string;
-    email: string;
-    phoneNumber: string;
+    // email: string;
+    // phoneNumber: string;
 }
 export interface Customer {
   name: string;
-  email: string;
-  phoneNumber: string;
+  // email: string;
+  // phoneNumber: string;
 }
 export interface TicketState {
   passengers: PassengerForTicket[];

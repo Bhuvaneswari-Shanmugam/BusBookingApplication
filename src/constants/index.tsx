@@ -100,8 +100,7 @@ export const busDetails = [
     }
   ];
 
-  export const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIiLCJVc2VyRW1haWwiOiIiLCJpYXQiOjE3MzUxNDI2NjYsImV4cCI6MTczNTI0ODg2NiwiRmlyc3ROYW1lIjoiTmFuZGhpbmkiLCJVc2VySWQiOiI2N2UxNGE0My03ZDUxLTQ1ZWUtYmFhZi1lMWNkNzUyNWU4YWQiLCJSb2xlIjoiQURNSU4ifQ.9_cf0yormKJk0_pL2_lhsnPoU-K_ZGDznslS60jRkzQ'; 
-
+  
   interface Bus {
     name: string;
     type: string;

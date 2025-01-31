@@ -72,7 +72,7 @@ const BusCard: React.FC<BusCardProps> = ({
                 </div>
               ))}
               <div className="btn-container d-flex justify-content-between mt-5">
-                <button className="pay-button btn btn-primary" onClick={handleDownloadTicket}>
+                <button className="pay-button btn btn-primary" onClick={handlePayment}>
                   Proceed Booking
                 </button>
               </div>

@@ -1,30 +1,45 @@
-import React from "react";
+
+import React, { useState, useEffect } from "react";
 import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { ToastContainer, toast } from "react-toastify";
 import { loadStripe } from "@stripe/stripe-js";
+import { jwtDecode } from "jwt-decode";
 import "react-toastify/dist/ReactToastify.css";
-import { genderOptions } from '../../constants';
+import PropTypes from "prop-types";
 import Button from "../../components/Button";
 import Input from "../../components/Input";
 import { getPassengerDetailsValidationSchema } from "../../utils/schema/PassengerValidationSchema";
-import { FormData } from "../../utils/entity/PageEntity";
+import { genderOptions, passengers } from "../../constants/index";
 import Form from "../../components/Form";
-import { useCreatePassengerDetailsMutation } from '../../redux/services/PassengerDetailsApi';
-import { passengers } from '../../constants';
-import { total } from "../../constants";
+import { useCreatePassengerDetailsMutation } from "../../redux/services/PassengerDetailsApi";
+import { DecodedToken } from '../../utils/entity/PageEntity';
+import {PassengerDetailsFormProps} from '../../utils/entity/PassengerInterface';
+import { useCreateBookingMutation } from "../../redux/services/BookingApi";
+import { useNavigate } from "react-router-dom";
+import { usePassenger } from "../../context/PassengerProvider";
 
 const stripePromise = loadStripe("pk_test_51NDi2uSIeHGLmxdBXJaV2FhWJkT3MOwkff67QkcgQnjZCzZGnY6egJQ0jY7m9cRFMZXsAOT40U8JNVFAi4xyTClo00iZfLzxR9");
 
-const PassengerDeatilsForm: React.FC = () => {
+
+const PassengerDetailsForm: React.FC<PassengerDetailsFormProps> = ({ bookingDetails }) => {
+
+  const { setPassengers ,setEmail, setPhoneNumber} = usePassenger();
+  const navigate = useNavigate();
+  const [loggedInEmail, setLoggedInEmail] = useState("");
+  const [isEmailEditable, setIsEmailEditable] = useState(false);
+  const [createBooking] = useCreateBookingMutation();
+  const tokens = sessionStorage.getItem("Token");
+
   const {
     control,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(getPassengerDetailsValidationSchema),
     defaultValues: {
-      passengers: passengers.map(() => ({
+      passengers:bookingDetails.bookedNoOfSeats.map(() => ({
         firstName: "",
         lastName: "",
         age: undefined,
@@ -39,83 +54,113 @@ const PassengerDeatilsForm: React.FC = () => {
     control,
     name: "passengers",
   });
+  useEffect(() => {
+    const token = sessionStorage.getItem("Token");
+    if (token) {
+      try {
+        const decoded: DecodedToken = jwtDecode(token);
+        const email = decoded.UserEmail as string;
+        setLoggedInEmail(email);
+        setValue("email", email);
+        console.log("Decoded Email:", email); 
 
-  const [createPassengerDetails, { isLoading, isError }] = useCreatePassengerDetailsMutation();
+      } catch (error) {
+        console.error("Error decoding token:", error);
+      }
+    }
+  }, [setValue]);
 
-  const onSubmit = async (data: FormData) => {
+  const toggleEmailEdit = () => {
+    setIsEmailEditable(!isEmailEditable);
+  };
+
+  const [createPassengerDetails, { isLoading }] = useCreatePassengerDetailsMutation();
+
+  const onSubmit = async (data: any) => {
     try {
-      const response = await createPassengerDetails({
+      await createPassengerDetails({
         passengers: data.passengers,
         email: data.email,
         phoneNumber: data.phoneNumber,
       }).unwrap();
 
+      setPassengers(data.passengers);
+      setEmail(data.email);
+      setPhoneNumber(data.phoneNumber);
       toast.success("Form Submitted Successfully!");
+      // navigate("/ticket", { state: { passengers: data.passengers, email: data.email, phoneNumber: data.phoneNumber } });
 
-      const stripeResponse = await fetch("http://localhost:8082/stripe-payment/create-checkout-session", {
+      const stripe = await stripePromise;
+      if (!stripe) throw new Error("Stripe.js failed to load.");
+      const response = await fetch("http://localhost:8082/stripe-payment/create-checkout-session", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-        },
+           "Content-Type": "application/json",
+           "Authorization":`Bearer ${tokens}`
+         },
         body: JSON.stringify({
-          amount: total,
+          amount:bookingDetails.totalAmount * 100,
           currency: "INR",
-          description: "bus Booking Payment",
+          description: "Bus Booking Payment",
+          email: data.email,
+          token:tokens,
+          bookingDetails:{
+            pickupPoint: bookingDetails.pickupPoint,
+            destinationPoint: bookingDetails.destinationPoint,
+            pickupTime: bookingDetails.pickupTime,
+            busNumber:bookingDetails.busNumber,
+            busType: bookingDetails.busType,
+            bookedNoOfSeats: bookingDetails.bookedNoOfSeats,
+            perSeatAmount: bookingDetails.perSeatAmount,
+            totalAmount: bookingDetails.totalAmount,
+          },
+          metadata: {
+            token: tokens, 
+            bookingDetails: JSON.stringify(bookingDetails) 
+          },
+          successUrl: `http://localhost:3000/ticket?firstName=${encodeURIComponent(data.firstName)}&lastName=${encodeURIComponent(data.lastName)}&email=${encodeURIComponent(data.email)}`,
+          cancelUrl: "http://localhost:3000/failure"
         }),
-      });
+      }
+    );
+    
 
-      if (!stripeResponse.ok) {
-        throw new Error("Failed to create Stripe Checkout session");
-      }
-      const { sessionId } = await stripeResponse.json();
-      const stripe = await stripePromise;
-      if (!stripe) {
-        throw new Error("Stripe.js failed to load.");
-      }
+      if (!response.ok) throw new Error("Failed to create Stripe session");
+
+      const { sessionId } = await response.json();
       const { error } = await stripe.redirectToCheckout({ sessionId });
-      if (error) {
-        throw new Error(error.message);
-      }
+      
+    // await createBooking({ bookingDetails }).unwrap();
+  
+        toast.success("Payment Recieved . Bookedsuccessfully");
+        navigate("/ticket");
     } catch (error) {
       toast.error("An error occurred while processing the payment.");
     }
   };
 
   return (
-    <Form
-      onSubmit={handleSubmit(onSubmit)}
-      className="card shadow p-3 bg-body rounded d-flex justify-content-end mt-0"
-      style={{ width: "1100px" }}
-    >
-      <div className="card-body">
-        <h1 className="text-center">Passenger Form</h1>
+    <Form onSubmit={handleSubmit(onSubmit)}>
+      <div className="card-body" style={{ width: '700px' }}>
         <div className="d-flex align-items-center mb-3">
           <img
             src="https://cdn-icons-png.flaticon.com/512/5464/5464651.png"
             alt="Passenger Icon"
-            style={{ height: "75px", width: "75px", marginRight: "10px" }}
+            style={{ height: "45px", width: "44px", marginRight: "10px" }}
           />
-          <h2>Passenger Information</h2>
+          <h3>Passenger Information</h3>
         </div>
-
         {passengerFields.map((passenger, index) => (
           <div className="card mb-4 shadow" key={passenger.id}>
             <div className="card-body">
               <h5 className="mb-4">
-                Passenger {index + 1} | Seat {passengers[index].seatNumber}
-              </h5>
+                Passenger {index + 1} | Seat {bookingDetails.bookedNoOfSeats[index]}</h5>
               <div className="row">
                 <div className="col-md-6">
                   <Controller
                     control={control}
                     name={`passengers.${index}.firstName`}
-                    render={({ field }) => (
-                      <Input
-                        {...field}
-                        className="form-control"
-                        placeholder="Enter first name"
-                      />
-                    )}
+                    render={({ field }) => <Input {...field} className="form-control" placeholder="First Name" />}
                   />
                   {errors.passengers?.[index]?.firstName && (
                     <small className="text-danger">{errors.passengers[index].firstName?.message}</small>
@@ -125,13 +170,7 @@ const PassengerDeatilsForm: React.FC = () => {
                   <Controller
                     control={control}
                     name={`passengers.${index}.lastName`}
-                    render={({ field }) => (
-                      <Input
-                        {...field}
-                        className="form-control"
-                        placeholder="Enter last name"
-                      />
-                    )}
+                    render={({ field }) => <Input {...field} className="form-control" placeholder="Last Name" />}
                   />
                   {errors.passengers?.[index]?.lastName && (
                     <small className="text-danger">{errors.passengers[index].lastName?.message}</small>
@@ -143,42 +182,27 @@ const PassengerDeatilsForm: React.FC = () => {
                   <Controller
                     control={control}
                     name={`passengers.${index}.age`}
-                    render={({ field }) => (
-                      <Input
-                        {...field}
-                        type="number"
-                        className="form-control"
-                        placeholder="Enter age"
-                      />
-                    )}
+                    render={({ field }) => <Input {...field} className="form-control" type="number" placeholder="Age" />}
                   />
                   {errors.passengers?.[index]?.age && (
                     <small className="text-danger">{errors.passengers[index].age?.message}</small>
                   )}
                 </div>
                 <div className="col-md-6">
-                  <div>
-                    {genderOptions.map(({ id, value, label }) => (
-                      <div className="form-check form-check-inline" key={id}>
-                        <Controller
-                          control={control}
-                          name={`passengers.${index}.gender`}
-                          render={({ field }) => (
-                            <Input
-                              {...field}
-                              type="radio"
-                              value={value}
-                              id={`${value}-${index}`}
-                              className="form-check-input"
-                            />
-                          )}
-                        />
-                        <label htmlFor={`${value}-${index}`} className="form-check-label">
-                          {label}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
+                  {genderOptions.map(({ id, value, label }) => (
+                    <div className="form-check form-check-inline" key={id}>
+                      <Controller
+                        control={control}
+                        name={`passengers.${index}.gender`}
+                        render={({ field }) => (
+                          <Input {...field} type="radio" value={value} id={`${value}-${index}`} className="form-check-input" />
+                        )}
+                      />
+                      <label htmlFor={`${value}-${index}`} className="form-check-label">
+                        {label}
+                      </label>
+                    </div>
+                  ))}
                   {errors.passengers?.[index]?.gender && (
                     <small className="text-danger">{errors.passengers[index].gender?.message}</small>
                   )}
@@ -187,34 +211,28 @@ const PassengerDeatilsForm: React.FC = () => {
             </div>
           </div>
         ))}
-
         <div className="d-flex align-items-center mb-3">
           <img
             src="https://cdn4.iconfinder.com/data/icons/green-shopper/1049/email.png"
             alt="Contact Icon"
-            style={{ height: "75px", width: "75px", marginRight: "10px" }}
+            style={{ height: "45px", width: "44px", marginRight: "10px" }}
           />
-          <h2>Contact Details</h2>
+          <h3>Contact Details</h3>
         </div>
-
         <div className="card shadow">
           <div className="card-body">
-            <div className="mb-3">
+            <div className=" ">
+              <div className="mb-3"></div>
               <Controller
                 control={control}
                 name="email"
                 render={({ field }) => (
-                  <Input
-                    {...field}
-                    className="form-control"
-                    placeholder="Enter your email"
-                  />
+                  <Input {...field} className="form-control" placeholder="Email" disabled={!isEmailEditable} />
                 )}
               />
-              {errors.email && <small className="text-danger">{errors.email?.message}</small>}
+              {errors.email && <small className="text-danger">{errors.email.message}</small>}
             </div>
-
-            <div className="mb-3">
+            <div className="mt-3">
               <Controller
                 control={control}
                 name="phoneNumber"
@@ -230,8 +248,17 @@ const PassengerDeatilsForm: React.FC = () => {
                 <small className="text-danger">{errors.phoneNumber?.message}</small>
               )}
             </div>
+
+            <div className="d-flex justify-content-end align-items-center">
+              <div className="mt-3 ">
+                <Button type="button" onClick={toggleEmailEdit}>
+                  {isEmailEditable ? "Save Email" : "Change Email"}
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
+
 
         <hr />
         <div className="mt-4">
@@ -242,21 +269,30 @@ const PassengerDeatilsForm: React.FC = () => {
           <p>Once payment is confirmed, tickets will be available for download.</p>
         </div>
 
-        <div className="d-flex justify-content-between mt-4">
+
+        <div className="d-flex justify-content-between">
           <div>
             <p>
-              <strong>Total Amount:</strong> INR {total}.00
+              <strong>Total Amount:</strong> INR {bookingDetails.totalAmount}.00
             </p>
             <p>(*Exclusive of Taxes)</p>
+          </div >
+          <div className="d-flex justify-content-end align-items-center" style={{ marginRight: '35px' }}>
+            <div className="mb-3 ">
+              <Button type="submit" disabled={isLoading} >
+                PROCEED TO PAY
+              </Button>
+            </div>
           </div>
-          <Button type="submit" style={{ height: "50px" }}>
-            PROCEED TO PAY
-          </Button>
         </div>
       </div>
       <ToastContainer />
-    </Form>
+    </Form >
   );
 };
 
-export default PassengerDeatilsForm;
+PassengerDetailsForm.propTypes = {
+  bookedNoOfSeats: PropTypes.arrayOf(PropTypes.number).isRequired, 
+};
+
+export default PassengerDetailsForm;

@@ -7,11 +7,18 @@ import 'react-toastify/dist/ReactToastify.css';
 import { PassengerForTicket, Customer } from '../../utils/entity/PageEntity';
 import { colors } from "../../constants/Palette";
 import logo from '../../assets/images/logo.jpg';
+import { usePassenger } from "../../context/PassengerProvider";
 
 const Ticket: React.FC = () => {
     const ticketRef = useRef<HTMLDivElement | null>(null);
-    const { state } = useLocation();
-    const passengers = state?.passengers || [];
+    const { search } = useLocation();
+
+    // Extract query parameters from URL
+    const params = new URLSearchParams(search);
+    const firstName = params.get('firstName');
+    const lastName = params.get('lastName');
+    const email = params.get('email');
+   
 
     const downloadTicket = async () =>{
         if (ticketRef.current) {
@@ -41,7 +48,7 @@ const Ticket: React.FC = () => {
             window.open(blobUrl);
 
             const formData = new FormData();
-            formData.append("to", state.email);
+            formData.append("to", email || " ");
             formData.append("subject", "Your Ticket");
             formData.append("body", "Here is your bus ticket.");
             formData.append("attachment", pdfBlob, "ticket.pdf");
@@ -77,12 +84,11 @@ const Ticket: React.FC = () => {
     const departurePoint = "City Center Terminal";
     const boardingDetails = "Gate 2";
 
-    const customerDetails = passengers.map((passenger: PassengerForTicket) => ({
-        name: `${passenger.firstName} ${passenger.lastName}`,
-        email: passenger.email,
-        phoneNumber: passenger.phoneNumber,
-
-    }));
+    const customerDetails = {
+        name: `${firstName} ${lastName}`,
+        email: email,
+    };
+    
 
     const textStyle = { color: colors.secondary };
 
@@ -165,12 +171,11 @@ const Ticket: React.FC = () => {
                     <hr style={{ margin: "5px 0" }} />
                     <div className="d-flex justify-content-between align-items-center" style={{ margin: "0 30px" }}>
                         <div>
+                          
                             <b><h5>Customer Info</h5></b>
-                            {customerDetails.map((customer: Customer, index: number) => (
-                                <div key={index}>
-                                    <p><b>Name:</b> {customer.name}</p>
-                                </div>
-                            ))}
+                            <p><b>Name:</b> {customerDetails.name}</p>
+                            <p><b>Email:</b> {customerDetails.email}</p>
+                      
                         </div>
                     </div>
                     <hr style={{ margin: "5px 0" }} />

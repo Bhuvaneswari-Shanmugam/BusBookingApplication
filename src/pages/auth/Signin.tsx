@@ -46,9 +46,9 @@ const SignIn: React.FC = () => {
     resolver: yupResolver(getForgotPasswordValidationSchema()),
   });
 
-  useEffect(() => {
-    sessionStorage.clear();
-  }, []);
+  // useEffect(() => {
+  //   sessionStorage.clear();
+  // }, []);
 
   const onSubmit = async (data: Record<string, string>) => {
     try {
@@ -62,9 +62,10 @@ const SignIn: React.FC = () => {
         sessionStorage.setItem("RefreshToken", refreshToken);
         sessionStorage.setItem("FirstName", decodedToken.FirstName || "User");
         sessionStorage.setItem("Role", decodedToken.Role?.toUpperCase() || "GUEST");
-
+        localStorage.setItem("Token", accessToken);
+        localStorage.setItem("RefreshToken", refreshToken);
         toast.success(responseData.message || "Login successful!", { autoClose: 1000 });
-        navigate(decodedToken.Role?.toUpperCase() === "ADMIN" ? "/admin" : "/passenger-details");
+        navigate(decodedToken.Role?.toUpperCase() === "ADMIN" ? "/admin" : "/home");
         reset();
       } else {
         toast.error(responseData.message || "Login failed. Please try again.", { autoClose: 1000 });
