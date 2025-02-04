@@ -14,6 +14,7 @@ import { getSignupValidationSchema } from '../../utils/schema/SignupValidationSc
 import { SignupFormFields } from '../../constants/index';
 import { SignupFormInputs, SignupErrorResponse } from '../../utils/entity/SignupInterface';
 import { colors } from '../../constants/Palette';
+import Toast from '../../components/Toast';
 
 const Signup: React.FC = () => {
     const validationSchema = getSignupValidationSchema();
@@ -25,7 +26,11 @@ const Signup: React.FC = () => {
     const [otpModalVisible, setOtpModalVisible] = useState(false);
     const [OTP, setOTP] = useState('');
     const [isOtpValidated, setIsOtpValidated] = useState(false);
-    const [isEmailVerified, setIsEmailVerified] = useState(false); 
+    const [isEmailVerified, setIsEmailVerified] = useState(false);
+
+      const [toastMessage, setToastMessage] = useState<string>('');
+      const [toastType, setToastType] = useState<'info' | 'success' | 'error'>('info'); 
+      const [showToast, setShowToast] = useState<boolean>(false);
 
     const {
         register,
@@ -40,52 +45,77 @@ const Signup: React.FC = () => {
     const email = watch('email');
 
     const handleValidateOtp = async () => {
-        if (!OTP || OTP.length !== 6 || isNaN(Number(OTP))) {
-            toast.error("Please enter a 6-digit numeric OTP.");
+        if (!OTP  || OTP.length !== 6 || isNaN(Number(OTP))) {
+         //   toast.error("Please enter a 6-digit numeric OTP.");
+            setToastMessage("Please enter a 6-digit numeric OTP.");
+            setToastType('error');
+            setShowToast(true);
             return;
         }
 
         try {
             await validateOtp({ email, OTP }).unwrap();
-            toast.success("OTP validated successfully!");
+        //    toast.success("OTP validated successfully!");
+            setToastMessage("Failed to reset password. Please try again.");
+            setToastType('success');
+            setShowToast(true);
             setIsOtpValidated(true);
             setOtpModalVisible(false);
-            setIsEmailVerified(true); 
+            setIsEmailVerified(true);
         } catch (err) {
-            toast.error("Invalid OTP. Please try again.");
+          //  toast.error("Invalid OTP. Please try again.");
+            setToastMessage("Invalid OTP. Please try again.");
+            setToastType('error');
+            setShowToast(true);
         }
     };
 
     const handleSendOtp = async (data: SignupFormInputs) => {
         try {
             const response = await sendOtp(data).unwrap();
-            toast.success(response?.data?.message || '', {
-                autoClose: 500,
-            });
+            // toast.success(response?.data?.message || '', {
+            //     autoClose: 500,
+            // });
+            setToastMessage("Otp verified successfully");
+            setToastType('success');
+            setShowToast(true);
             setOtpModalVisible(true);
         } catch (err) {
-            const errorMessage = (err as SignupErrorResponse)?.data?.message || 'Error while sending OTP';
-            toast.error(errorMessage);
+          //  const errorMessage = (err as SignupErrorResponse)?.data?.message || 'Error while sending OTP';
+            //toast.error(errorMessage);
+            setToastMessage("Error while sending OTP");
+            setToastType('error');
+            setShowToast(true);
         }
     };
 
     const onSubmit = async (data: SignupFormInputs) => {
         if (!isOtpValidated) {
-            toast.error('Please validate OTP before signing up.');
+            //toast.error('Please validate OTP before signing up.');
+            setToastMessage("Please validate OTP before signing up.");
+            setToastType('error');
+            setShowToast(true);
             return;
         }
 
         try {
             const response = await signup(data).unwrap();
-            toast.success(response?.data?.message || 'Signup completed successfully!', {
-                autoClose: 500,
-                onClose: () => navigate('/'),
-            });
+            // toast.success(response?.data?.message || 'Signup completed successfully!', {
+            //     autoClose: 500,
+            //     onClose: () => navigate('/'),
+            // });
+            setToastMessage("Signup completed successfully!");
+            setToastType('success');
+            setShowToast(true);
+            navigate('/')
             reset();
         } catch (err) {
-            const errorMessage =
-                (err as SignupErrorResponse)?.data?.message || 'Signup failed. Please try again.';
-            toast.error(errorMessage, { autoClose: 500 });
+            // const errorMessage =
+            //     (err as SignupErrorResponse)?.data?.message || 'Signup failed. Please try again.';
+            // toast.error(errorMessage, { autoClose: 500 });
+            setToastMessage("Signup failed. Please try again.");
+            setToastType('error');
+            setShowToast(true);
         }
     };
 
@@ -125,37 +155,37 @@ const Signup: React.FC = () => {
                                 </span>
                             </>
                         ) : !field.isCheckbox ? (
-                        <>
-                            <Input
-                                {...register(field.name as keyof SignupFormInputs)}
-                                type={field.type}
-                                placeholder={field.placeholder}
-                                className="form-control w-100"
-                                id={field.id}
-                            />
-                            <span className="error text-danger">
-                                {errors[field.name as keyof SignupFormInputs]?.message}
-                            </span>
-                        </>
+                            <>
+                                <Input
+                                    {...register(field.name as keyof SignupFormInputs)}
+                                    type={field.type}
+                                    placeholder={field.placeholder}
+                                    className="form-control w-100"
+                                    id={field.id}
+                                />
+                                <span className="error text-danger">
+                                    {errors[field.name as keyof SignupFormInputs]?.message}
+                                </span>
+                            </>
                         ) : (
-                        <div className="form-check w-100">
-                            <Input
-                                type="checkbox"
-                                {...register(field.name as keyof SignupFormInputs)}
-                                className={field.className}
-                                id={field.id}
-                            />
-                            <label className="form-check-label" htmlFor={field.id}>
-                                {field.label}
-                            </label>
-                            <span className="error text-danger">
-                                {errors[field.name as keyof SignupFormInputs]?.message}
-                            </span>
-                        </div>
+                            <div className="form-check w-100">
+                                <Input
+                                    type="checkbox"
+                                    {...register(field.name as keyof SignupFormInputs)}
+                                    className={field.className}
+                                    id={field.id}
+                                />
+                                <label className="form-check-label" htmlFor={field.id}>
+                                    {field.label}
+                                </label>
+                                <span className="error text-danger">
+                                    {errors[field.name as keyof SignupFormInputs]?.message}
+                                </span>
+                            </div>
                         )}
                     </div>
                 ))}
-                {!isEmailVerified ? ( 
+                {!isEmailVerified ? (
                     <Button
                         type="button"
                         className="btn btn-secondary w-100 mt-3"
@@ -180,6 +210,14 @@ const Signup: React.FC = () => {
                 )}
             </Form>
 
+            {showToast && (
+                <Toast
+                    message={toastMessage}
+                    type={toastType}
+                    duration={3000}
+                    onClose={() => setShowToast(false)}
+                />
+            )}
             <p className="text-center mt-3">
                 Already have an account? <Link to="/">Sign In</Link>
             </p>

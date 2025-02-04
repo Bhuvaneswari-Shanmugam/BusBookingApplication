@@ -17,6 +17,7 @@ import Form from "../../components/Form";
 import { colors } from "../../constants/Palette";
 import { SigninResponse } from "../../utils/entity/loginInterface";
 import { LoginJwtPayload } from "../../utils/entity/loginInterface";
+import Toast from "../../components/Toast";
 
 const SignIn: React.FC = () => {
   const validationSchema = getLoginValidationSchema();
@@ -33,6 +34,9 @@ const SignIn: React.FC = () => {
   const [newPasswordData, setNewPasswordData] = useState({ newPassword: "", confirmPassword: "" });
   const [forgotPasswordMode, setForgotPasswordMode] = useState(false);
   const [resetPasswordMode, setResetPasswordMode] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string>('');
+  const [toastType, setToastType] = useState<'info' | 'success' | 'error'>('info');
+  const [showToast, setShowToast] = useState<boolean>(false);
 
   const { register, handleSubmit, formState: { errors }, reset } = useForm({
     resolver: yupResolver(validationSchema),
@@ -68,53 +72,83 @@ const SignIn: React.FC = () => {
         navigate(decodedToken.Role?.toUpperCase() === "ADMIN" ? "/admin" : "/home");
         reset();
       } else {
-        toast.error(responseData.message || "Login failed. Please try again.", { autoClose: 1000 });
+        // toast.error(responseData.message || "Login failed. Please try again.", { autoClose: 1000 });
+        setToastMessage("Login failed. Please try again");
+        setToastType('error');
+        setShowToast(true);
       }
     } catch (error) {
-      toast.error(
-        (error as Error).message || "An error occurred during submission. Please try again.",
-        { autoClose: 1000 }
-      );
+      // toast.error(
+      //   (error as Error).message || "An error occurred during submission. Please try again.",
+      //   { autoClose: 1000 }
+      // );
+      setToastMessage("An error occurred during submission. Please try again.");
+      setToastType('error');
+      setShowToast(true);
     }
   };
 
   const handleForgotPassword = async () => {
     if (!email) {
-      toast.error("Please enter your email address before requesting OTP.", { autoClose: 1000 });
+    //  toast.error("Please enter your email address before requesting OTP.", { autoClose: 1000 });
+      setToastMessage("Please enter your email address before requesting OTP.");
+      setToastType('error');
+      setShowToast(true);
       return;
     }
-  
+
     try {
       const response = await sendOtp({ email }).unwrap();
       if (response.statusCode === 200) {
-        toast.success(response.message || "OTP sent successfully!", { autoClose: 1000 });
+       // toast.success(response.message || "OTP sent successfully!", { autoClose: 1000 });
+        setToastMessage("OTP sent successfully.");
+        setToastType('success');
+        setShowToast(true);
         setOtpModalVisible(true);
       } else {
-        toast.error(response.message || "Failed to send OTP.", { autoClose: 1000 });
+      //  toast.error(response.message || "Failed to send OTP.", { autoClose: 1000 });
+        setToastMessage("Failed to send OTP.");
+        setToastType('error');
+        setShowToast(true);
       }
     } catch (error) {
-      toast.error("An error occurred while sending OTP. Please try again.", { autoClose: 1000 });
+    //  toast.error("An error occurred while sending OTP. Please try again.", { autoClose: 1000 });
+      setToastMessage("An error occurred while sending OTP. Please try again.");
+      setToastType('error');
+      setShowToast(true);
     }
   };
 
   const handleValidateOtp = async () => {
     if (OTP.length !== 6) {
-      toast.error("OTP must be exactly 6 digits. Please try again.", { autoClose: 1000 });
+    //  toast.error("OTP must be exactly 6 digits. Please try again.", { autoClose: 1000 });
+      setToastMessage("OTP must be exactly 6 digits. Please try again.");
+      setToastType('error');
+      setShowToast(true);
       return;
     }
 
     try {
       const response = await validateOtp({ email, OTP }).unwrap();
       if (response.statusCode === 200) {
-        toast.success("OTP validated successfully. Please reset your password.", { autoClose: 1000 });
+       // toast.success("OTP validated successfully. Please reset your password.", { autoClose: 1000 });
+        setToastMessage("OTP validated successfully. Please reset your password.");
+        setToastType('success');
+        setShowToast(true);
         setOtpVerified(true);
         setOtpModalVisible(false);
         setResetPasswordMode(true);
       } else {
-        toast.error(response.message || "Invalid OTP. Please try again.", { autoClose: 1000 });
+      //  toast.error(response.message || "Invalid OTP. Please try again.", { autoClose: 1000 });
+        setToastMessage("Invalid OTP. Please try again.");
+        setToastType('error');
+        setShowToast(true);
       }
     } catch (error) {
-      toast.error("An error occurred while validating OTP. Please try again.", { autoClose: 1000 });
+     // toast.error("An error occurred while validating OTP. Please try again.", { autoClose: 1000 });
+      setToastMessage("An error occurred while validating OTP. Please try again.");
+      setToastType('error');
+      setShowToast(true);
     }
   };
 
@@ -123,22 +157,34 @@ const SignIn: React.FC = () => {
 
     if (resetPassword !== confirmPassword) {
       toast.error("Passwords do not match. Please try again.", { autoClose: 1000 });
+      setToastMessage("Passwords do not match. Please try again.");
+      setToastType('error');
+      setShowToast(true);
       return;
     }
 
     try {
       const response = await forgotPassword({ email, password: resetPassword, newPassword: resetPassword, confirmPassword: confirmPassword }).unwrap();
       if (response.statusCode === 200) {
-        toast.success("Password reset successful. You can now log in.", { autoClose: 1000 });
+       // toast.success("Password reset successful. You can now log in.", { autoClose: 1000 });
+        setToastMessage("Password reset successful. You can now log in.");
+        setToastType('success');
+        setShowToast(true);
         setNewPasswordData({ newPassword: "", confirmPassword: "" });
         setOtpVerified(false);
         setForgotPasswordMode(false);
         setResetPasswordMode(false);
       } else {
-        toast.error(response.message || "Failed to reset password. Please try again.", { autoClose: 1000 });
+        //toast.error(response.message || "Failed to reset password. Please try again.", { autoClose: 1000 });
+        setToastMessage("Failed to reset password. Please try again.");
+        setToastType('error');
+        setShowToast(true);
       }
     } catch (error) {
-      toast.error("An error occurred while resetting the password. Please try again.", { autoClose: 1000 });
+     // toast.error("An error occurred while resetting the password. Please try again.", { autoClose: 1000 });
+      setToastMessage("An error occurred while resetting the password. Please try again.");
+        setToastType('error');
+        setShowToast(true);
     }
   };
 
@@ -279,8 +325,14 @@ const SignIn: React.FC = () => {
           </Form>
         </div>
       )}
-
-      <ToastContainer />
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          type={toastType}
+          duration={3000}
+          onClose={() => setShowToast(false)}
+        />
+      )}
     </div>
   );
 };

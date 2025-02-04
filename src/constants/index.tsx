@@ -3,6 +3,7 @@ import catBus1 from '../assets/cat-bus1.png';
 import catBus2 from '../assets/cat-bus2.png'
 import catBus3 from  '../assets/cat-bus3.jpg'
 import {PassengerField,GenderOption, SeatDeatils} from '../utils/entity/PageEntity';
+import Checkbox from "../components/CheckBox";
 
 export const SignupFormFields: SignupFormField[] = [
   { name: 'firstName', placeholder: 'First name', type: 'text', className: 'w-48 me-2', id: 'firstName' },

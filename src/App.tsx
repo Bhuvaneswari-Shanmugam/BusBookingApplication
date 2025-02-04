@@ -13,7 +13,7 @@ import AvailableBuses from './pages/booking/AvailableBuses';
 import MissMatch from './pages/MissMatch';
 import { BookingDetails } from './utils/entity/PageEntity';
 import { Navigate } from 'react-router-dom';
-import Success from './pages/auth/SuccessPayment';
+
 
 
 
@@ -34,7 +34,6 @@ const App = () => {
             <Route path="/ticket" element={<Ticket />} />
             <Route path="/home" element={<Home />} />
             <Route path="/buses" element={<AvailableBuses />} />
-            <Route path="/success" element={<Success/>}/>
             {/* <Route path="passenger-details" element={<PassengerDetailsForm bookedNoOfSeats={bookedNoOfSeats} totalPrice={totalPrice} />} /> */}
             <Route
               path="/passenger-details"

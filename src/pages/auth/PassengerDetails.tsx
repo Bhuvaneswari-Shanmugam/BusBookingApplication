@@ -18,6 +18,9 @@ import {PassengerDetailsFormProps} from '../../utils/entity/PassengerInterface';
 import { useCreateBookingMutation } from "../../redux/services/BookingApi";
 import { useNavigate } from "react-router-dom";
 import { usePassenger } from "../../context/PassengerProvider";
+import { SubmitHandler } from "react-hook-form";
+import Toast from "../../components/Toast";
+
 
 const stripePromise = loadStripe("pk_test_51NDi2uSIeHGLmxdBXJaV2FhWJkT3MOwkff67QkcgQnjZCzZGnY6egJQ0jY7m9cRFMZXsAOT40U8JNVFAi4xyTClo00iZfLzxR9");
 
@@ -30,6 +33,9 @@ const PassengerDetailsForm: React.FC<PassengerDetailsFormProps> = ({ bookingDeta
   const [isEmailEditable, setIsEmailEditable] = useState(false);
   const [createBooking] = useCreateBookingMutation();
   const tokens = sessionStorage.getItem("Token");
+  const [toastMessage, setToastMessage] = useState<string>('');
+  const [toastType, setToastType] = useState<'info' | 'success' | 'error'>('info'); 
+  const [showToast, setShowToast] = useState<boolean>(false);
 
   const {
     control,
@@ -38,16 +44,18 @@ const PassengerDetailsForm: React.FC<PassengerDetailsFormProps> = ({ bookingDeta
     formState: { errors },
   } = useForm({
     resolver: yupResolver(getPassengerDetailsValidationSchema),
-    defaultValues: {
-      passengers:bookingDetails.bookedNoOfSeats.map(() => ({
-        firstName: "",
-        lastName: "",
-        age: undefined,
-        gender: "",
-      })),
-      email: "",
-      phoneNumber: "",
-    },
+ 
+      defaultValues: {
+        passengers: bookingDetails.bookedNoOfSeats.map(() => ({
+          firstName: "",
+          lastName: "",
+          age: undefined,
+          gender: "",
+        })),
+        email: "",
+        phoneNumber: "",
+      },
+      
   });
 
   const { fields: passengerFields } = useFieldArray({
@@ -76,68 +84,66 @@ const PassengerDetailsForm: React.FC<PassengerDetailsFormProps> = ({ bookingDeta
 
   const [createPassengerDetails, { isLoading }] = useCreatePassengerDetailsMutation();
 
-  const onSubmit = async (data: any) => {
+  const onSubmit: SubmitHandler<{
+    passengers?: { firstName: string; lastName: string; age: number; gender: string }[];
+    email: string;
+    phoneNumber: string;
+  }> = async (data) => {
     try {
       await createPassengerDetails({
         passengers: data.passengers,
         email: data.email,
         phoneNumber: data.phoneNumber,
       }).unwrap();
-
-      setPassengers(data.passengers);
+  
+      setPassengers(data.passengers ?? []);
       setEmail(data.email);
       setPhoneNumber(data.phoneNumber);
-      toast.success("Form Submitted Successfully!");
-      // navigate("/ticket", { state: { passengers: data.passengers, email: data.email, phoneNumber: data.phoneNumber } });
 
+      setToastMessage("Form Submitted Successfully!");
+      setToastType('success');
+      setShowToast(true);
+  
       const stripe = await stripePromise;
       if (!stripe) throw new Error("Stripe.js failed to load.");
+  
       const response = await fetch("http://localhost:8082/stripe-payment/create-checkout-session", {
         method: "POST",
         headers: {
-           "Content-Type": "application/json",
-           "Authorization":`Bearer ${tokens}`
-         },
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tokens}`, 
+        },
         body: JSON.stringify({
-          amount:bookingDetails.totalAmount * 100,
+          amount: bookingDetails.totalAmount * 100, 
           currency: "INR",
           description: "Bus Booking Payment",
           email: data.email,
-          token:tokens,
-          bookingDetails:{
-            pickupPoint: bookingDetails.pickupPoint,
-            destinationPoint: bookingDetails.destinationPoint,
-            pickupTime: bookingDetails.pickupTime,
-            busNumber:bookingDetails.busNumber,
-            busType: bookingDetails.busType,
-            bookedNoOfSeats: bookingDetails.bookedNoOfSeats,
-            perSeatAmount: bookingDetails.perSeatAmount,
-            totalAmount: bookingDetails.totalAmount,
-          },
-          metadata: {
-            token: tokens, 
-            bookingDetails: JSON.stringify(bookingDetails) 
-          },
-          successUrl: `http://localhost:3000/ticket?firstName=${encodeURIComponent(data.firstName)}&lastName=${encodeURIComponent(data.lastName)}&email=${encodeURIComponent(data.email)}`,
-          cancelUrl: "http://localhost:3000/failure"
+          token: tokens,
+          bookingDetails: bookingDetails,
+          successUrl: `http://localhost:3000/ticket`,
+          cancelUrl: "http://localhost:3000/failure",
         }),
+      });
+      if (!response.ok) {
+        const errorMessage = await response.text();
+        setToastMessage("Stripe session creation failed");
+        setToastType('error');
+        setShowToast(true);
       }
-    );
-    
-
-      if (!response.ok) throw new Error("Failed to create Stripe session");
-
-      const { sessionId } = await response.json();
-      const { error } = await stripe.redirectToCheckout({ sessionId });
-      
-    // await createBooking({ bookingDetails }).unwrap();
-  
-        toast.success("Payment Recieved . Bookedsuccessfully");
-        navigate("/ticket");
-    } catch (error) {
-      toast.error("An error occurred while processing the payment.");
+       const { sessionId } = await response.json();
+       const { error } = await stripe.redirectToCheckout({ sessionId });
+      //  const stripeCheckoutUrl = `https://checkout.stripe.com/c/pay/${sessionId}`;
+      //  console.log("Stripe Checkout URL:", stripeCheckoutUrl);
+      //  window.open(stripeCheckoutUrl, "_blank");
+      //  toast.success("Redirecting to Stripe for payment.");
+     } catch (error) {
+      // toast.error("An error occurred while processing the payment.");
+       setToastMessage("An error occurred while processing the payment.");
+       setToastType('error');
+       setShowToast(true);
     }
   };
+  
 
   return (
     <Form onSubmit={handleSubmit(onSubmit)}>
@@ -286,13 +292,29 @@ const PassengerDetailsForm: React.FC<PassengerDetailsFormProps> = ({ bookingDeta
           </div>
         </div>
       </div>
-      <ToastContainer />
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          type={toastType}
+          duration={3000}
+          onClose={() => setShowToast(false)}
+        />
+      )}
     </Form >
   );
 };
 
 PassengerDetailsForm.propTypes = {
-  bookedNoOfSeats: PropTypes.arrayOf(PropTypes.number).isRequired, 
+  bookingDetails: PropTypes.shape({
+    bookedNoOfSeats: PropTypes.arrayOf(PropTypes.number).isRequired,
+    totalAmount: PropTypes.number.isRequired,
+    pickupPoint: PropTypes.string.isRequired,
+    destinationPoint: PropTypes.string.isRequired,
+    pickupTime: PropTypes.string.isRequired,
+    busNumber: PropTypes.string.isRequired,
+    busType: PropTypes.string.isRequired,
+    perSeatAmount: PropTypes.number.isRequired,
+  }).isRequired,
 };
 
 export default PassengerDetailsForm;

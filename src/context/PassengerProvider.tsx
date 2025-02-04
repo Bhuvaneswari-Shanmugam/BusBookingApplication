@@ -1,26 +1,9 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
+import {Passenger,PassengerContextType} from '../utils/entity/PassengerInterface';
 
-// Define the types for passenger details
-export interface Passenger {
-  firstName: string;
-  lastName: string;
-  age: number | undefined;
-  gender: string;
-}
 
-export interface PassengerContextType {
-  passengers: Passenger[];
-  setPassengers: (passengers: Passenger[]) => void;
-  email: string;
-  setEmail: (email: string) => void;
-  phoneNumber: string;
-  setPhoneNumber: (phoneNumber: string) => void;
-}
-
-// Create the context with a default value
 const PassengerContext = createContext<PassengerContextType | undefined>(undefined);
 
-// Provider component
 export const PassengerProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [passengers, setPassengers] = useState<Passenger[]>([]);
   const [email, setEmail] = useState<string>("");
@@ -33,7 +16,6 @@ export const PassengerProvider: React.FC<{ children: ReactNode }> = ({ children 
   );
 };
 
-// Custom hook to use the context
 export const usePassenger = (): PassengerContextType => {
   const context = useContext(PassengerContext);
   if (!context) {

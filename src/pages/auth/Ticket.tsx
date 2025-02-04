@@ -1,4 +1,5 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect,useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import { useLocation } from "react-router-dom";
@@ -8,29 +9,39 @@ import { PassengerForTicket, Customer } from '../../utils/entity/PageEntity';
 import { colors } from "../../constants/Palette";
 import logo from '../../assets/images/logo.jpg';
 import { usePassenger } from "../../context/PassengerProvider";
+import Toast from "../../components/Toast";
 
 const Ticket: React.FC = () => {
     const ticketRef = useRef<HTMLDivElement | null>(null);
-    const { search } = useLocation();
+    const navigate = useNavigate();
 
-    // Extract query parameters from URL
-    const params = new URLSearchParams(search);
-    const firstName = params.get('firstName');
-    const lastName = params.get('lastName');
-    const email = params.get('email');
-   
 
-    const downloadTicket = async () =>{
+    const [toastMessage, setToastMessage] = useState<string>('');
+    const [toastType, setToastType] = useState<'info' | 'success' | 'error'>('info');
+    const [showToast, setShowToast] = useState<boolean>(false);
+
+    const { passengers, email } = usePassenger();
+    console.log("Ticket Component - Passengers:", passengers);
+
+    useEffect(() => {
+        console.log("Passengers updated:", passengers);
+    }, [passengers]);
+
+
+    const downloadTicket = async () => {
         if (ticketRef.current) {
             const canvas = await html2canvas(ticketRef.current);
             const imgData = canvas.toDataURL("image/png");
             const pdf = new jsPDF("p", "mm", "a4");
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-    
+
             pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
             pdf.save("ticket.pdf");
             toast.success("Ticket downloaded successfully!");
+            setToastMessage("Invalid OTP. Please try again.");
+            setToastType('error');
+            setShowToast(true);
         }
     }
 
@@ -60,12 +71,21 @@ const Ticket: React.FC = () => {
                 });
 
                 if (response.ok) {
-                    toast.success("Email sent successfully!");
+                   // toast.success("Email sent successfully!");
+                    setToastMessage("Email sent successfully!");
+                    setToastType('success');
+                    setShowToast(true);
                 } else {
-                    toast.error("Failed to send email.");
+                    //toast.error("Failed to send email.");
+                    setToastMessage("Failed to send email.");
+                    setToastType('error');
+                    setShowToast(true);
                 }
             } catch (error) {
-                toast.error("Error sending email.");
+               // toast.error("Error sending email.");
+                setToastMessage("Error sending email.");
+                setToastType('error');
+                setShowToast(true);
             }
         }
     };
@@ -84,11 +104,16 @@ const Ticket: React.FC = () => {
     const departurePoint = "City Center Terminal";
     const boardingDetails = "Gate 2";
 
-    const customerDetails = {
-        name: `${firstName} ${lastName}`,
+    // here i consoled but i got [] empty data ?
+    const customerDetails = passengers.map((passenger, index) => ({
+        id: index + 1,
+        name: `${passenger.firstName} ${passenger.lastName}`,
         email: email,
-    };
-    
+    }));
+    console.log("Customer Details:", customerDetails);
+
+
+
 
     const textStyle = { color: colors.secondary };
 
@@ -109,7 +134,7 @@ const Ticket: React.FC = () => {
                 <div className="card-body" style={textStyle}>
                     <div className="ticket-head-content d-flex justify-content-between align-items-center" style={{ margin: "0 30px" }}>
                         <div>
-                            <img src={logo} alt="logo" width='90px' height='90x'/>
+                            <img src={logo} alt="logo" width='90px' height='90x' />
                         </div>
                         <div>
                             <p><b>Need help with your trip?</b></p>
@@ -171,11 +196,12 @@ const Ticket: React.FC = () => {
                     <hr style={{ margin: "5px 0" }} />
                     <div className="d-flex justify-content-between align-items-center" style={{ margin: "0 30px" }}>
                         <div>
-                          
+
                             <b><h5>Customer Info</h5></b>
-                            <p><b>Name:</b> {customerDetails.name}</p>
-                            <p><b>Email:</b> {customerDetails.email}</p>
-                      
+                            {customerDetails.map((customer) => (
+                                <p key={customer.id}><b>Name:</b> {customer.name}</p>
+                            ))}
+
                         </div>
                     </div>
                     <hr style={{ margin: "5px 0" }} />
@@ -200,9 +226,10 @@ const Ticket: React.FC = () => {
                         <div>
                             <button
                                 className="btn btn-primary mx-4"
-                                
-                                onClick={(event)=>{event.preventDefault();
-                                                   downloadTicket();
+
+                                onClick={(event) => {
+                                    event.preventDefault();
+                                    downloadTicket();
                                 }}>
                                 Download PDF
                             </button>
@@ -221,7 +248,18 @@ const Ticket: React.FC = () => {
                         </div>
                     </div>
                 </div>
+
             </div>
+
+
+            {showToast && (
+                <Toast
+                    message={toastMessage}
+                    type={toastType}
+                    duration={3000}
+                    onClose={() => setShowToast(false)}
+                />
+            )}
         </div>
     );
 };
