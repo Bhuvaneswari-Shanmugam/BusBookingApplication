@@ -58,14 +58,15 @@ export const countries = [
 
 export const contactDetails = [
   { label: "Email", value: "support@bigtrazetravels.com" },
-  { label: "Phone", value: "+1 (234) 567-890" },
-  { label: "Address", value: "123 Bigtraze Travels Ave, City, State, ZIP" }
+  { label: "Phone", value: "+1 (234) 567-890-987" },
+  {label: "Insta", value: "BigStanz_Booking"},
+  
 ];
 
 export const services = ['Sleeper Bus Service', 'AC and Non-AC Service', 'Luxury Bus Services'];
 
 export const navLinks = [
-  { name: 'Home', to: '/' },
+  { name: 'Home', to: '' },
   { name: 'About', to: '/' },
   { name: 'Contact', to: '/' },
   { name: 'Services', to: '/' },

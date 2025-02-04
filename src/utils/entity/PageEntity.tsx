@@ -27,9 +27,11 @@ export interface Bus {
   originalPrice: number;
   discountedPrice: number;
   busId: number;
+  expense:number;
   number: string;
   pickupPoint: string;
   droppingPoint: string;
+  ratings:number;
 }
 
 
@@ -44,7 +46,7 @@ export interface BookingDetails {
   totalAmount: number;
 }
 
-export interface PointsSelectorProps {
+export interface LocationPickerProps {
   title: string;
   points: {
     id: number;
@@ -56,9 +58,16 @@ export interface PointsSelectorProps {
 }
 
 export interface TripDetailsModalProps {
-  show: boolean;
-  onClose: () => void;
-  onProceed: () => void;
+  show?: boolean;
+  onClose?: () => void;
+  onProceed?: () => void;
+  bus: Bus;
+  selectedSeats?: string[];
+  totalPrice?: number;
+  currentSelectedSeats?: string[];
+  selectedPickupPoints?: Set<string>;
+  selectedDroppingPoints?: Set<string>;
+  
 }
 
 
@@ -72,6 +81,7 @@ export interface BusCardProps {
   from: string;
   to: string;
   date: string;
+  expense:number;
   selectedBus: Bus | null;
   selectedSeats: number[];
   bookedSeats: number[];
@@ -87,7 +97,7 @@ export interface BusCardProps {
 export interface InputData {
   pickupPoint: string;
   destinationPoint: string;
-  pickupDate: string;
+  pickupDate: string | null;
 }
 
 
@@ -172,3 +182,8 @@ export interface SeatDeatils{
   seatNumber:String;
 
 }
+
+// export interface DecodedToken {
+//   FirstName?: string;
+//   UserId?: string;
+// }

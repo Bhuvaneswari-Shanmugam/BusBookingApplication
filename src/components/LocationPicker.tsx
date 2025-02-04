@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import {PointsSelectorProps} from '../utils/entity/PageEntity';
+import { LocationPickerProps } from '../utils/entity/PageEntity';
+import { colors } from '../constants/Palette';
+import Checkbox from './CheckBox';
 
-
-
-const LocationPicker: React.FC<PointsSelectorProps> = ({
+const LocationPicker: React.FC<LocationPickerProps> = ({
   title,
   points,
   selectedPoints,
@@ -46,12 +46,14 @@ const LocationPicker: React.FC<PointsSelectorProps> = ({
         <Modal.Title>{title}</Modal.Title>
       </Modal.Header>
       <input
-        type="text"
-        className="form-control mt-3 w-50"
-        placeholder="Search place"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-      />
+  type="text"
+  className="form-control mt-3 w-50"
+  placeholder="Search place"
+  value={searchTerm}
+  onChange={(e) => setSearchTerm(e.target.value)}
+  style={{marginRight:'10px'}}
+/>
+
       <div className="mt-3 d-flex flex-wrap justify-content-evenly">
         {filteredData.length > 0 ? (
           filteredData.map((point) => (
@@ -61,14 +63,15 @@ const LocationPicker: React.FC<PointsSelectorProps> = ({
                 padding: '5px 10px',
                 textAlign: 'center',
                 flex: '1 1 22%',
+                borderColor: colors.pagecolor,
               }}
             >
-              <input
-                type="checkbox"
+              <Checkbox
+                label={point.location}
                 checked={selectedPoints.has(point.location)}
-                onChange={() => handleCheckboxChange(point.location)}
+                type="checkbox"
+                onChange={(checked) => handleCheckboxChange(point.location)}
               />
-              <label>{point.location}</label>
             </div>
           ))
         ) : (
@@ -76,10 +79,16 @@ const LocationPicker: React.FC<PointsSelectorProps> = ({
         )}
       </div>
       <Modal.Footer>
-        <Button variant="secondary" onClick={handleCancel}>
+        <Button
+          style={{ backgroundColor: colors.pagecolor, borderColor: colors.pagecolor }}
+          onClick={handleCancel}
+        >
           Cancel
         </Button>
-        <Button variant="primary" onClick={handleApply}>
+        <Button
+          style={{ backgroundColor: colors.pagecolor, borderColor: colors.pagecolor }}
+          onClick={handleApply}
+        >
           Apply
         </Button>
       </Modal.Footer>

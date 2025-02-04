@@ -69,7 +69,7 @@ export const TripApi = createApi({
     }),
   
     getBusesForTrip: builder.query({
-      query: ({ pickupPoint, destinationPoint, pickupTime, busType, timeSlot }) => ({
+      query: ({ pickupPoint, destinationPoint, pickupTime, busType, timeSlot,expenseRange,ratingRange }) => ({
         url: 'buses',
         method: 'GET',
         params: {
@@ -77,7 +77,9 @@ export const TripApi = createApi({
           destinationPoint,
           pickupTime,
           busType: busType ,
-          timeSlot: timeSlot ,  
+          timeSlot: timeSlot ,
+          expenseRange:expenseRange,
+          ratingRange:ratingRange 
         },
       }),
     }),

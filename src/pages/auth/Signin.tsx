@@ -25,7 +25,6 @@ const SignIn: React.FC = () => {
   const [sendOtp, { isLoading: isOtpLoading }] = useSendOtpMutation();
   const [validateOtp, { isLoading: isOtpVerifying }] = useValidateOtpMutation();
   const [forgotPassword, { isLoading: isForgotPasswordLoading }] = useForgotPasswordMutation();
-
   const [otpModalVisible, setOtpModalVisible] = useState(false);
   const [OTP, setOTP] = useState("");
   const [email, setEmail] = useState("");
@@ -64,7 +63,7 @@ const SignIn: React.FC = () => {
         sessionStorage.setItem("Role", decodedToken.Role?.toUpperCase() || "GUEST");
 
         toast.success(responseData.message || "Login successful!", { autoClose: 1000 });
-        navigate(decodedToken.Role?.toUpperCase() === "ADMIN" ? "/admin" : "/passenger-details");
+        navigate(decodedToken.Role?.toUpperCase() === "ADMIN" ? "/admin" : "/home");
         reset();
       } else {
         toast.error(responseData.message || "Login failed. Please try again.", { autoClose: 1000 });
@@ -157,7 +156,9 @@ const SignIn: React.FC = () => {
                 placeholder="Email"
                 className="form-control"
               />
+              <div className="float-start">
               <span className="error text-danger">{errors.email?.message}</span>
+              </div>
             </div>
             <div className="mb-3 w-100">
               <Input
@@ -166,7 +167,10 @@ const SignIn: React.FC = () => {
                 placeholder="Password"
                 className="form-control"
               />
+              <div className="float-start">
+
               <span className="error text-danger">{errors.password?.message}</span>
+              </div>
             </div>
 
             <div className="text-end w-100">
@@ -174,20 +178,22 @@ const SignIn: React.FC = () => {
                 type="button"
                 className="btn btn-link p-0"
                 onClick={() => setForgotPasswordMode(true)}
-                style={{ textDecoration: "none", color: colors.primary }}
+                style={{ textDecoration: "none", color: colors.pagecolor }}
               >
                 Forgot Password?
               </Button>
             </div>
             <div className="justify-content-center mt-3 w-100">
-              <Button type="submit" className="btn w-100" disabled={isSigninLoading}>
+              <Button type="submit" className="btn w-100" disabled={isSigninLoading} style={{backgroundColor:colors.pagecolor, borderColor:colors.pagecolor
+                
+              }}>
                 {isSigninLoading ? "Signing In..." : "Sign In"}
               </Button>
             </div>
           </Form>
 
-          <p className="text-center mt-3">
-            Don't have an account? <Link to="/signup">Sign Up</Link>
+          <p className="text-center mt-3" >
+            Don't have an account? <Link to="/signup" style={{color:colors.pagecolor,border:'none'}}>Sign Up</Link>
           </p>
         </div>
       )}
@@ -211,15 +217,15 @@ const SignIn: React.FC = () => {
               onClick={handleForgotPassword}
               className="btn btn-primary my-2 w-100"
               disabled={isOtpLoading}
+              style={{backgroundColor:colors.pagecolor}}
             >
               {isOtpLoading ? "Sending..." : "Send OTP"}
             </Button>
             <Button
               onClick={() => setForgotPasswordMode(false)}
               className="btn btn-link text-center my-2"
-              style={{ textDecoration: "none", color: colors.primary }}
-            >
-              Back to Sign In
+              style={{ textDecoration: "none", color: colors.pagecolor }}
+            >Back to Sign In
             </Button>
           </div>
         </div>
@@ -255,7 +261,7 @@ const SignIn: React.FC = () => {
               className="form-control my-2 w-100"
             />
             {resetPasswordErrors.resetPassword && (
-              <span className="error text-danger">{resetPasswordErrors.resetPassword.message}</span>
+              <div className="error text-danger float-left">{resetPasswordErrors.resetPassword.message}</div>
             )}
 
             <Input
@@ -265,13 +271,14 @@ const SignIn: React.FC = () => {
               className="form-control my-2 w-100"
             />
             {resetPasswordErrors.confirmPassword && (
-              <span className="error text-danger">{resetPasswordErrors.confirmPassword.message}</span>
+              <div className="error text-danger float-left " style={{float:"left"}}>{resetPasswordErrors.confirmPassword.message}</div>
             )}
 
             <Button
               type="submit"
               className="btn btn-primary my-2 w-100"
               disabled={isForgotPasswordLoading}
+              style={{backgroundColor:colors.pagecolor}}
             >
               {isForgotPasswordLoading ? "Resetting..." : "Reset Password"}
             </Button>

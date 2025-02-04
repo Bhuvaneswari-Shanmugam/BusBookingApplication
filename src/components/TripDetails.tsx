@@ -1,45 +1,56 @@
 import React from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import { TripDetailsModalProps } from '../utils/entity/PageEntity';
+import { colors } from '../constants/Palette';
 
+const TripDetailsModal: React.FC<TripDetailsModalProps> = ({ show, onClose, onProceed, bus, currentSelectedSeats, selectedDroppingPoints, selectedPickupPoints }) => {
+  const totalPrice = bus.expense * (currentSelectedSeats?.length || 0);
+  
+  const renderSelectedPoints = (points: Set<string>) => {
+    return Array.from(points).join(', ');
+  };
 
-const TripDetailsModal: React.FC<TripDetailsModalProps> = ({ show, onClose, onProceed }) => {
-    return (
-        <Modal show={show} onHide={onClose}>
-            <Modal.Header closeButton>
-                <Modal.Title>Boarding & Dropping</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-                <p>
-                    <strong>From</strong>  
-                    <span className="d-inline ml-4 justify-content-end">date</span>
-                    <p className='text-secondary'>PickupPoint</p>
+  return (
+    <Modal show={show} onHide={onClose}>
+      <Modal.Header closeButton>
+        <Modal.Title>Boarding & Dropping</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        {/* <strong>{bus.departureTime}</strong>
+        <span className="d-inline ml-4 justify-content-end">Date</span>
+        <br /> */}
+        <strong>{bus.pickupPoint}</strong>
+        <p className="text-secondary">{renderSelectedPoints(selectedPickupPoints ?? new Set<string>())}</p>
+        <strong>{bus.droppingPoint}</strong>
+        <p className="text-secondary">{renderSelectedPoints(selectedDroppingPoints ?? new Set<string>())}</p>
+        <hr />
+        <p>
+          <strong>
+            <span className="d-inline">Seat No:</span>
+          </strong>
+          <span className="d-inline ml-4 justify-content-end">
+            {(currentSelectedSeats ?? []).length > 0
+              ? (currentSelectedSeats ?? []).join(', ')
+              : 'None'}
+          </span>
+        </p>
 
-                    <strong>to</strong>
-                    <p className="text-secondary">DroppingPoint</p>
-                </p>
-                <hr></hr>
-                <p>
-                    <strong><span className="d-inline ">Seat No:</span></strong>
-                    <span className="d-inline ml-4 justify-content-end">L13, L18, L17, L14, L11, L10W</span>
-                    <span className="d-inline ml-4  justify-content-end">L13,L18, L17, L14, L11, L10W</span>
-                </p>
-
-                <hr></hr>
-                <strong><span className="d-inline ">Fare Details</span></strong>
-                <p>
-                    <span className="d-inline">Amount</span>
-                    <span className="d-inline justify-content-end">INR  2000.00</span>
-                </p>
-                <div className="d-flex justify-content-center">
-                      <Button variant="primary" onClick={onProceed}>
-                       Proceed to Book
-                       </Button>
-                </div>
-        
-            </Modal.Body>
-         </Modal>
-    );
+        <hr />
+        <strong>
+          <span className="d-inline">Fare Details</span>
+        </strong>
+        <p>
+          <span className="d-inline">Amount</span>
+          <span className="d-inline justify-content-end">₹{totalPrice}</span>
+        </p>
+        <div className="d-flex justify-content-center">
+          <Button onClick={onProceed} style={{ backgroundColor: colors.pagecolor }}>
+            Proceed Payment
+          </Button>
+        </div>
+      </Modal.Body>
+    </Modal>
+  );
 };
 
 export default TripDetailsModal;

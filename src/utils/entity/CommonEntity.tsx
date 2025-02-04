@@ -2,8 +2,8 @@ import React from 'react';
 
 
 interface DropDownStyle {
-  container?: React.CSSProperties;
   select?: React.CSSProperties;
+  option?:React.CSSProperties;
 
 }
 export interface DropdownProps {

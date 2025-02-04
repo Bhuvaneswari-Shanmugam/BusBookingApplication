@@ -25,7 +25,7 @@ const Signup: React.FC = () => {
     const [otpModalVisible, setOtpModalVisible] = useState(false);
     const [OTP, setOTP] = useState('');
     const [isOtpValidated, setIsOtpValidated] = useState(false);
-    const [isEmailVerified, setIsEmailVerified] = useState(false); // New state for email verification
+    const [isEmailVerified, setIsEmailVerified] = useState(false); 
 
     const {
         register,
@@ -50,7 +50,7 @@ const Signup: React.FC = () => {
             toast.success("OTP validated successfully!");
             setIsOtpValidated(true);
             setOtpModalVisible(false);
-            setIsEmailVerified(true); // Email is successfully verified
+            setIsEmailVerified(true);
         } catch (err) {
             toast.error("Invalid OTP. Please try again.");
         }
@@ -95,12 +95,12 @@ const Signup: React.FC = () => {
     };
 
     return (
-        <div>
+        <div className="bg-light">
             <ToastContainer />
             <h2 className="text-center font-italic p-4">Customer Signup</h2>
             <Form
                 onSubmit={handleSubmit(onSubmit)}
-                className="d-flex flex-column align-items-center w-100"
+                className="d-flex flex-column align-items-center w-100 "
             >
                 {SignupFormFields.map((field, index) => (
                     <div key={index} className="mb-3 w-100">
@@ -120,9 +120,11 @@ const Signup: React.FC = () => {
                                         </option>
                                     ))}
                                 </select>
-                                <span className="error text-danger">
+                                <div className='float-start'>
+                                    <span className="error text-danger">
                                     {errors[field.name as keyof SignupFormInputs]?.message}
                                 </span>
+                                </div>
                             </>
                         ) : !field.isCheckbox ? (
                         <>
@@ -144,6 +146,7 @@ const Signup: React.FC = () => {
                                 {...register(field.name as keyof SignupFormInputs)}
                                 className={field.className}
                                 id={field.id}
+                                style={{borderColor:colors.pagecolor}}
                             />
                             <label className="form-check-label" htmlFor={field.id}>
                                 {field.label}
@@ -155,11 +158,12 @@ const Signup: React.FC = () => {
                         )}
                     </div>
                 ))}
-                {!isEmailVerified ? ( // Conditionally render buttons
+                {!isEmailVerified ? (
                     <Button
                         type="button"
                         className="btn btn-secondary w-100 mt-3"
                         onClick={() => handleSendOtpWithValidation(watch())}
+                        style={{backgroundColor:colors.pagecolor}}
                     >
                         Verify Email
                     </Button>
@@ -181,7 +185,7 @@ const Signup: React.FC = () => {
             </Form>
 
             <p className="text-center mt-3">
-                Already have an account? <Link to="/">Sign In</Link>
+                Already have an account? <Link to="/" style={{color:colors.pagecolor}}>Sign In</Link>
             </p>
 
             <Modal

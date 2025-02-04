@@ -5,5 +5,5 @@ export const validationSchema = Yup.object().shape({
   destinationPoint: Yup.string()
     .required('Destination point is required')
     .notOneOf([Yup.ref('pickupPoint')], 'Pickup and destination points cannot be the same'),
-  pickupDate: Yup.string().nullable().required('Pickup date is required'),
+  pickupDate: Yup.string().required('Pickup date is required').nullable(),
 });

@@ -17,7 +17,7 @@ const DroppingPoints: React.FC<DroppingPointsProps> = ({ onSelectionChange, onAp
     pickupTime: date,
   });
 
-  const [selectedDroppingPoints, setSelectedDroppingPoints] = useState<Set<string>>(new Set());  
+const [selectedDroppingPoints, setSelectedDroppingPoints] = useState<Set<string>>(new Set());  
 
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>Error fetching dropping points.</p>;

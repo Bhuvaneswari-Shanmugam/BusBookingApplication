@@ -1,6 +1,10 @@
-import React from 'react';
-import seat from '../assets/seat.jpg';
+import React, { useState } from 'react';
+import TripDetailsModal from '../components/TripDetails';
 import { BusCardProps } from '../utils/entity/PageEntity';
+import { colors } from '../constants/Palette';
+import Badge from './Badge';
+import { FaStar } from 'react-icons/fa';
+import seat from '../assets/seat.jpg';
 
 const BusCard: React.FC<BusCardProps> = ({
   bus,
@@ -12,14 +16,50 @@ const BusCard: React.FC<BusCardProps> = ({
   bookedSeats,
   viewSeats,
   rows,
+  expense,
   toggleSeatSelection,
   handleBusClick,
   handlePayment,
-  handleDownloadTicket,
   totalPrice,
 }) => {
+  // State to manage the visibility of the TripDetailsModal
+  const [showModal, setShowModal] = useState(false);
+
+  // State for selected seats and total price
+  const [currentSelectedSeats, setCurrentSelectedSeats] = useState<string[]>(selectedSeats.map(String));
+  const [currentTotalPrice, setCurrentTotalPrice] = useState<number>(totalPrice);
+
+  // Function to show the modal
+  const handleProceedBooking = () => {
+    setShowModal(true); // Show the modal when the button is clicked
+  };
+
+  // Function to close the modal
+  const handleCloseModal = () => {
+    setShowModal(false); // Close the modal
+  };
+
+  // Handle seat selection
+  const handleSeatSelection = (seatNumber: string, event: React.MouseEvent) => {
+    // Toggle seat selection logic
+    toggleSeatSelection(Number(seatNumber), event);
+
+    // Update the selected seats and total price
+    let updatedSelectedSeats = [...currentSelectedSeats];
+    if (updatedSelectedSeats.includes(seatNumber)) {
+      updatedSelectedSeats = updatedSelectedSeats.filter((seat) => seat !== seatNumber);
+    } else {
+      updatedSelectedSeats.push(seatNumber);
+    }
+
+    // Update selected seats and calculate the total price
+    const newTotalPrice = updatedSelectedSeats.length * bus.expense; // Assuming each selected seat adds to the total price
+    setCurrentSelectedSeats(updatedSelectedSeats);
+    setCurrentTotalPrice(newTotalPrice);
+  };
+
   return (
-    <div key={bus.number} className="card p-4 mb-2 w-100" style={{ marginLeft: '5px', marginRight: '0px' }}>
+    <div key={bus.number} className="card p-4 mb-2" style={{ width: '1100px', marginRight: '0px' }}>
       <div className="card-content d-flex justify-content-between align-items-center">
         <div>
           <h5>{bus.name}</h5>
@@ -36,7 +76,12 @@ const BusCard: React.FC<BusCardProps> = ({
           <h5>{bus.arrivalTime}</h5>
           <p>{bus.droppingPoint}</p>
         </div>
-      
+        <Badge
+          label={bus.ratings.toString()}
+          icon={<FaStar />}
+          className="ms-2 bg-success"
+        />
+        <div>{bus.expense}</div>
         <button
           onClick={() => handleBusClick(bus)}
           style={{
@@ -59,20 +104,26 @@ const BusCard: React.FC<BusCardProps> = ({
           <div className="hide-content d-flex justify-content-around">
             <div className="" style={{ paddingRight: '10px', marginLeft: '150px' }}>
               <h4>Booking Summary</h4>
-              {[{ label: 'Bus ID', value: selectedBus.number },
-                { label: 'From', value: from }, 
+              {[{ label: 'Bus Number', value: selectedBus.number },
+                { label: 'From', value: from },
                 { label: 'To', value: to },
                 { label: 'Date', value: date },
+                { label: 'Expense', value: selectedBus.expense },
                 { label: 'Bus Type', value: selectedBus.type },
-                { label: 'Selected Seats', value: selectedSeats.join(', ') || 'None' }, 
-                { label: 'Total Price', value: `₹${totalPrice}` }].map(({ label, value }) => (
-                <div className="summary-item" key={label}>
-                  <label htmlFor={label}>{label}:</label>
-                  <input type="text" id={label} value={value} readOnly />
-                </div>
-              ))}
+                { label: 'Selected Seats', value: currentSelectedSeats.join(', ') || 'None' },
+                { label: 'Total Price', value: `₹${currentTotalPrice}` }]
+                .map(({ label, value }) => (
+                  <div className="summary-item" key={label}>
+                    <label htmlFor={label}>{label}:</label>
+                    <input type="text" id={label} value={value} readOnly />
+                  </div>
+                ))}
               <div className="btn-container d-flex justify-content-between mt-5">
-                <button className="pay-button btn btn-primary" onClick={handleDownloadTicket}>
+                <button
+                  className="pay-button btn text-white"
+                  style={{ backgroundColor: colors.pagecolor }}
+                  onClick={handleProceedBooking}  // Call this function on "Proceed Booking"
+                >
                   Proceed Booking
                 </button>
               </div>
@@ -93,14 +144,14 @@ const BusCard: React.FC<BusCardProps> = ({
                         key={seatNumber}
                         src={seat}
                         alt={`Seat ${seatNumber}`}
-                        className={`seat ${selectedSeats.includes(seatNumber) ? 'selected' : ''}`}
-                        onClick={(e) => toggleSeatSelection(seatNumber, e)}
+                        className={`seat ${currentSelectedSeats.includes(seatNumber.toString()) ? 'selected' : ''}`}
+                        onClick={(e) => handleSeatSelection(seatNumber.toString(), e)}
                         style={{
                           width: '40px',
                           height: '40px',
                           margin: '3px',
                           cursor: bookedSeats.includes(seatNumber) ? 'not-allowed' : 'pointer',
-                          border: selectedSeats.includes(seatNumber)
+                          border: currentSelectedSeats.includes(seatNumber.toString())
                             ? '2px solid green'
                             : bookedSeats.includes(seatNumber)
                             ? '2px solid red'
@@ -154,6 +205,21 @@ const BusCard: React.FC<BusCardProps> = ({
           </div>
         </>
       )}
+
+    
+      <TripDetailsModal
+        show={showModal}
+        onClose={handleCloseModal}
+        onProceed={() => {
+          handleCloseModal();
+        
+        }}
+        bus={bus}
+        selectedSeats={currentSelectedSeats}
+        totalPrice={currentTotalPrice}
+        currentSelectedSeats={currentSelectedSeats}
+  
+      />
     </div>
   );
 };

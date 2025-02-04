@@ -3,7 +3,7 @@ import { DropdownProps } from '../utils/entity/CommonEntity';
 
 const DropDown: React.FC<DropdownProps> = ({ options, onChange, text, className, style }) => {
   return (
-    <div className={`dropdown-container ${className ? className : ''}`} style={{ ...style?.container }}>
+    <div className={`drop-down ${className ? className : ''}`} style={{ ...style?.option }}>
       <select 
         onChange={(e) => onChange(e.target.value)} 
         defaultValue="" 
@@ -11,7 +11,9 @@ const DropDown: React.FC<DropdownProps> = ({ options, onChange, text, className,
       >
         <option value="" disabled>{text}</option>
         {options.map((option, index) => (
-          <option key={index} value={option}>
+          <option key={index} value={option}
+          style={{ ...style?.option }}
+          >
             {option}
           </option>
         ))}

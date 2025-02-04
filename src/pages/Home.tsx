@@ -1,29 +1,31 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSearchTripsMutation } from '../redux/services/TripApi';
-import { locations, busDetails } from '../constants';
+import { locations, busDetails, contactDetails, services, countries } from '../constants';
 import { useForm, Controller } from 'react-hook-form';
 import { validationSchema } from '../utils/schema/validationSchema';
-import Footer from '../components/layout/Footer';
 import DropDown from '../components/DropDown';
 import Card from '../components/Card';
 import homeBus from '../assets/homeBus.png';
 import Header from '../components/layout/Header';
 import Toast from '../components/Toast';
+import Button from '../components/Button';
+import Input from '../components/Input'
 import { InputData } from '../utils/entity/PageEntity';
-import '../App.css'; 
+import '../App.css';
+import { colors } from '../constants/Palette';
 
 const Home = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [ticket, setTicket] = useState<null>(null);
   const [searchTrips] = useSearchTripsMutation();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string>('');
-  const [toastType, setToastType] = useState<'info' | 'success' | 'error'>('info'); 
+  const [toastType, setToastType] = useState<'info' | 'success' | 'error'>('info');
   const [showToast, setShowToast] = useState<boolean>(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+  const aboutCardRef = useRef<HTMLDivElement>(null);
 
   const {
     control,
@@ -35,15 +37,14 @@ const Home = () => {
     defaultValues: {
       pickupPoint: '',
       destinationPoint: '',
-      pickupDate: '', 
+      pickupDate: '',
     },
   });
   const currentDate = new Date().toISOString().split('T')[0];
 
   const handleBookNowClick = async (data: InputData) => {
-    if (isLoading) return; 
+    if (isLoading) return;
     setIsLoading(true);
-
     try {
       const tripExists = await searchTrips({
         pickupPoint: data.pickupPoint,
@@ -82,26 +83,26 @@ const Home = () => {
 
   return (
     <div>
-      <Header />
+      <Header aboutCardRef={aboutCardRef} />
       <div className="home-container min-vh-100 w-100 position-relative overflow-hidden">
-        <div className="button-container " style={{fontSize:'70px'}}>
-          <h1 style={{ color: '#B966E2', fontSize:'70px' }}>
+        <div className="button-container " style={{ fontSize: '70px' }}>
+          <h1 style={{ color: '#B966E2', fontSize: '70px' }}>
             Reserve Your Bus
             <span className="ticket" style={{ color: '#B966E2' }}>
               Tickets
             </span>
             Now
           </h1>
-          <p style={{fontSize:'20px', color:'#f5f5f5', width:'500px'}}>
+          <p style={{ fontSize: '20px', color: '#f5f5f5', width: '500px' }}>
             Find and book your bus tickets with just a few clicks. We offer a wide range of bus routes and schedules to suit your needs.
           </p>
-           <div className="home-btn d-flex justify-content-between" style={{ gap: '10px',width:'250px', height:'45px', backgroundColor:'darkarChid', borderRadius:'7px',fontSize:'20px', paddingRight:'4px', color:'#f5f5f5'}}>
-            <button onClick={scrollToSearchContainer}>Book Now</button>
-            <button onClick={() => navigate('/booking-details')}>Booking Details</button>
+          <div className="home-btn d-flex justify-content-between border-0" style={{ gap: '20px' }}>
+            <Button className="border-0 text-white" onClick={scrollToSearchContainer} style={{ width: '250px', height: '45px', backgroundColor: 'darkorchid', borderRadius: '7px', fontSize: '20px', paddingRight: '4px' }}>Book Now</Button>
+            <Button className='border-0 text-white' onClick={() => navigate('/booking-details')} style={{ gap: '20px', width: '250px', height: '45px', backgroundColor: 'darkorchid', borderRadius: '7px', fontSize: '20px', paddingRight: '4px' }}>Booking Details</Button>
           </div>
         </div>
-          <div className="right-img-container" style={{position:'absolute', bottom:'20px',right:'20px', minHeight:'500px',minWidth:'500px'}}>
-          <img src={homeBus} alt="homepage-right-img" />
+        <div className="right-img-container" style={{ position: 'absolute', bottom: '20px', right: '20px', minHeight: '500px', minWidth: '500px' }}>
+          <img src={homeBus} alt="homepage-right-img" height={'450px'} />
         </div>
       </div>
 
@@ -115,15 +116,18 @@ const Home = () => {
                 render={({ field }) => (
                   <DropDown
                     {...field}
-                    className="custom-dropdown" 
+                    className='drop-down'
                     options={locations}
                     text="Select Pickup Point"
-                    style={{select:{width:'100px',height:'40px',padding:'10px',fontSize:'16px',borderRadius:'5px',border:'1px solid #B966E2',color:'#333',boxSizing:'border-box'}
+                    style={{
+                      select: { width: '250px', height: '40px', padding: '5px', fontSize: '16px', borderRadius: '5px', border: '1px solid #B966E2', color: '#333',borderColor:colors.pagecolor}
                     }}
                   />
                 )}
               />
-              {errors.pickupPoint && <span className="text-danger">{errors.pickupPoint?.message}</span>}
+               <div className="float-start">
+              <span className="error text-danger">{errors.pickupPoint?.message}</span>
+              </div>
             </div>
 
             <div className="col-md-4">
@@ -133,52 +137,57 @@ const Home = () => {
                 render={({ field }) => (
                   <DropDown
                     {...field}
-                    className="custom-dropdown"
-                    options={locations}
+                    className="drop-down"
                     text="Select Destination Point"
-                    style={{select:{}}}
+                    options={locations}
+                    style={{
+                      select: {width:'250px', height: '40px', padding: '5px', fontSize: '16px', borderRadius: '5px', border: '1px solid #B966E2', color: '#333',borderColor:colors.pagecolor},
+                      option: {},
+                    }}
                   />
                 )}
               />
-              {errors.destinationPoint && (
-                <span className="text-danger ">{errors.destinationPoint?.message}</span>
-              )}
+               <div className="">
+              <span className="error text-danger">{errors.destinationPoint?.message}</span>
+              </div>
             </div>
             <div className="col-md-2">
               <Controller
                 name="pickupDate"
                 control={control}
                 render={({ field }) => (
-                  <input
+                  <Input
                     type="date"
                     className="form-control input-custom"
                     style={{ borderColor: 'darkorchid' }}
                     {...field}
                     min={currentDate}
-                    value={field.value || ''} 
+                    value={field.value || ''}
                   />
                 )}
               />
-              {errors.pickupDate && <span className="text-danger">{errors.pickupDate?.message}</span>}
+               <div className="float-start ">
+              <span className="error text-danger">{errors.pickupDate?.message}</span>
+              </div>
             </div>
 
             <div className="col-md-2">
-              <button
+              <Button
                 className="search-btn"
                 style={{
                   width: '150px',
-                  border:'none',
-                  borderRadius:'4px',
+                  border: 'none',
+                  borderRadius: '4px',
                   height: '40px',
                   backgroundColor: 'darkorchid',
                   color: 'white',
-                  cursor:'pointer'
+                  cursor: 'pointer'
                 }}
                 type="submit"
                 disabled={isLoading}
               >
                 {isLoading ? 'Searching...' : 'Search'}
-              </button>
+              </Button>
             </div>
           </div>
         </form>
@@ -186,9 +195,11 @@ const Home = () => {
 
       <div className="container mt-5">
         <Card
-          header="Available Buses"
+
           description={
             <div className="bus-container">
+              <h4>AVAILABLE BUSES</h4>
+              <br></br>
               <div className="row g-4 d-flex flex-column align-items-center">
                 {busDetails.map((bus, index) => (
                   <div key={index} className={`col d-flex align-items-${bus.alignment} mb-3`} style={{ width: '80%' }}>
@@ -204,22 +215,68 @@ const Home = () => {
           }
         />
         <Card
-          header="BOOK BUS TICKETS ONLINE"
+
           description={
             <>
+              <h4>MAKE AN ONLINE BUS RESERVATION</h4>
               <p className="card-text mb-3">
                 Bigtraze Travels is India's largest brand for online bus ticket booking and offers an easy-to-use online bus and train ticket booking; with over 36 million satisfied customers, 3500+ bus operators to choose from, and plenty of offers on bus ticket booking, redBus makes road journeys super convenient for travellers.
               </p>
               <p className="card-text">
-                Booking a bus ticket online on the redBus app or website is very simple. You can download the redBus app or visit redbus.in and enter your source, destination & travel date to check the top-rated bus services available. Make a quick selection and book bus tickets online.
+                Booking a bus ticket online on the bigtranz  app or website is very simple. You can download the bigtranz app or visit bigtranz.in and enter your source, destination & travel date to check the top-rated bus services available. Make a quick selection and book bus tickets online.
+              </p>
+            </>
+          }
+        />
+         <div ref={aboutCardRef}>
+        <Card
+          description={
+            <>
+              <h4>ABOUT BIGSTANZ</h4>
+              <p className="card-text mb-3">
+                Welcome to BigStanz! your reliable partner for bus travel bookings! Whether you're commuting for work, going on a weekend getaway, or traveling for leisure, our app ensures you can easily find, book, and manage your bus tickets with just a few taps.
               </p>
             </>
           }
         />
       </div>
-      <Footer />
 
-      {showToast && (
+        <Card description={
+            <>
+              <h5>CONTACT US</h5>
+              {contactDetails.map((contact, index) => (
+                <p key={index} className={index === 2 ? 'mb-0' : 'mb-2'}>
+                  {contact.label}: {contact.value}
+                </p>
+              ))}
+            </>
+          }/>
+        <Card description={
+            <>
+              <h5>SERVICES</h5>
+              <ul className='list-unstyled'>
+                {services.map((service, index) => (
+                  <li key={index} className={index === services.length - 1 ? 'mb-0' : 'mb-2'}>
+                    {service}
+                  </li>
+                ))}
+              </ul>
+            </>
+          }
+        />
+       <Card description={
+            <><h5>GLOBAL SITES</h5>
+              <ul className='list-unstyled'>
+                {countries.map((country: string, index: number) => (
+                  <li className={index === countries.length - 1 ? 'mb-0' : 'mb-2'} key={country}>
+                    {country}
+                  </li>
+                ))}
+              </ul>
+            </>
+          }/>
+       </div>
+     {showToast && (
         <Toast
           message={toastMessage}
           type={toastType}
