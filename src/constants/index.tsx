@@ -4,6 +4,13 @@ import catBus2 from '../assets/cat-bus2.png'
 import catBus3 from  '../assets/cat-bus3.jpg'
 import {PassengerField,GenderOption, SeatDeatils} from '../utils/entity/PageEntity';
 import Checkbox from "../components/CheckBox";
+import canada from '../assets/canada.jpg';
+import china from '../assets/china.jpg';
+import denmark from '../assets/denmark.jpg';
+import france from '../assets/france.jpg';
+import germany from '../assets/germany.jpg';
+import india from '../assets/india.jpg';
+import greece from '../assets/greece.jpg';
 
 export const SignupFormFields: SignupFormField[] = [
   { name: 'firstName', placeholder: 'First name', type: 'text', className: 'w-48 me-2', id: 'firstName' },
@@ -21,7 +28,7 @@ export const SignupFormFields: SignupFormField[] = [
       { value: 'ADMIN', label: 'Admin' }
     ]
   },
-  { name: 'termsAccepted', label: 'I accept the Terms and Conditions', type: 'checkbox', className: 'form-check-input', id: 'termsAccepted', isCheckbox: true },
+  { name: 'termAccepted', label: 'I accept the Terms and Conditions', type: 'checkbox', className: 'form-check-input', id: 'termsAccepted', isCheckbox: true },
 ];
 
 export const LoginFormFields = [
@@ -117,5 +124,29 @@ export const busDetails = [
   }
 
 
+  export const countryImages : Country[]= [
+    { src: canada, alt: "Canada" },
+    { src: china, alt: "China" },
+    { src: denmark, alt: "Denmark" },
+    { src: france, alt: "France" },
+    { src: germany, alt: "Germany" },
+    {src: greece, alt: "Greece"},
+    {src: india, alt: "India"},
+  ];
   
+  export interface Country  {
+    src: string;
+    alt: string;
+  };
+
   
+
+export const userProfilefields = [
+  { name: 'firstName', type: 'text', label: 'First Name' },
+  { name: 'lastName', type: 'text', label: 'Last Name' },
+  { name: 'email', type: 'email', label: 'Email' },
+  { name: 'age', type: 'number', label: 'Age' },
+  { name: 'gender', type: 'select', label: 'Gender', options: ['male', 'female', 'other'] },
+  { name: 'phoneNumber', type: 'tel', label: 'Phone Number' },
+  { name: 'address', type: 'text', label: 'Address' },
+];

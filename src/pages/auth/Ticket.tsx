@@ -63,7 +63,10 @@ const Ticket: React.FC = () => {
             formData.append("subject", "Your Ticket");
             formData.append("body", "Here is your bus ticket.");
             formData.append("attachment", pdfBlob, "ticket.pdf");
+           // formData.append("ticketUrl",blobUrl);
 
+
+           // need to write anotherapi to store ticketurl into db for userId(ticketId, ticketUrl, userId)
             try {
                 const response = await fetch("http://localhost:8080/email/send-mail-with-attachment", {
                     method: "POST",

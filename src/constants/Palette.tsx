@@ -33,6 +33,7 @@ export const colors = {
     darkHover: "#555", 
     darkButton: "#333", 
     darkShade: "#23272b", 
+    pagecolor:"#9932CC"
 };
 
 

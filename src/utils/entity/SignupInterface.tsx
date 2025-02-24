@@ -14,7 +14,7 @@ export interface SignupFormField {
     email: string;
     password: string;
     role: string;
-    termsAccepted: boolean;
+    termAccepted: boolean;
 }
 
 export interface SignupErrorResponse {

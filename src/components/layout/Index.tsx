@@ -10,8 +10,8 @@ const Layout: React.FC = () => {
       <div
         style={{ backgroundImage: `url(${bg})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat", position: "absolute", top: 0, left: 0, right: 0, bottom: 0, filter: "blur(7px)", zIndex: -1, }} />
 
-      <div className="card border-0 shadow-lg bg-light" style={{ width: "100%", maxWidth: "400px", padding: "1rem", zIndex: 1, }}>
-        <div className="card-body d-flex flex-column justify-content-between">
+      <div className="" >
+        <div className="">
           <Outlet />
         </div>
       </div>

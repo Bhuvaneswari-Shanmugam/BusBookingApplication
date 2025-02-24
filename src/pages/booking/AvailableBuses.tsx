@@ -1,40 +1,42 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { useGetBusesForTripQuery } from '../../redux/services/TripApi';
 import Header from '../../components/layout/Header';
 import { Bus, BookingDetails } from '../../utils/entity/PageEntity';
 import Filters from '../filters/Filters';
 import Toast from '../../components/Toast';
 import BusCard from '../../components/BusCard';
-import PassengerDeatilsForm from '../auth/PassengerDetails';
+import Button from '../../components/Button';
+import { colors } from '../../constants/Palette';
+import { space } from '../../constants/Palette';
 
 const AvailableBuses = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { from, to, date } = location.state || {};
+  const aboutCardRef = useRef<HTMLDivElement>(null);
+  const formattedDate = new Date(date);
   const { data: buses, isLoading, isError } = useGetBusesForTripQuery({
     pickupPoint: from,
     destinationPoint: to,
-    pickupTime: date
+    pickupTime: date,
   });
   const [bookedSeats, setBookedSeats] = useState<{ [busId: string]: number[] }>({});
   const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
-  const [isPaymentSuccessful, setIsPaymentSuccessful] = useState<boolean>(false);
   const [selectedBus, setSelectedBus] = useState<Bus | null>(null);
   const [viewSeats, setViewSeats] = useState<boolean>(false);
-  const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' | 'info' | undefined }>({ message: '', type: undefined });
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' | undefined }>({ message: '', type: undefined });
   const [rows, setRows] = useState<(number | null)[][]>([]);
-  const [showPassengerDetailsModal, setShowPassengerDetailsModal] = useState<boolean>(false);
-  const [bookingDetails, setBookingDetails] = useState<BookingDetails | null>(null);
 
+  const formattedDateString = formattedDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
-
-  const availableBuses = buses?.filter((bus: Bus) => {
-    const isSeatsAvailable = !selectedSeats.some(seat => bookedSeats[bus.id]?.includes(seat));
-    return isSeatsAvailable;
-  });
+  const availableBuses = Array.isArray(buses?.data) 
+  ? buses.data.filter((bus: Bus) => {
+      const isSeatsAvailable = !selectedSeats.some((seat) => bookedSeats[bus.id]?.includes(seat));
+      return isSeatsAvailable;
+    }): [];
+    
+  const totalBusesCount = availableBuses?.length || 0;
 
   useEffect(() => {
     if (selectedBus?.type === 'SLEEPER') {
@@ -64,127 +66,86 @@ const AvailableBuses = () => {
       return;
     }
     setSelectedSeats((prevSelectedSeats) =>
-      prevSelectedSeats.includes(seatNumber) ?
-        prevSelectedSeats.filter((seat) => seat !== seatNumber) :
-        [...prevSelectedSeats, seatNumber]
+      prevSelectedSeats.includes(seatNumber)
+        ? prevSelectedSeats.filter((seat) => seat !== seatNumber)
+        : [...prevSelectedSeats, seatNumber]
     );
   };
 
-  const totalPrice = selectedSeats.length * 250;
+  const totalPrice = selectedSeats.length * (selectedBus?.expense || 0);
 
   const handleBusClick = (bus: Bus) => {
-    if (selectedBus?.id === bus.id) {
+    if (selectedBus?.number === bus.number) {
       setViewSeats(!viewSeats);
-    } else {
+      } else {
       setSelectedBus(bus);
       setViewSeats(true);
     }
   };
-
-  const handleDownloadTicket = () => { };
-
-  const handlePayment = async () => {
-    if (selectedSeats.length > 0) {
-      try {
-        const bookingDetails: BookingDetails = {
-          pickupPoint: from,
-          destinationPoint: to,
-          pickupTime: date,
-          busNumber: Number(selectedBus?.number) || 0,
-          busType: selectedBus?.type || 'Non-AC',
-          bookedNoOfSeats: selectedSeats,
-          perSeatAmount: selectedBus?.discountedPrice || 0,
-          totalAmount: totalPrice,
-        };
-
-        localStorage.setItem('bookingDetails', JSON.stringify(bookingDetails));
-
-        setBookedSeats(prev => ({
-          ...prev,
-          [selectedBus?.id || '']: [...(prev[selectedBus?.id || ''] || []), ...selectedSeats]
-        }));
-
-        setBookingDetails(bookingDetails);
-        setSelectedSeats([]);
-
-        setShowPassengerDetailsModal(true);
-      } catch (error: any) {
-        const errorMessage = error?.data?.message || error.message || 'Unknown error occurred';
-        setToast({ message: `Booking failed. Reason: ${errorMessage}`, type: 'error' });
-      }
-    } else {
-      setToast({ message: 'Please select at least one seat to proceed with booking.', type: 'error' });
-    }
-  };
-
+  
   if (isLoading) {
     return <div>Loading buses...</div>;
   }
-
   return (
     <div>
-      <Header />
-      <div className="container d-flex flex-column flex-md-row mt-4">
-        <div className="filters-container col-12 col-md-3 p-3">
-          <Filters />
+      <Header aboutCardRef={aboutCardRef} />
+      <div className="container">
+        <div className="d-flex align-items-start mt-5" style={{ marginLeft: '-100px' }}>
+          <h5 className="mb-0 mt-5">
+            <span className="text-dark">{from} </span>
+            <span style={{ color: colors.secondary }}>&rarr; </span>
+            <span className="text-dark">{to} </span>
+            <span style={{ color: colors.secondary }}>on </span>
+            <span className="text-dark">&lt; {formattedDateString} &gt;</span>
+          </h5>
+          <Button
+            className="btn mt-5 ms-3 text-white border-0 p-2"
+            style={{ backgroundColor: colors.pagecolor, height: space.xxl, borderRadius: '5px', width: '70px' }}
+            onClick={() => navigate('/home')}
+          >
+            Modify
+          </Button>
         </div>
-        <div className="buses-container col-12 col-md-9 p-3 mt-5" style={{ opacity: showPassengerDetailsModal ? 0.5 : 1, pointerEvents: showPassengerDetailsModal ? 'none' : 'auto' }}>
-          <div className="d-flex justify-content-start align-items-center mb-4">
-            <h5 className="mb-0">
-              <strong>{from}</strong> - <strong>{to}</strong> on <strong>{date}</strong>
-            </h5>
-            <button className="btn ms-3 text-white" style={{ backgroundColor: 'darkorchid' }} onClick={() => navigate('/')}>
-              Modify
-            </button>
+
+        <div className="d-flex mt-4">
+          <div className="col-lg-3 w-25">
+            <Filters />
           </div>
-          <div>
-            <div className="d-flex align-items-center mb-4">
-              <h6 className="mb-0">Buses found</h6>
+          <div className="col-md-8 col-lg-9">
+            <div className="d-flex mb-4 mt-2">
+              <strong className="ms-3 ">{totalBusesCount} buses </strong> <span className='text-body-tertiary ms-2'>found </span>
               <strong className="ms-3">SORT BY:</strong>
-              <button className="btn ms-4" style={{ color: 'darkorchid' }}>Departure</button>
-              <button className="btn ms-3" style={{ color: 'darkorchid' }}>Duration</button>
-              <button className="btn ms-3" style={{ color: 'darkorchid' }}>Arrival</button>
+              <h6 className="ms-5 text-body-tertiary mx-3 " >Departure</h6>
+              <h6 className="ms-5 text-body-tertiary mx-3 " >Duration</h6>
+              <h6 className="ms-5 text-body-tertiary mx-3 ">Arrival </h6>
+              <h6 className="ms-5 text-body-tertiary mx-3 ">Ratings</h6>
+              <h6 className="ms-5 text-body-tertiary mx-3 ">Fare</h6>
             </div>
-          </div>
-          <div className="row mt-3">
-            {availableBuses?.map((bus: any) => (
-              <BusCard
-                key={bus.id}
-                bus={bus}
-                from={from}
-                to={to}
-                date={date}
-                selectedBus={selectedBus}
-                selectedSeats={selectedSeats}
-                bookedSeats={bookedSeats[bus.id] || []}
-                viewSeats={viewSeats}
-                rows={rows}
-                toggleSeatSelection={toggleSeatSelection}
-                handleBusClick={handleBusClick}
-                handlePayment={handlePayment}
-                handleDownloadTicket={handleDownloadTicket}
-                totalPrice={totalPrice}
-              />
-            ))}
+
+            <div className="row mt-3">
+              {availableBuses?.map((bus: any) => (
+                <BusCard
+                  key={bus.id}
+                  bus={bus}
+                  from={from}
+                  to={to}
+                  date={date}
+                  selectedBus={selectedBus}
+                  selectedSeats={selectedSeats}
+                  bookedSeats={bookedSeats[bus.id] || []}
+                  viewSeats={viewSeats}
+                  rows={rows}
+                  toggleSeatSelection={toggleSeatSelection}
+                  handleBusClick={handleBusClick}
+                  totalPrice={totalPrice}
+                  expense={bus.expense}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>
-      {toast.message && <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '', type: undefined })} />}
-
-      {showPassengerDetailsModal && (
-        <div className="offcanvas offcanvas-end show" tabIndex={-1} id="offcanvasEnd" aria-labelledby="offcanvasEndLabel" style={{ display: 'block', width: '700px' }}>
-          <div className="offcanvas-header">
-            <button type="button" className="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close" onClick={() => setShowPassengerDetailsModal(false)}></button>
-          </div>
-          <div className="offcanvas-body" style={{ maxHeight: '95vh' }}>
-
-            {bookingDetails && (
-              <PassengerDeatilsForm bookingDetails={bookingDetails} />
-            )}
-
-          </div>
-        </div>
-      )}
+     {toast.message && <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '', type: undefined })} />}
     </div>
   );
 };

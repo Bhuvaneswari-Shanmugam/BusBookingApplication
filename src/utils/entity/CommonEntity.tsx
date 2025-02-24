@@ -1,9 +1,8 @@
 import React from 'react';
 
-
 interface DropDownStyle {
-  container?: React.CSSProperties;
   select?: React.CSSProperties;
+  option?:React.CSSProperties;
 
 }
 export interface DropdownProps {
@@ -16,11 +15,16 @@ export interface DropdownProps {
 }
 
 export interface CheckboxProps {
+  id?: string;
+  name?: string;
   label: string;
   checked: boolean;
   type: 'checkbox' | 'radio';
+  className?: string;
+  register?: any; 
   onChange: (checked: boolean) => void;
 }
+
 
 export interface ToastProps {
   message: string;

@@ -16,14 +16,11 @@ export const BookingApi = createApi({
     },
   }),
   endpoints: (builder) => ({
-    createBooking: builder.mutation<CreateBookingResponse,  { bookingDetails: CreateBookingRequest; token?: string }>({
-        query: ({bookingDetails,token}) => ({
+    createBooking: builder.mutation<CreateBookingResponse,CreateBookingRequest>({
+        query: (bookingDetails) => ({
           url: '/create',
           method: 'POST',
           body:bookingDetails, 
-          headers: {
-            Authorization: `Bearer ${token}`, // Explicitly pass the token
-          }, 
         }),
       }),
   }),

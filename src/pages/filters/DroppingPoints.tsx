@@ -9,15 +9,15 @@ interface DroppingPointsProps {
 }
 
 const DroppingPoints: React.FC<DroppingPointsProps> = ({ onSelectionChange, onApply }) => {
-  const location = useLocation();
-  const { from, to, date } = location.state || {};
-  const { data: droppingPoints, error, isLoading } = useFetchDroppingPointsQuery({
+const location = useLocation();
+const { from, to, date } = location.state || {};
+const { data: droppingPoints, error, isLoading } = useFetchDroppingPointsQuery({
     pickupPoint: from,
     destinationPoint: to,
     pickupTime: date,
   });
 
-  const [selectedDroppingPoints, setSelectedDroppingPoints] = useState<Set<string>>(new Set());  
+const [selectedDroppingPoints, setSelectedDroppingPoints] = useState<Set<string>>(new Set());  
 
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>Error fetching dropping points.</p>;

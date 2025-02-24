@@ -1,17 +1,16 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-
 export const TripApi = createApi({
   reducerPath: 'tripApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: process.env.REACT_APP_URL,
+    baseUrl: "http://localhost:8081/trip/",
     prepareHeaders: (headers) => {
       const token = sessionStorage.getItem("Token");
       if (token) {
         headers.set('Authorization', `Bearer ${token}`);
       }
       return headers;
-    },
+    }
   }),
   endpoints: (builder) => ({
     searchTrips: builder.mutation({
@@ -68,18 +67,11 @@ export const TripApi = createApi({
         params: { pickupPoint, destinationPoint, pickupTime },
       }),
     }),
-  
     getBusesForTrip: builder.query({
-      query: ({ pickupPoint, destinationPoint, pickupTime, busType, timeSlot }) => ({
-        url: 'buses',
-        method: 'GET',
-        params: {
-          pickupPoint,
-          destinationPoint,
-          pickupTime,
-          busType: busType ,
-          timeSlot: timeSlot ,  
-        },
+      query: (params) => ({
+        url: 'retrieve', 
+        method: 'POST',
+        body: params,
       }),
     }),
   }),

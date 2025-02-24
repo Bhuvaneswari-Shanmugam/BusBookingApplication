@@ -7,11 +7,11 @@ export interface AccessRole {
 
 export interface DecodedToken {
   sub: string;
-  UserEmail: string;
+  userEmail: string;
   iat: number;
   exp: number;
-  FirstName: string;
-  UserId: string;
+  firstName: string;
+  userId: string;
   Role: string;
 }
 
@@ -27,9 +27,11 @@ export interface Bus {
   originalPrice: number;
   discountedPrice: number;
   busId: number;
-  number: string;
+  expense:number;
+  number: number;
   pickupPoint: string;
   droppingPoint: string;
+  ratings:number;
 }
 
 
@@ -42,6 +44,7 @@ export interface BookingDetails {
   bookedNoOfSeats: number[];
   perSeatAmount: number;
   totalAmount: number;
+  userId : string;
 }
 
 export interface PointsSelectorProps {
@@ -56,11 +59,18 @@ export interface PointsSelectorProps {
 }
 
 export interface TripDetailsModalProps {
-  show: boolean;
-  onClose: () => void;
-  onProceed: () => void;
+  show?: boolean;
+  onClose?: () => void;
+  onProceed?: () => void;
+  bus: Bus;
+  selectedSeats?: string[];
+  totalPrice?: number;
+  currentSelectedSeats?: string[];
+  selectedPickupPoints?: Set<string>;
+  selectedDroppingPoints?: Set<string>;
+  date: string;  
+  
 }
-
 
 export interface PickUpPointsProps {
   onSelectionChange: (selectedPoints: Set<string>) => void;
@@ -72,6 +82,7 @@ export interface BusCardProps {
   from: string;
   to: string;
   date: string;
+  expense:number;
   selectedBus: Bus | null;
   selectedSeats: number[];
   bookedSeats: number[];
@@ -79,9 +90,19 @@ export interface BusCardProps {
   rows: (number | null)[][];
   toggleSeatSelection: (seatNumber: number, e: React.MouseEvent) => void;
   handleBusClick: (bus: Bus) => void;
-  handlePayment: () => void;
-  handleDownloadTicket: () => void;
   totalPrice: number;
+}
+export interface TripDetailsModalProps {
+  show?: boolean;
+  onClose?: () => void;
+  onProceed?: () => void;
+  bus: Bus;
+  selectedSeats?: string[];
+  totalPrice?: number;
+  currentSelectedSeats?: string[];
+  selectedPickupPoints?: Set<string>;
+  selectedDroppingPoints?: Set<string>;
+  
 }
 
 export interface InputData {
