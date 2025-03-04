@@ -27,4 +27,9 @@ export const getPassengerDetailsValidationSchema = Yup.object().shape({
   phoneNumber: Yup.string()
     .required("Phone number is required")
     .matches(/^\d{10}$/, "Phone number must be 10 digits"),
+  busNumber: Yup.number()
+    .required("Bus number is required")
+    .positive("Bus number must be a positive number")
+    .integer("Bus number must be an integer")
+    .typeError("Bus number must be a number"),
 });

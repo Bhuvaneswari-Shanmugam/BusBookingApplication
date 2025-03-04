@@ -1,25 +1,32 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
-import {Passenger,PassengerContextType} from '../utils/entity/PassengerInterface';
+import React, { createContext, useContext, useState } from "react";
+import { PassengerContextType, PassengerData } from "../utils/entity/PageEntity";
+import {defaultState} from '../utils/entity/PageEntity';
 
+const PassengerContext = createContext<PassengerContextType>(defaultState);
 
-const PassengerContext = createContext<PassengerContextType | undefined>(undefined);
+export const PassengerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [passengers, setPassengers] = useState<PassengerData[]>([]);
 
-export const PassengerProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [passengers, setPassengers] = useState<Passenger[]>([]);
-  const [email, setEmail] = useState<string>("");
-  const [phoneNumber, setPhoneNumber] = useState<string>("");
+  const setPassengerDetails = (newPassenger: PassengerData) => {
+    setPassengers((prevPassengers) => {
+      const existingIndex = prevPassengers.findIndex((p) => p.email === newPassenger.email);
+
+      if (existingIndex !== -1) {
+        const updatedPassengers = [...prevPassengers];
+        updatedPassengers[existingIndex] = newPassenger;
+        return updatedPassengers;
+      } else {
+        return [...prevPassengers, newPassenger];
+      }
+    });
+  };
 
   return (
-    <PassengerContext.Provider value={{ passengers, setPassengers, email, setEmail, phoneNumber, setPhoneNumber }}>
+    <PassengerContext.Provider value={{ passengers, setPassengers, setPassengerDetails }}>
       {children}
     </PassengerContext.Provider>
   );
 };
 
-export const usePassenger = (): PassengerContextType => {
-  const context = useContext(PassengerContext);
-  if (!context) {
-    throw new Error("usePassenger must be used within a PassengerProvider");
-  }
-  return context;
-};
+
+export const usePassenger = (): PassengerContextType => useContext(PassengerContext);

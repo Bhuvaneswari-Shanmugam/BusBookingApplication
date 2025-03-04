@@ -1,210 +1,155 @@
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { Link, useNavigate } from "react-router-dom";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "react-toastify/dist/ReactToastify.css";
-import Modal from "react-bootstrap/Modal";
-import Form from "../../components/Form";
-import Input from "../../components/Input";
-import Button from "../../components/Button";
-import { useSendOtpMutation, useValidateOtpMutation, useSignupMutation } from "../../redux/services/SignupApi";
-import { getSignupValidationSchema } from "../../utils/schema/SignupValidationSchema";
-import { SignupFormFields } from "../../constants/index";
-import { SignupFormInputs, SignupErrorResponse } from "../../utils/entity/SignupInterface";
-import { colors } from "../../constants/Palette";
-import Card from "../../components/Card";
-import Toast from "../../components/Toast";
+import React, { useRef, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { useGetUserByIdQuery, useUpdateUserMutation } from '../../redux/services/UserApi';
+import { colors } from '../../constants/Palette';
+import Header from '../../components/layout/Header';
+import Card from '../../components/Card';
+import Button from '../../components/Button';
+import Input from '../../components/Input';
+import Label from '../../components/Label';
+import { UserProfile } from '../../utils/entity/UserProfileInterface';
+import { userProfilefields } from '../../constants';
+import ProfileUpdateschema from '../../utils/schema/ProfileUpdateSchema';
+import { yupResolver } from '@hookform/resolvers/yup';
+import Toast from '../../components/Toast';
+import {jwtDecode} from 'jwt-decode';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
-const Signup: React.FC = () => {
-    const validationSchema = getSignupValidationSchema();
+interface CustomJwtPayload {
+    userId: string;
+}
+
+const Profile: React.FC = () => {
     const navigate = useNavigate();
-    const [signup, { isLoading }] = useSignupMutation();
-    const [sendOtp] = useSendOtpMutation();
-    const [validateOtp] = useValidateOtpMutation();
-    
-    const [otpModalVisible, setOtpModalVisible] = useState(false);
-    const [OTP, setOTP] = useState("");
-    const [isOtpValidated, setIsOtpValidated] = useState(false);
-    const [toastMessage, setToastMessage] = useState<string>("");
-    const [toastType, setToastType] = useState<"info" | "success" | "error">("info");
-    const [showToast, setShowToast] = useState<boolean>(false);
+    const aboutCardRef = useRef<HTMLDivElement>(null);
+    const [userId, setUserId] = useState<string | null>(null);
+    const [toastMessage, setToastMessage] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+
+    useEffect(() => {
+        const token = sessionStorage.getItem("token");
+        if (token) {
+            try {
+                const decodedToken = jwtDecode<CustomJwtPayload>(token);
+                setUserId(decodedToken.userId || null);
+            } catch (error) {
+                console.error("Error decoding token:", error);
+            }
+        }
+    }, []);
+
+    const { data, error, isLoading } = useGetUserByIdQuery(userId || '', { skip: !userId });
+    console.log("profile page userId : ", userId);
+    console.log("data : ", data);
+
+    const [updateUser] = useUpdateUserMutation();
 
     const {
         register,
         handleSubmit,
+        setValue,
         formState: { errors },
-        watch,
-        reset,
-    } = useForm<SignupFormInputs>({
-        resolver: yupResolver(validationSchema),
+    } = useForm<UserProfile>({
+        resolver: yupResolver(ProfileUpdateschema),
     });
 
-    const email = watch("email");
-
-    const handleValidateOtp = async () => {
-        if (!OTP || OTP.length !== 6 || isNaN(Number(OTP))) {
-            setToastMessage("Please enter a valid 6-digit OTP.");
-            setToastType("error");
-            setShowToast(true);
-            return;
+    useEffect(() => {
+        if (data?.data) {
+            setValue("firstName", data.data.firstName || "");
+            setValue("lastName", data.data.lastName || "");
+            setValue("email", data.data.email || "");
+            setValue("age", data.data.age || 0);
+            setValue("gender", data.data.gender || "");
+            setValue("phoneNumber", data.data.phoneNumber || "");
+            setValue("address", data.data.address || "");
         }
+    }, [data, setValue]);
 
-        try {
-            await validateOtp({ email, OTP }).unwrap();
-            setToastMessage("OTP validated successfully!");
-            setToastType("success");
-            setShowToast(true);
-            setIsOtpValidated(true);
-            setOtpModalVisible(false);
-        } catch (err) {
-            setToastMessage("Invalid OTP. Please try again.");
-            setToastType("error");
-            setShowToast(true);
-        }
-    };
-
-    const handleButtonClick = async (data: SignupFormInputs) => {
-        if (!isOtpValidated) {
+    const onSubmit = async (formData: UserProfile) => {
+        if (userId) {
             try {
-                const response = await sendOtp(data).unwrap();
-                setToastMessage(response?.data?.message || "OTP sent");
-                setToastType("success");
-                setShowToast(true);
-                setOtpModalVisible(true);
+                await updateUser({ id: userId, data: formData }).unwrap();
+                setToastMessage({ message: "Profile updated successfully!", type: "success" });
             } catch (err) {
-                const errorMessage = (err as SignupErrorResponse)?.data?.message || "Error while sending OTP";
-                setToastMessage(errorMessage);
-                setToastType("error");
-                setShowToast(true);
-            }
-        } else {
-            try {
-                const response = await signup(data).unwrap();
-                setToastMessage(response?.data?.message || "Signup successful!");
-                setToastType("success");
-                setShowToast(true);
-                navigate("/");
-                reset();
-            } catch (err) {
-                const errorMessage = (err as SignupErrorResponse)?.data?.message || "Signup failed. Try again.";
-                setToastMessage(errorMessage);
-                setToastType("error");
-                setShowToast(true);
+                setToastMessage({ message: "Failed to update profile.", type: "error" });
             }
         }
     };
+
+    const handleCancel = () => {
+        navigate('/');
+    };
+
+    if (isLoading) return <p>Loading...</p>;
+    if (error) {
+        setToastMessage({ message: "Failed to load user details.", type: "error" });
+        return <p>Error loading user details!</p>;
+    }
 
     return (
         <div className="container mt-5">
+            <Header aboutCardRef={aboutCardRef} />
             <Card
+                className="profile-details shadow-lg"
+                style={{ marginTop: '120px', width: '600px' }}
                 description={
-                    <Form onSubmit={handleSubmit(handleButtonClick)}>
-                        <h3>Sign up</h3>
-                        {SignupFormFields.map((field, index) => (
-                            <div key={index} className="mb-3 w-100">
-                                {field.type === "select" ? (
-                                    <>
-                                        <select {...register(field.name as keyof SignupFormInputs)} className="form-select w-100">
-                                            <option value="" disabled>
-                                                {field.placeholder}
-                                            </option>
-                                            {field.options?.map((option, optIndex) => (
-                                                <option key={optIndex} value={option.value}>
-                                                    {option.label}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        <div className="float-start">
-                                            <span className="error text-danger">
-                                                {errors[field.name as keyof SignupFormInputs]?.message}
-                                            </span>
-                                        </div>
-                                    </>
-                                ) : !field.isCheckbox ? (
-                                    <>
-                                        <Input
-                                            {...register(field.name as keyof SignupFormInputs)}
-                                            type={field.type}
-                                            placeholder={field.placeholder}
-                                            className="form-control w-100"
-                                        />
-                                        <div className="float-start">
-                                            <span className="error text-danger">
-                                                {errors[field.name as keyof SignupFormInputs]?.message}
-                                            </span>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <div className="form-check w-100">
-                                        <Input
-                                            type="checkbox"
-                                            {...register(field.name as keyof SignupFormInputs)}
-                                            className={field.className}
-                                            style={{ borderColor: colors.pagecolor }}
-                                        />
-                                        <label className="form-check-label">
-                                            {field.label}
-                                        </label>
-                                        <div>
-                                            <span className="error text-danger">
-                                                {errors[field.name as keyof SignupFormInputs]?.message}
-                                            </span>
-                                        </div>
+                    <form onSubmit={handleSubmit(onSubmit)}>
+                        <div className="row mb-3">
+                            <h3 className="card-title text-center">My Profile</h3>
+                            {userProfilefields.map(({ name, type, label, options }) => (
+                                <div className="row mb-3 align-items-center" key={name}>
+                                    <div className="col-md-4 text-md-start">
+                                        <Label htmlFor={name} className="form-label mb-0">
+                                            <strong>{label}</strong>
+                                        </Label>
                                     </div>
-                                )}
-                            </div>
-                        ))}
 
-                        <Button
-                            type="submit"
-                            className="btn w-100 mt-3"
-                            style={{
-                                padding: "0.6rem 1rem",
-                                border: "none",
-                                backgroundColor: colors.pagecolor,
-                            }}
-                            disabled={isLoading}
-                        >
-                            {isOtpValidated ? "Signup" : "Verify Email & Signup"}
-                        </Button>
+                                    <div className="col-md-6" style={{ width: '300px' }}>
+                                        {type === 'select' ? (
+                                            <select
+                                                className={`form-select ${errors[name as keyof UserProfile] ? 'is-invalid' : ''}`}
+                                                {...register(name as keyof UserProfile)}
+                                            >
+                                                <option value="">Select {label}</option>
+                                                {options?.map((option) => (
+                                                    <option key={option} value={option}>
+                                                        {option.charAt(0).toUpperCase() + option.slice(1)}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        ) : (
+                                            <Input
+                                                type={type}
+                                                className={`form-control ${errors[name as keyof UserProfile] ? 'is-invalid' : ''}`}
+                                                {...register(name as keyof UserProfile)}
+                                            />
+                                        )}
+                                    </div>
 
-                        <p className="text-center mt-3">
-                            Already have an account? <Link to="/" style={{ color: colors.pagecolor }}>Sign In</Link>
-                        </p>
-                    </Form>
+                                    <div className="float-start">
+                                        {errors[name as keyof UserProfile]?.message && (
+                                            <span className="error text-danger">{errors[name as keyof UserProfile]?.message}</span>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="text-center">
+                            <Button type="submit" className="btn mt-3 border-0 me-2" style={{ color: 'white', backgroundColor: colors.pagecolor }}>
+                                Save
+                            </Button>
+                            <Button type="button" onClick={handleCancel} className="btn mt-3 border-0" style={{ color: 'white', backgroundColor: 'gray' }}>
+                                Cancel
+                            </Button>
+                        </div>
+                    </form>
                 }
             />
-
-            <Modal show={otpModalVisible} onHide={() => setOtpModalVisible(false)} centered>
-                <Modal.Header closeButton className="bg-light">
-                    <Modal.Title>Enter OTP</Modal.Title>
-                </Modal.Header>
-                <Modal.Body className="px-4 py-3">
-                    <Input
-                        type="text"
-                        value={OTP}
-                        onChange={(e) => setOTP(e.target.value)}
-                        placeholder="Enter OTP"
-                        className="form-control form-control-lg rounded"
-                    />
-                </Modal.Body>
-                <Modal.Footer className="border-0 d-flex justify-content-center">
-                    <Button
-                        type="button"
-                        className="btn btn-primary btn-lg w-100 rounded"
-                        onClick={handleValidateOtp}
-                    >
-                        Validate OTP
-                    </Button>
-                </Modal.Footer>
-            </Modal>
-
-            {showToast && (
-                <Toast message={toastMessage} type={toastType} duration={3000} onClose={() => setShowToast(false)} />
+            {toastMessage && (
+                <Toast message={toastMessage.message} type={toastMessage.type} duration={3000} onClose={() => setToastMessage(null)} />
             )}
         </div>
     );
 };
 
-export default Signup;
+export default Profile;

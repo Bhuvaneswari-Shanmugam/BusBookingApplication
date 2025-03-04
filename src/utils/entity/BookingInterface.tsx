@@ -7,11 +7,14 @@ export interface CreateBookingRequest {
   bookedSeats: number[];
   perSeatAmount: number;
   totalAmount: number;
-  
+  ticketId:string;
 }
 
 export interface CreateBookingResponse {
   success: boolean;
   message: string;
   data: any;
+}
+export interface CreateBookingResponse {
+  id: string; 
 }

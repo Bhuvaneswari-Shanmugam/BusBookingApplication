@@ -3,17 +3,16 @@ import { Modal, Button } from 'react-bootstrap';
 import { TripDetailsModalProps } from '../utils/entity/PageEntity';
 import { colors } from '../constants/Palette';
 import PassengerDetailsForm from '../pages/auth/PassengerDetails';
-import { useBooking } from '../context/BookingProvider'; // Import Context
+import { useBooking } from '../context/BookingProvider';
 
-const TripDetails: React.FC<TripDetailsModalProps> = ({
+const TripDetailsModal: React.FC<TripDetailsModalProps> = ({
   show,
   onClose,
   bus,
   currentSelectedSeats = [],
   date,
-
 }) => {
-  const { setBookingDetails, bookingDetails } = useBooking(); // Use context
+  const { setBookingDetails, bookingDetails } = useBooking();
   const [selectedPickupPoints, setSelectedPickupPoints] = useState<Set<string>>(new Set());
   const [selectedDroppingPoints, setSelectedDroppingPoints] = useState<Set<string>>(new Set());
   const [showPassengerDetailsOffcanvas, setShowPassengerDetailsOffcanvas] = useState(false);
@@ -38,16 +37,17 @@ const TripDetails: React.FC<TripDetailsModalProps> = ({
       return;
     }
 
-    // Store data in Context instead of local state
     setBookingDetails({
       bus,
       currentSelectedSeats: currentSelectedSeats.map(Number),
       date,
       totalAmount: totalPrice,
     });
-    console.log("trip context stored ");
 
     setShowPassengerDetailsOffcanvas(true);
+    if (onClose) {
+      onClose();
+    }
   };
 
   const handleCloseOffcanvas = () => {
@@ -56,8 +56,7 @@ const TripDetails: React.FC<TripDetailsModalProps> = ({
 
   return (
     <>
-      {/* Trip Details Modal */}
-      <Modal show={show} onHide={onClose}>
+      <Modal show={show} onHide={onClose} backdrop="static" keyboard={false}>
         <Modal.Header closeButton>
           <Modal.Title>Boarding & Dropping</Modal.Title>
         </Modal.Header>
@@ -101,31 +100,37 @@ const TripDetails: React.FC<TripDetailsModalProps> = ({
         </Modal.Body>
       </Modal>
 
-      {/* Passenger Details Offcanvas */}
       {showPassengerDetailsOffcanvas && (
-        <div
-          className="offcanvas offcanvas-end show"
-          tabIndex={-1}
-          id="offcanvasEnd"
-          aria-labelledby="offcanvasEndLabel"
-          style={{ display: 'block', width: '700px',height:'auto' }}
-        >
-          <div className="offcanvas-header">
-            <button
-              type="button"
-              className="btn-close text-reset"
-              data-bs-dismiss="offcanvas"
-              aria-label="Close"
-              onClick={handleCloseOffcanvas}
-            ></button>
+        <>
+          <div className="modal-backdrop fade show"></div> 
+          <div
+            className="offcanvas offcanvas-end show"
+            tabIndex={-1}
+            id="offcanvasEnd"
+            aria-labelledby="offcanvasEndLabel"
+            style={{ display: 'block', width: '700px', height: 'auto', zIndex: 1050 }}
+          >
+            <div className="offcanvas-header">
+              <h4 className="offcanvas-title  fw-bold" id="offcanvasEndLabel">
+                Passenger Details
+              </h4>
+             <Button
+                type="button"
+                className="btn-close text-reset"
+                data-bs-dismiss="offcanvas"
+                aria-label="Close"
+                onClick={handleCloseOffcanvas}
+                style={{ backgroundColor: colors.pagecolor}}
+              ></Button>
+            </div>
+            <div className="offcanvas-body" style={{ overflowY: 'auto', maxHeight: '80vh' }}>
+              {bookingDetails && <PassengerDetailsForm />}
+            </div>
           </div>
-          <div className="offcanvas-body">
-            {bookingDetails && <PassengerDetailsForm  />}
-          </div>
-        </div>
+        </>
       )}
     </>
   );
 };
 
-export default TripDetails;
+export default TripDetailsModal;

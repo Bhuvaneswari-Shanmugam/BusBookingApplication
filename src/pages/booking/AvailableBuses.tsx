@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useGetBusesForTripQuery } from '../../redux/services/TripApi';
+import { useRetrieveGenderListQuery } from '../../redux/services/PassengerDetailsApi';
 import Header from '../../components/layout/Header';
 import { Bus, BookingDetails } from '../../utils/entity/PageEntity';
 import Filters from '../filters/Filters';
@@ -27,15 +28,21 @@ const AvailableBuses = () => {
   const [viewSeats, setViewSeats] = useState<boolean>(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' | undefined }>({ message: '', type: undefined });
   const [rows, setRows] = useState<(number | null)[][]>([]);
+  const [genderSeats, setGenderSeats] = useState<{ femaleSeats: number[]; maleSeats: number[]; availableSeats: number[] }>({ femaleSeats: [], maleSeats: [], availableSeats: [] });
+
+  const { data: genderListData, isLoading: isGenderListLoading } = useRetrieveGenderListQuery(selectedBus?.number || '', {
+    skip: !selectedBus?.number,
+  });
 
   const formattedDateString = formattedDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
-  const availableBuses = Array.isArray(buses?.data) 
-  ? buses.data.filter((bus: Bus) => {
-      const isSeatsAvailable = !selectedSeats.some((seat) => bookedSeats[bus.id]?.includes(seat));
-      return isSeatsAvailable;
-    }): [];
-    
+  const availableBuses = Array.isArray(buses?.data)
+    ? buses.data.filter((bus: Bus) => {
+        const isSeatsAvailable = !selectedSeats.some((seat) => bookedSeats[bus.id]?.includes(seat));
+        return isSeatsAvailable;
+      })
+    : [];
+
   const totalBusesCount = availableBuses?.length || 0;
 
   useEffect(() => {
@@ -59,10 +66,20 @@ const AvailableBuses = () => {
     }
   }, [selectedBus]);
 
+  useEffect(() => {
+    if (genderListData) {
+      setGenderSeats({
+        femaleSeats: genderListData.data.femaleSeatList,
+        maleSeats: genderListData.data.maleSeatList,
+        availableSeats: genderListData.data.availableSeatList,
+      });
+    }
+  }, [genderListData]);
+
   const toggleSeatSelection = (seatNumber: number, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (bookedSeats[selectedBus?.id || '']?.includes(seatNumber)) {
-      setToast({ message: 'This seat is already booked.', type: 'error' });
+    if (bookedSeats[selectedBus?.id || '']?.includes(seatNumber) || (genderSeats.femaleSeats.includes(seatNumber) && !genderSeats.availableSeats.includes(seatNumber))) {
+      setToast({ message: 'This seat is already booked or unavailable.', type: 'error' });
       return;
     }
     setSelectedSeats((prevSelectedSeats) =>
@@ -77,15 +94,16 @@ const AvailableBuses = () => {
   const handleBusClick = (bus: Bus) => {
     if (selectedBus?.number === bus.number) {
       setViewSeats(!viewSeats);
-      } else {
+    } else {
       setSelectedBus(bus);
       setViewSeats(true);
     }
   };
-  
+
   if (isLoading) {
     return <div>Loading buses...</div>;
   }
+
   return (
     <div>
       <Header aboutCardRef={aboutCardRef} />
@@ -139,13 +157,14 @@ const AvailableBuses = () => {
                   handleBusClick={handleBusClick}
                   totalPrice={totalPrice}
                   expense={bus.expense}
+                  genderSeats={genderSeats}
                 />
               ))}
             </div>
           </div>
         </div>
       </div>
-     {toast.message && <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '', type: undefined })} />}
+      {toast.message && <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '', type: undefined })} />}
     </div>
   );
 };

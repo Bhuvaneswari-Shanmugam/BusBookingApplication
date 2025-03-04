@@ -14,17 +14,25 @@ export const PassengerDetailsApi = createApi({
   }),
   endpoints: (builder) => ({
     createPassengerDetails: builder.mutation({
-      query: ({ passengers, email, phoneNumber }) => ({
+      query: ({ passengers, email, phoneNumber ,busNumber}) => ({
         url: '/create',
         method: 'POST',
         body: { 
           passengers,  
           email,      
           phoneNumber, 
+          busNumber,
         },
       }),
     }),
+    retrieveGenderList: builder.query({
+      query: (busNumber) => ({
+        url: `/retrieve/gender/seat-list?busNumber=${busNumber}`, 
+        method: "GET",
+      }),
+    }),
+    
   }),
 });
 
-export const { useCreatePassengerDetailsMutation } = PassengerDetailsApi;
+export const { useCreatePassengerDetailsMutation, useRetrieveGenderListQuery } = PassengerDetailsApi;

@@ -61,13 +61,13 @@ const SignIn: React.FC = () => {
 
         sessionStorage.setItem("Token", accessToken);
         sessionStorage.setItem("RefreshToken", refreshToken);
-        sessionStorage.setItem("FirstName", decodedToken.FirstName || "User");
-        sessionStorage.setItem("Role", decodedToken.Role?.toUpperCase() || "GUEST");
+        sessionStorage.setItem("FirstName", decodedToken.firstName || "User");
+        sessionStorage.setItem("Role", decodedToken.role?.toUpperCase() || "GUEST");
 
         setToastMessage(responseData.message || "Login successful!");
         setToastType('success');
         setShowToast(true);
-        navigate(decodedToken.Role?.toUpperCase() === "ADMIN" ? "/admin" : "/home");
+        navigate(decodedToken.role === "ROLE_ADMIN" ? "/admin" : "/home");
         reset();
       } else {
         setToastMessage(responseData.message || "Login failed. Please try again.");

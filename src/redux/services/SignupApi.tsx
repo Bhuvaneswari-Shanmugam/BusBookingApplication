@@ -15,7 +15,7 @@ export const SignupApi = createApi({
   endpoints: (builder) => ({
     sendOtp: builder.mutation({
       query: ({email}: { email: string }) => ({
-        url: "/otp/send-otp",
+        url: "/email/send-otp",
         method: "POST",
         params: {email},
       }),
@@ -23,7 +23,7 @@ export const SignupApi = createApi({
 
     validateOtp: builder.mutation({
       query: ({ email, OTP }: { email: string; OTP: string }) => ({
-        url: '/otp/validate-otp',
+        url: '/email/validate-otp',
         method: 'GET',
         params: { email, OTP }, 
       }),

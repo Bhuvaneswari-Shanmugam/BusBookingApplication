@@ -1,6 +1,6 @@
 export interface LoginJwtPayload {
-  FirstName?: string;
-  Role?: string; 
+  firstName?: string;
+  role?: string; 
   [key: string]: string | number | boolean | null | undefined | Record<string, string | number | boolean | null | undefined> | Array<string | number | boolean | null>;
 }
 

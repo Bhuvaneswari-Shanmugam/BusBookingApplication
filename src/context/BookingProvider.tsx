@@ -1,17 +1,25 @@
-import React, { createContext, useContext, useState } from 'react';
-import { BookingDetails } from '../utils/entity/PageEntity';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { Bus } from '../utils/entity/PageEntity';
 
-interface BookingContextType {
-  bookingDetails: BookingDetails | null;
-  setBookingDetails: (details: BookingDetails | null) => void;
+// Define the type for booking details
+interface BookingDetails {
+  bus: Bus;
+  currentSelectedSeats: number[];
+  date: string;
+  totalAmount: number;
 }
 
-const BookingContext = createContext<BookingContextType>({
-  bookingDetails: null,
-  setBookingDetails: () => {}, // Empty function as a placeholder
-});
+// Define the type for the context value
+interface BookingContextType {
+  bookingDetails: BookingDetails | null;
+  setBookingDetails: React.Dispatch<React.SetStateAction<BookingDetails | null>>;
+}
 
-export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+// Create Context with an initial undefined value
+const BookingContext = createContext<BookingContextType | undefined>(undefined);
+
+// Provider Component
+export const BookingProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [bookingDetails, setBookingDetails] = useState<BookingDetails | null>(null);
 
   return (
@@ -21,5 +29,11 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   );
 };
 
-// ✅ Add this missing export
-export const useBookingDetails = () => useContext(BookingContext);
+// Custom Hook for using context
+export const useBooking = () => {
+  const context = useContext(BookingContext);
+  if (!context) {
+    throw new Error("useBooking must be used within a BookingProvider");
+  }
+  return context;
+};

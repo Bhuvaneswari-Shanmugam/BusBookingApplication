@@ -31,11 +31,12 @@ const Footer = () => {
                             <ul className="list-unstyled mb-0">
                                 {services.map((service, index) => (
                                     <li key={index} className={index === services.length - 1 ? 'mb-0' : 'mb-2'}>
-                                        {service}
+                                        <strong>{service.name}</strong>: {service.description}
                                     </li>
                                 ))}
                             </ul>
                         </div>
+
 
                         <div className="col-md-2 col-sm-6 mb-4">
                             <h5 className="text-uppercase mb-3">Global Sites</h5>

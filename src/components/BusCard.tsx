@@ -21,21 +21,25 @@ const BusCard: React.FC<BusCardProps> = ({
   toggleSeatSelection,
   handleBusClick,
   totalPrice,
+  genderSeats,
 }) => {
   const [showModal, setShowModal] = useState(false);
   const [currentSelectedSeats, setCurrentSelectedSeats] = useState<string[]>(selectedSeats.map(String));
   const [currentTotalPrice, setCurrentTotalPrice] = useState<number>(totalPrice);
-  
 
   const handleProceedBooking = () => {
-    setShowModal(true); 
+    setShowModal(true);
   };
 
   const handleCloseModal = () => {
-    setShowModal(false); 
+    setShowModal(false);
   };
 
   const handleSeatSelection = (seatNumber: string, event: React.MouseEvent) => {
+    if (bookedSeats.includes(Number(seatNumber)) || genderSeats.femaleSeats.includes(Number(seatNumber))) {
+      return; // Do nothing if the seat is booked or a female seat
+    }
+
     toggleSeatSelection(Number(seatNumber), event);
 
     let updatedSelectedSeats = [...currentSelectedSeats];
@@ -45,7 +49,7 @@ const BusCard: React.FC<BusCardProps> = ({
       updatedSelectedSeats.push(seatNumber);
     }
 
-    const newTotalPrice = updatedSelectedSeats.length * bus.expense; 
+    const newTotalPrice = updatedSelectedSeats.length * bus.expense;
     setCurrentSelectedSeats(updatedSelectedSeats);
     setCurrentTotalPrice(newTotalPrice);
   };
@@ -74,7 +78,7 @@ const BusCard: React.FC<BusCardProps> = ({
           className="ms-2 bg-success"
         />
         <div>{bus.expense}</div>
-        <button 
+        <button
           onClick={() => handleBusClick(bus)}
           style={{
             backgroundColor: 'darkorchid',
@@ -97,13 +101,13 @@ const BusCard: React.FC<BusCardProps> = ({
             <div className="" style={{ paddingRight: '10px', marginLeft: '150px' }}>
               <h4>Booking Summary</h4>
               {[{ label: 'Bus Number', value: selectedBus.number },
-                { label: 'From', value: from },
-                { label: 'To', value: to },
-                { label: 'Date', value: date },
-                { label: 'Expense', value: selectedBus.expense },
-                { label: 'Bus Type', value: selectedBus.type },
-                { label: 'Selected Seats', value: currentSelectedSeats.join(', ') || 'None' },
-                { label: 'Total Price', value: `₹${currentTotalPrice}` }]
+              { label: 'From', value: from },
+              { label: 'To', value: to },
+              { label: 'Date', value: date },
+              { label: 'Expense', value: selectedBus.expense },
+              { label: 'Bus Type', value: selectedBus.type },
+              { label: 'Selected Seats', value: currentSelectedSeats.join(', ') || 'None' },
+              { label: 'Total Price', value: `₹${currentTotalPrice}` }]
                 .map(({ label, value }) => (
                   <div className="summary-item" key={label}>
                     <label htmlFor={label}>{label}:</label>
@@ -114,7 +118,7 @@ const BusCard: React.FC<BusCardProps> = ({
                 <button
                   className="pay-button btn text-white"
                   style={{ backgroundColor: colors.pagecolor }}
-                  onClick={handleProceedBooking}  
+                  onClick={handleProceedBooking}
                 >
                   Proceed Booking
                 </button>
@@ -131,24 +135,40 @@ const BusCard: React.FC<BusCardProps> = ({
                         style={{ width: '40px', height: '40px', margin: '3px' }}
                       />
                     ) : (
-                      <img
+                      <div
                         key={seatNumber}
-                        src={seat}
-                        alt={`Seat ${seatNumber}`}
                         className={`seat ${currentSelectedSeats.includes(seatNumber.toString()) ? 'selected' : ''}`}
-                        onClick={(e) => handleSeatSelection(seatNumber.toString(), e)}
+                        onClick={(e) => {
+                          if (bookedSeats.includes(Number(seatNumber)) || genderSeats.femaleSeats.includes(Number(seatNumber)) || !genderSeats.availableSeats.includes(Number(seatNumber))) {
+                            return; // Do nothing if the seat is booked, a female seat, or unavailable
+                          }
+                          handleSeatSelection(seatNumber.toString(), e);
+                        }}
                         style={{
                           width: '40px',
                           height: '40px',
                           margin: '3px',
-                          cursor: bookedSeats.includes(seatNumber) ? 'not-allowed' : 'pointer',
+                          cursor: bookedSeats.includes(seatNumber) || genderSeats.femaleSeats.includes(seatNumber) || !genderSeats.availableSeats.includes(seatNumber) ? 'not-allowed' : 'pointer',
+                          backgroundColor: genderSeats.femaleSeats.includes(seatNumber)
+                            ? colors.lightRed
+                            : genderSeats.maleSeats.includes(seatNumber)
+                              ? colors.secondary
+                              : 'transparent',
+                          backgroundImage: genderSeats.femaleSeats.includes(seatNumber) || genderSeats.maleSeats.includes(seatNumber) ? 'none' : `url(${seat})`,
+                          backgroundSize: 'cover',
                           border: currentSelectedSeats.includes(seatNumber.toString())
-                            ? '2px solid green'
-                            : bookedSeats.includes(seatNumber)
-                            ? '2px solid red'
-                            : '2px solid transparent',
+                            ? `3px solid ${colors.pagecolor}`
+                            : genderSeats.femaleSeats.includes(seatNumber)
+                              ? `2px solid ${colors.lightRed}`
+                              : genderSeats.maleSeats.includes(seatNumber)
+                                ? `2px solid ${colors.secondary}`
+                                : genderSeats.availableSeats.includes(seatNumber)
+                                  ? `2px solid ${colors.lightGray}`
+                                  : '2px solid transparent',
                         }}
-                      />
+                      >
+                        {seatNumber}
+                      </div>
                     )
                   )}
                 </div>
@@ -161,18 +181,31 @@ const BusCard: React.FC<BusCardProps> = ({
                       style={{
                         width: '20px',
                         height: '20px',
-                        border: '2px solid green',
+                        border: `2px solid ${colors.pagecolor}`,
                         marginRight: '8px',
                       }}
                     ></div>
-                    <h5 className="text-secondary" style={{ margin: '0' }}>Available</h5>
+                    <h5 className="text-secondary" style={{ margin: '0' }}>Selected</h5>
                   </div>
                   <div className="legend-item d-flex align-items-center" style={{ marginRight: '20px' }}>
                     <div
                       style={{
                         width: '20px',
                         height: '20px',
-                        border: '2px solid grey',
+                        backgroundColor: colors.lightRed,
+                        border: `2px solid ${colors.lightRed}`,
+                        marginRight: '8px',
+                      }}
+                    ></div>
+                    <h5 className="text-secondary" style={{ margin: '0' }}>Female</h5>
+                  </div>
+                  <div className="legend-item d-flex align-items-center" style={{ marginRight: '20px' }}>
+                    <div
+                      style={{
+                        width: '20px',
+                        height: '20px',
+                        backgroundColor: colors.lightGray,
+                        border: `2px solid ${colors.lightGray}`,
                         marginRight: '8px',
                       }}
                     ></div>
@@ -183,11 +216,12 @@ const BusCard: React.FC<BusCardProps> = ({
                       style={{
                         width: '20px',
                         height: '20px',
-                        border: '2px solid crimson',
+                        backgroundColor: 'transparent',
+                        border: `2px solid ${colors.lightGray}`,
                         marginRight: '8px',
                       }}
                     ></div>
-                    <h5 className="text-secondary" style={{ margin: '0' }}>Female</h5>
+                    <h5 className="text-secondary" style={{ margin: '0' }}>Available</h5>
                   </div>
                 </div>
               </div>
@@ -203,9 +237,9 @@ const BusCard: React.FC<BusCardProps> = ({
         }}
         bus={bus}
         currentSelectedSeats={currentSelectedSeats}
-        selectedDroppingPoints={new Set<string>()} 
-        selectedPickupPoints={new Set<string>()}  
-        date={date} 
+        selectedDroppingPoints={new Set<string>()}
+        selectedPickupPoints={new Set<string>()}
+        date={date}
       />
     </div>
   );

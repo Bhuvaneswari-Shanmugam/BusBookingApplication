@@ -1,45 +1,54 @@
-import React, { useRef, useEffect,useState } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
-import { useLocation } from "react-router-dom";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { PassengerForTicket, Customer } from '../../utils/entity/PageEntity';
 import { colors } from "../../constants/Palette";
 import logo from '../../assets/images/logo.jpg';
 import { usePassenger } from "../../context/PassengerProvider";
 import Toast from "../../components/Toast";
+import { useBooking } from "../../context/BookingProvider";
+import { PassengerData, Passenger } from '../../utils/entity/PageEntity';
 
 const Ticket: React.FC = () => {
     const ticketRef = useRef<HTMLDivElement | null>(null);
     const navigate = useNavigate();
 
+    const { bookingDetails } = useBooking();
+    const { passengers } = usePassenger();
+
+    console.log("passenger data in ticket:", passengers);
+    const email = passengers.length > 0 ? passengers[0].email : '';
+    const phoneNumber = passengers.length > 0 ? passengers[0].phoneNumber : '';
+    const ticketId = passengers.length > 0 ? passengers[0].ticketId : '';
+    const busNumber = passengers.length > 0 ? passengers[0].busNumber : '';
 
     const [toastMessage, setToastMessage] = useState<string>('');
     const [toastType, setToastType] = useState<'info' | 'success' | 'error'>('info');
     const [showToast, setShowToast] = useState<boolean>(false);
 
-    const { passengers, email } = usePassenger();
-    console.log("Ticket Component - Passengers:", passengers);
-
     useEffect(() => {
         console.log("Passengers updated:", passengers);
     }, [passengers]);
 
-
     const downloadTicket = async () => {
-        if (ticketRef.current) {
-            const canvas = await html2canvas(ticketRef.current);
-            const imgData = canvas.toDataURL("image/png");
-            const pdf = new jsPDF("p", "mm", "a4");
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        try {
+            if (ticketRef.current) {
+                const canvas = await html2canvas(ticketRef.current);
+                const imgData = canvas.toDataURL("image/png");
+                const pdf = new jsPDF("p", "mm", "a4");
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
-            pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-            pdf.save("ticket.pdf");
-            toast.success("Ticket downloaded successfully!");
-            setToastMessage("Invalid OTP. Please try again.");
+                pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+                pdf.save("ticket.pdf");
+                toast.success("Ticket downloaded successfully!");
+                setToastType('success');
+                setShowToast(true);
+            }
+        } catch (err) {
+            toast.error("Error while downloading ticket!");
             setToastType('error');
             setShowToast(true);
         }
@@ -59,70 +68,51 @@ const Ticket: React.FC = () => {
             window.open(blobUrl);
 
             const formData = new FormData();
-            formData.append("to", email || " ");
+            formData.append("email", email);
             formData.append("subject", "Your Ticket");
             formData.append("body", "Here is your bus ticket.");
-            formData.append("attachment", pdfBlob, "ticket.pdf");
-           // formData.append("ticketUrl",blobUrl);
+            formData.append("file", pdfBlob, "ticket.pdf");
 
-
-           // need to write anotherapi to store ticketurl into db for userId(ticketId, ticketUrl, userId)
             try {
-                const response = await fetch("http://localhost:8080/email/send-mail-with-attachment", {
+                const response = await fetch("http://localhost:8080/email/send-file", {
                     method: "POST",
                     body: formData,
                 });
 
                 if (response.ok) {
-                   // toast.success("Email sent successfully!");
                     setToastMessage("Email sent successfully!");
                     setToastType('success');
                     setShowToast(true);
                 } else {
-                    //toast.error("Failed to send email.");
                     setToastMessage("Failed to send email.");
                     setToastType('error');
                     setShowToast(true);
                 }
             } catch (error) {
-               // toast.error("Error sending email.");
                 setToastMessage("Error sending email.");
                 setToastType('error');
                 setShowToast(true);
             }
         }
     };
-    // i put these data as static because now i didn't integrate with avaliable and booking page with this ticket so for test this whether is working or not i put as static data here
-    const from = "City X";
-    const to = "City Y";
-    const date = "2025-02-15";
-    const ticketid = "987654";
-    const pnrNo = "123987";
-    const boardingPoint = "Main Bus Station";
-    const busName = "Comfort Line";
-    const busType = "Luxury Bus";
-    const reportingTime = "8:00 AM";
-    const departureTime = "8:30 AM";
-    const seatNumbers = "5A, 5B";
-    const departurePoint = "City Center Terminal";
-    const boardingDetails = "Gate 2";
 
-    // here i consoled but i got [] empty data ?
-    const customerDetails = passengers.map((passenger, index) => ({
-        id: index + 1,
-        name: `${passenger.firstName} ${passenger.lastName}`,
-        email: email,
-    }));
-    console.log("Customer Details:", customerDetails);
-
-
-
+    const fields = [
+        { key: 'from', label: 'From', value: bookingDetails?.bus.pickupPoint },
+        { key: 'to', label: 'To', value: bookingDetails?.bus.droppingPoint },
+        { key: 'date', label: 'Date', value: bookingDetails?.date },
+        { key: 'ticketid', label: 'Ticket No', value: bookingDetails?.bus.tripNumber },
+        { key: 'boardingPoint', label: 'Boarding Point', value: bookingDetails?.bus.pickupPoint },
+        { key: 'busName', label: 'Bus Name', value: `${bookingDetails?.bus.name} ${bookingDetails?.bus.type}` },
+        { key: 'reportingTime', label: 'Reporting Time', value: bookingDetails?.bus.departureTime },
+        { key: 'departureTime', label: 'Departure Time', value: bookingDetails?.bus.departureTime },
+        { key: 'seatNumbers', label: 'Seat Numbers', value: bookingDetails?.currentSelectedSeats?.join(", ") || "N/A" },
+        { key: 'departurePoint', label: 'Departure Point', value: bookingDetails?.bus.droppingPoint },
+    ];
 
     const textStyle = { color: colors.secondary };
 
     return (
-        <div className="d-flex justify-content-center align-items-center" style={{ backgroundColor: "#f8f9fa" }}>
-            <ToastContainer />
+        <div className="d-flex justify-content-center align-items-center" style={{ marginLeft: '0px', marginRight: '0px' }}>
             <div
                 className="card ticket-card shadow-lg m-4"
                 ref={ticketRef}
@@ -145,72 +135,83 @@ const Ticket: React.FC = () => {
                             <p>care@bus.com</p>
                         </div>
                     </div>
-                    <hr style={{ margin: "5px 0" }} />
+                    <hr style={{ margin: "5px 0 0px 0" }} />
                     <div className="ticket-content d-flex justify-content-between align-items-center" style={{ margin: "0 30px" }}>
                         <div style={{ display: "flex", alignItems: "center" }}>
-                            <h3 style={{ margin: "0 10px 0 0" }}>{from}</h3>
+                            <h3 style={{ margin: "0 10px 0 0" }}>{fields.find(field => field.key === 'from')?.value}</h3>
                             <img
                                 src="https://img.icons8.com/?size=100&id=n2C7Bts7cbWW&format=png&color=000000"
                                 alt="arrow-icon"
                                 style={{ height: "20px", width: "20px", margin: "0 10px" }}
                             />
-                            <h3 style={{ margin: "0 10px 0 0" }}>{to},</h3>
-                            <h3 style={{ margin: "0" }}>{date}</h3>
+                            <h3 style={{ margin: "5 0px 0 0" }}>{fields.find(field => field.key === 'to')?.value},</h3>
+                            <h3 style={{ margin: "0" }}>{fields.find(field => field.key === 'date')?.value}</h3>
                         </div>
                         <div>
-                            <p><b>Ticket no:</b> {ticketid}</p>
-                            <p><b>PNR no:</b> {pnrNo}</p>
-                        </div>
-                    </div>
-                    <hr style={{ margin: "5px 0" }} />
-                    <div className="d-flex justify-content-between align-items-center" style={{ margin: "0 30px" }}>
-                        <div>
-                            <b><h5>{boardingPoint}</h5></b>
-                            <p>{busName} {busType}</p>
-                        </div>
-                        <div>
-                            <b><h5>{reportingTime}</h5></b>
-                            <p>Reporting time</p>
-                        </div>
-                        <div>
-                            <b><h5>{departureTime}</h5></b>
-                            <p>Departure time</p>
-                        </div>
-                        <div>
-                            <b><h5>{seatNumbers}</h5></b>
-                            <p>Seat Numbers</p>
+                            <p><b>Ticket no:</b> {fields.find(field => field.key === 'ticketid')?.value}</p>
                         </div>
                     </div>
                     <hr style={{ margin: "5px 0" }} />
                     <div className="d-flex justify-content-between align-items-center" style={{ margin: "0 30px" }}>
-                        <div>
-                            <b><h5>{boardingDetails}</h5></b>
-                            <p>Boarding Details</p>
-                        </div>
-                        <div>
-                            <b><h5>{boardingPoint}</h5></b>
-                            <p>Boarding Point</p>
-                        </div>
-                        <div>
-                            <b><h5>{departurePoint}</h5></b>
-                            <p>Departure Point</p>
-                        </div>
+                        {fields.filter(field => ['busName', 'reportingTime', 'departureTime'].includes(field.key)).map((field, index) => (
+                            <div key={index}>
+                                <b><h5>{field.value}</h5></b>
+                                <p>{field.label}</p>
+                            </div>
+                        ))}
+                    </div>
+                    <hr style={{ margin: "5px 0" }} />
+                    <div className="d-flex justify-content-between align-items-center" style={{ margin: "0 30px" }}>
+                        {fields.filter(field => ['boardingPoint', 'seatNumbers', 'departurePoint'].includes(field.key)).map((field, index) => (
+                            <div key={index}>
+                                <b><h5>{field.value}</h5></b>
+                                <p>{field.label}</p>
+                            </div>
+                        ))}
                     </div>
                     <hr style={{ margin: "5px 0" }} />
                     <div className="d-flex justify-content-between align-items-center" style={{ margin: "0 30px" }}>
                         <div>
-
-                            <b><h5>Customer Info</h5></b>
-                            {customerDetails.map((customer) => (
-                                <p key={customer.id}><b>Name:</b> {customer.name}</p>
-                            ))}
-
+                            <div className="d-flex justify-content-start align-items-center">
+                                <b><h5>Customer Info</h5></b>
+                            </div>
+                            <table className="table table-bordered" style={textStyle}>
+                                <thead>
+                                    <tr className="" style={textStyle}>
+                                        <th style={textStyle}>Name</th>
+                                        <th style={textStyle}>Age</th>
+                                        <th style={textStyle}>Gender</th>
+                                        <th style={textStyle}>Email</th>
+                                        <th style={textStyle}>Phone Number</th>
+                                        <th style={textStyle}>Bus Number</th>
+                                        <th style={textStyle}>Seat Number</th>
+                                        <th style={textStyle}>Ticket ID</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="" style={textStyle}>
+                                    {Array.isArray(passengers) &&
+                                        passengers.length > 0 &&
+                                        passengers[0].passengers.map((passenger: Passenger, index: number) => (
+                                            <tr key={index}>
+                                                <td style={textStyle}>{passenger.firstName} {passenger.lastName}</td>
+                                                <td style={textStyle}>{passenger.age}</td>
+                                                <td style={textStyle}>{passenger.gender}</td>
+                                                <td style={textStyle}>{email}</td>
+                                                <td style={textStyle}>{phoneNumber}</td>
+                                                <td style={textStyle}>{busNumber}</td>
+                                                <td style={textStyle}>{passenger.seatNumber}</td>
+                                                <td style={textStyle}>{ticketId}</td>
+                                            </tr>
+                                        ))
+                                    }
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                     <hr style={{ margin: "5px 0" }} />
                     <div style={{ marginTop: "20px" }}>
                         <h4 style={{ textAlign: "center" }}><b>Terms and Conditions</b></h4>
-                        <div style={{ display: "flex", justifyContent: "space-around", marginTop: "10px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-around", marginTop: "10px", marginLeft: '5px', marginRight: '5px' }}>
                             <div style={{ width: "45%" }}>
                                 <p>1. Arrival Time: Passengers must arrive at least 30 minutes before the scheduled departure time. This allows for sufficient time to complete the boarding process and avoid delays. Arriving early also helps ensure that all passengers can comfortably board the bus without any rush or confusion.</p>
                                 <p>2. ID Verification: It is mandatory to carry a valid photo ID proof during the journey. The ticket and the ID will be verified before boarding to ensure the safety and security of all passengers. Without a valid ID, boarding will not be allowed, and no refunds will be provided.</p>
@@ -225,11 +226,11 @@ const Ticket: React.FC = () => {
                             </div>
                         </div>
                     </div>
+
                     <div className="text-center d-flex justify-content-center align-items-center mt-4">
                         <div>
                             <button
                                 className="btn btn-primary mx-4"
-
                                 onClick={(event) => {
                                     event.preventDefault();
                                     downloadTicket();
@@ -251,10 +252,7 @@ const Ticket: React.FC = () => {
                         </div>
                     </div>
                 </div>
-
             </div>
-
-
             {showToast && (
                 <Toast
                     message={toastMessage}
@@ -263,6 +261,7 @@ const Ticket: React.FC = () => {
                     onClose={() => setShowToast(false)}
                 />
             )}
+            <ToastContainer />
         </div>
     );
 };
