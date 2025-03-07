@@ -18,8 +18,8 @@ export const getSignupValidationSchema = () => {
             .min(6, "Password must be at least 6 characters"),
         role: Yup.string()
              .required("Role is required")
-            .oneOf(['ADMIN', 'CUSTOMER'], "role must be either Admin or Customer"),
-        termsAccepted: Yup.bool().oneOf([true], 'You must accept the terms and conditions').required('Terms and conditions are required'),
+            .oneOf(['ADMIN', 'CUSTOMER'], "Role must be either Admin or Customer"),
+        termsAccepted: Yup.bool().required('Terms and conditions are required').oneOf([true], 'You must accept the terms and conditions'),
     
     });
 };

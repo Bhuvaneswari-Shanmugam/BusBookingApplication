@@ -19,32 +19,28 @@ const BusCard: React.FC<BusCardProps> = ({
   expense,
   toggleSeatSelection,
   handleBusClick,
-  handlePayment,
   totalPrice,
+  genderSeats,
 }) => {
-  // State to manage the visibility of the TripDetailsModal
   const [showModal, setShowModal] = useState(false);
-
-  // State for selected seats and total price
   const [currentSelectedSeats, setCurrentSelectedSeats] = useState<string[]>(selectedSeats.map(String));
   const [currentTotalPrice, setCurrentTotalPrice] = useState<number>(totalPrice);
 
-  // Function to show the modal
   const handleProceedBooking = () => {
-    setShowModal(true); // Show the modal when the button is clicked
+    setShowModal(true);
   };
 
-  // Function to close the modal
   const handleCloseModal = () => {
-    setShowModal(false); // Close the modal
+    setShowModal(false);
   };
 
-  // Handle seat selection
   const handleSeatSelection = (seatNumber: string, event: React.MouseEvent) => {
-    // Toggle seat selection logic
+    if (bookedSeats.includes(Number(seatNumber)) || genderSeats.femaleSeats.includes(Number(seatNumber))) {
+      return; // Do nothing if the seat is booked or a female seat
+    }
+
     toggleSeatSelection(Number(seatNumber), event);
 
-    // Update the selected seats and total price
     let updatedSelectedSeats = [...currentSelectedSeats];
     if (updatedSelectedSeats.includes(seatNumber)) {
       updatedSelectedSeats = updatedSelectedSeats.filter((seat) => seat !== seatNumber);
@@ -52,14 +48,13 @@ const BusCard: React.FC<BusCardProps> = ({
       updatedSelectedSeats.push(seatNumber);
     }
 
-    // Update selected seats and calculate the total price
-    const newTotalPrice = updatedSelectedSeats.length * bus.expense; // Assuming each selected seat adds to the total price
+    const newTotalPrice = updatedSelectedSeats.length * bus.expense;
     setCurrentSelectedSeats(updatedSelectedSeats);
     setCurrentTotalPrice(newTotalPrice);
   };
 
   return (
-    <div key={bus.number} className="card p-4 mb-2" style={{ width: '1100px', marginRight: '0px' }}>
+    <div key={bus.number} className="card p-4 mb-2" style={{ width: '1100px', marginRight: ' 0 px' }}>
       <div className="card-content d-flex justify-content-between align-items-center">
         <div>
           <h5>{bus.name}</h5>
@@ -105,13 +100,13 @@ const BusCard: React.FC<BusCardProps> = ({
             <div className="" style={{ paddingRight: '10px', marginLeft: '150px' }}>
               <h4>Booking Summary</h4>
               {[{ label: 'Bus Number', value: selectedBus.number },
-                { label: 'From', value: from },
-                { label: 'To', value: to },
-                { label: 'Date', value: date },
-                { label: 'Expense', value: selectedBus.expense },
-                { label: 'Bus Type', value: selectedBus.type },
-                { label: 'Selected Seats', value: currentSelectedSeats.join(', ') || 'None' },
-                { label: 'Total Price', value: `₹${currentTotalPrice}` }]
+              { label: 'From', value: from },
+              { label: 'To', value: to },
+              { label: 'Date', value: date },
+              { label: 'Expense', value: selectedBus.expense },
+              { label: 'Bus Type', value: selectedBus.type },
+              { label: 'Selected Seats', value: currentSelectedSeats.join(', ') || 'None' },
+              { label: 'Total Price', value: `₹${currentTotalPrice}` }]
                 .map(({ label, value }) => (
                   <div className="summary-item" key={label}>
                     <label htmlFor={label}>{label}:</label>
@@ -122,13 +117,12 @@ const BusCard: React.FC<BusCardProps> = ({
                 <button
                   className="pay-button btn text-white"
                   style={{ backgroundColor: colors.pagecolor }}
-                  onClick={handleProceedBooking}  // Call this function on "Proceed Booking"
+                  onClick={handleProceedBooking}
                 >
                   Proceed Booking
                 </button>
               </div>
             </div>
-
             <div className="bus" style={{ flexGrow: '1', marginTop: '50px' }}>
               {rows.map((row, rowIndex) => (
                 <div key={rowIndex} className="bus-row">
@@ -140,29 +134,44 @@ const BusCard: React.FC<BusCardProps> = ({
                         style={{ width: '40px', height: '40px', margin: '3px' }}
                       />
                     ) : (
-                      <img
+                      <div
                         key={seatNumber}
-                        src={seat}
-                        alt={`Seat ${seatNumber}`}
                         className={`seat ${currentSelectedSeats.includes(seatNumber.toString()) ? 'selected' : ''}`}
-                        onClick={(e) => handleSeatSelection(seatNumber.toString(), e)}
+                        onClick={(e) => {
+                          if (bookedSeats.includes(Number(seatNumber)) || genderSeats.femaleSeats.includes(Number(seatNumber)) || !genderSeats.availableSeats.includes(Number(seatNumber))) {
+                            return; // Do nothing if the seat is booked, a female seat, or unavailable
+                          }
+                          handleSeatSelection(seatNumber.toString(), e);
+                        }}
                         style={{
                           width: '40px',
                           height: '40px',
                           margin: '3px',
-                          cursor: bookedSeats.includes(seatNumber) ? 'not-allowed' : 'pointer',
+                          cursor: bookedSeats.includes(seatNumber) || genderSeats.femaleSeats.includes(seatNumber) || !genderSeats.availableSeats.includes(seatNumber) ? 'not-allowed' : 'pointer',
+                          backgroundColor: genderSeats.femaleSeats.includes(seatNumber)
+                            ? colors.lightRed
+                            : genderSeats.maleSeats.includes(seatNumber)
+                              ? colors.secondary
+                              : 'transparent',
+                          backgroundImage: genderSeats.femaleSeats.includes(seatNumber) || genderSeats.maleSeats.includes(seatNumber) ? 'none' : `url(${seat})`,
+                          backgroundSize: 'cover',
                           border: currentSelectedSeats.includes(seatNumber.toString())
-                            ? '2px solid green'
-                            : bookedSeats.includes(seatNumber)
-                            ? '2px solid red'
-                            : '2px solid transparent',
+                            ? `3px solid ${colors.pagecolor}`
+                            : genderSeats.femaleSeats.includes(seatNumber)
+                              ? `2px solid ${colors.lightRed}`
+                              : genderSeats.maleSeats.includes(seatNumber)
+                                ? `2px solid ${colors.secondary}`
+                                : genderSeats.availableSeats.includes(seatNumber)
+                                  ? `2px solid ${colors.lightGray}`
+                                  : '2px solid transparent',
                         }}
-                      />
+                      >
+                        {seatNumber}
+                      </div>
                     )
                   )}
                 </div>
               ))}
-
               <div className="seat-legend" style={{ marginTop: '20px' }}>
                 <strong>SEAT LEGEND</strong>
                 <div className="d-flex justify-content-start mt-2">
@@ -171,18 +180,31 @@ const BusCard: React.FC<BusCardProps> = ({
                       style={{
                         width: '20px',
                         height: '20px',
-                        border: '2px solid green',
+                        border: `2px solid ${colors.pagecolor}`,
                         marginRight: '8px',
                       }}
                     ></div>
-                    <h5 className="text-secondary" style={{ margin: '0' }}>Available</h5>
+                    <h5 className="text-secondary" style={{ margin: '0' }}>Selected</h5>
                   </div>
                   <div className="legend-item d-flex align-items-center" style={{ marginRight: '20px' }}>
                     <div
                       style={{
                         width: '20px',
                         height: '20px',
-                        border: '2px solid grey',
+                        backgroundColor: colors.lightRed,
+                        border: `2px solid ${colors.lightRed}`,
+                        marginRight: '8px',
+                      }}
+                    ></div>
+                    <h5 className="text-secondary" style={{ margin: '0' }}>Female</h5>
+                  </div>
+                  <div className="legend-item d-flex align-items-center" style={{ marginRight: '20px' }}>
+                    <div
+                      style={{
+                        width: '20px',
+                        height: '20px',
+                        backgroundColor: colors.lightGray,
+                        border: `2px solid ${colors.lightGray}`,
                         marginRight: '8px',
                       }}
                     ></div>
@@ -193,11 +215,12 @@ const BusCard: React.FC<BusCardProps> = ({
                       style={{
                         width: '20px',
                         height: '20px',
-                        border: '2px solid crimson',
+                        backgroundColor: 'transparent',
+                        border: `2px solid ${colors.lightGray}`,
                         marginRight: '8px',
                       }}
                     ></div>
-                    <h5 className="text-secondary" style={{ margin: '0' }}>Female</h5>
+                    <h5 className="text-secondary" style={{ margin: '0' }}>Available</h5>
                   </div>
                 </div>
               </div>
@@ -205,20 +228,17 @@ const BusCard: React.FC<BusCardProps> = ({
           </div>
         </>
       )}
-
-    
       <TripDetailsModal
         show={showModal}
         onClose={handleCloseModal}
         onProceed={() => {
           handleCloseModal();
-        
         }}
         bus={bus}
-        selectedSeats={currentSelectedSeats}
-        totalPrice={currentTotalPrice}
         currentSelectedSeats={currentSelectedSeats}
-  
+        selectedDroppingPoints={new Set<string>()}
+        selectedPickupPoints={new Set<string>()}
+        date={date}
       />
     </div>
   );

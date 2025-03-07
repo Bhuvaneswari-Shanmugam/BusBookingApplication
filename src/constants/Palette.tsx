@@ -17,6 +17,7 @@ export const colors = {
     buttonBorder: "#ccc",
     
     // Light colors
+    lightGray:"#91a3b0",
     lightText: "#f8f9fa",  
     lightBackground: "#e9ecef", 
     lightCardBackground: "#fdfdfe",
@@ -24,6 +25,7 @@ export const colors = {
     lightHover: "#f1f3f5", 
     lightButton: "#e0e0e0",
     lightShade: "#f0f0f0",  
+    lightRed : "#fa8072 ",
     
     // Dark colors
     darkText: "#343a40",   
@@ -32,6 +34,7 @@ export const colors = {
     darkBorder: "#444",  
     darkHover: "#555", 
     darkButton: "#333", 
+    darkorchid :"#9932cc",
     darkShade: "#23272b", 
     pagecolor:"#9932CC"
 };

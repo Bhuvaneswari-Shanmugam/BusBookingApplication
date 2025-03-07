@@ -1,44 +1,89 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useGetBusesForTripQuery } from '../../redux/services/TripApi';
-import Header from '../../components/layout/Header';
-import { Bus, BookingDetails } from '../../utils/entity/PageEntity';
+import { useRetrieveGenderListQuery } from '../../redux/services/PassengerDetailsApi';
+import { Bus } from '../../utils/entity/PageEntity';
 import Filters from '../filters/Filters';
-import Toast from '../../components/Toast';
 import BusCard from '../../components/BusCard';
 import Button from '../../components/Button';
 import { colors } from '../../constants/Palette';
-import { space } from '../../constants/Palette';
 
 const AvailableBuses = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { from, to, date } = location.state || {};
-  const aboutCardRef = useRef<HTMLDivElement>(null);
   const formattedDate = new Date(date);
+  const [bookedSeats, setBookedSeats] = useState<{ [busId: string]: number[] }>({});
+  const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
+  const [selectedBus, setSelectedBus] = useState<Bus | null>(null);
+  const [viewSeats, setViewSeats] = useState<boolean>(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' | undefined }>({ message: '', type: undefined });
+  const [genderSeats, setGenderSeats] = useState<{ femaleSeats: number[]; maleSeats: number[]; availableSeats: number[] }>({ femaleSeats: [], maleSeats: [], availableSeats: [] });
+  const [rows, setRows] = useState<(number | null)[][]>([]);
+
+  const { data: genderListData, isLoading: isGenderListLoading } = useRetrieveGenderListQuery(selectedBus?.number || '', {
+    skip: !selectedBus?.number,
+  });
+
+
+  const [checkedState, setCheckedState] = useState({
+    before6AM: false,
+    sixTo12PM: false,
+    twelveTo6PM: false,
+    after6PM: false,
+  });
+  const [busTypeState, setBusTypeState] = useState({
+    seater: false,
+    sleeper: false,
+    ac: false,
+    nonAc: false,
+  });
+  const [expenseState, setExpenseState] = useState({
+    below500: false,
+    between500and1000: false,
+    above1000: false,
+  });
+  const [ratingsState, setRatingsState] = useState({
+    below4: false,
+    above4: false,
+    above4_5: false,
+    perfect5: false,
+  });
+
   const { data: buses, isLoading, isError } = useGetBusesForTripQuery({
     pickupPoint: from,
     destinationPoint: to,
     pickupTime: date,
-  });
-  const [bookedSeats, setBookedSeats] = useState<{ [busId: string]: number[] }>({});
-  const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
-  const [isPaymentSuccessful, setIsPaymentSuccessful] = useState<boolean>(false);
-  const [selectedBus, setSelectedBus] = useState<Bus | null>(null);
-  const [viewSeats, setViewSeats] = useState<boolean>(false);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' | undefined }>({ message: '', type: undefined });
-  const [rows, setRows] = useState<(number | null)[][]>([]);
-
-  const formattedDateString = formattedDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-
-  const availableBuses = buses?.filter((bus: Bus) => {
-    const isSeatsAvailable = !selectedSeats.some((seat) => bookedSeats[bus.id]?.includes(seat));
-    return isSeatsAvailable;
+    busType: busTypeState.seater ? 'Seater' : busTypeState.sleeper ? 'Sleeper' : busTypeState.ac ? 'AC' : busTypeState.nonAc ? 'Non-AC' : undefined,
+    timeSlot: checkedState.before6AM ? 'Before 6 AM' : checkedState.sixTo12PM ? '6AM-12 PM' : checkedState.twelveTo6PM ? '12PM-6PM' : checkedState.after6PM ? 'After 6PM' : undefined,
+    expenseRange: expenseState.below500 ? 'Below ₹500' : expenseState.between500and1000 ? '₹500 - ₹1000' : expenseState.above1000 ? 'Above ₹1000' : undefined,
+    ratingRange: ratingsState.below4 ? 'below4' : ratingsState.above4 ? '4.0 and above' : ratingsState.above4_5 ? '4.5 and above' : ratingsState.perfect5 ? '5.0 (Perfect)' : undefined,
   });
 
-  
-  const totalBusesCount = availableBuses?.length || 0;
+  const availableBuses = Array.isArray(buses?.data) ? buses.data : [];
+  const handleBusClick = (bus: Bus) => {
+    if (selectedBus?.number === bus.number) {
+      setViewSeats(!viewSeats);
+    } else {
+      setSelectedBus(bus)
+        ;
+      setViewSeats(true);
+    }
+  };
+  const toggleSeatSelection = (seatNumber: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (bookedSeats[selectedBus?.id || '']?.includes(seatNumber) || (genderSeats.femaleSeats.includes(seatNumber) && !genderSeats.availableSeats.includes(seatNumber))) {
+      setToast({ message: 'This seat is already booked or unavailable.', type: 'error' });
+      return;
+    }
+    setSelectedSeats((prevSelectedSeats) =>
+      prevSelectedSeats.includes(seatNumber)
+        ? prevSelectedSeats.filter((seat => seat !== seatNumber))
+        : [...prevSelectedSeats, seatNumber]
+    );
+  };
 
+  const totalPrice = selectedSeats.length * (selectedBus?.expense || 0);
   useEffect(() => {
     if (selectedBus?.type === 'SLEEPER') {
       setRows([
@@ -60,94 +105,33 @@ const AvailableBuses = () => {
     }
   }, [selectedBus]);
 
-  const toggleSeatSelection = (seatNumber: number, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (bookedSeats[selectedBus?.id || '']?.includes(seatNumber)) {
-      setToast({ message: 'This seat is already booked.', type: 'error' });
-      return;
+  useEffect(() => {
+    if (genderListData) {
+      setGenderSeats({
+        femaleSeats: genderListData.data.femaleSeatList,
+        maleSeats: genderListData.data.maleSeatList,
+        availableSeats: genderListData.data.availableSeatList,
+      });
     }
-    setSelectedSeats((prevSelectedSeats) =>
-      prevSelectedSeats.includes(seatNumber)
-        ? prevSelectedSeats.filter((seat) => seat !== seatNumber)
-        : [...prevSelectedSeats, seatNumber]
-    );
-  };
+  }, [genderListData]);
 
-  const totalPrice = selectedSeats.length * (selectedBus?.expense || 0);
 
-  const handleBusClick = (bus: Bus) => {
-    if (selectedBus?.id === bus.id) {
-      setViewSeats(!viewSeats);
-    } else {
-      setSelectedBus(bus);
-      setViewSeats(true);
-    }
-  };
-
-  const handlePayment = async () => {
-    if (selectedSeats.length > 0) {
-      try {
-        const bookingDetails: BookingDetails = {
-          pickupPoint: from,
-          destinationPoint: to,
-          pickupTime: date,
-          busNumber: Number(selectedBus?.number) || 0,
-          busType: selectedBus?.type || 'Non-AC',
-          bookedNoOfSeats: selectedSeats,
-          perSeatAmount: selectedBus?.discountedPrice || 0,
-          totalAmount: totalPrice,
-        };
-        const response = { statusCode: 200, message: 'Booking successful' };
-        if (response.statusCode === 200) {
-          setToast({ message: `Payment Successful! Total Amount is ₹${totalPrice}`, type: 'success' });
-          setBookedSeats((prev) => ({
-            ...prev,
-            [selectedBus?.id || '']: [...(prev[selectedBus?.id || ''] || []), ...selectedSeats],
-          }));
-          setIsPaymentSuccessful(true);
-          setSelectedSeats([]);
-          navigate('/home');
-        } else {
-          setToast({ message: `Booking failed. Reason: ${response.message}`, type: 'error' });
-        }
-      } catch (error: any) {
-        const errorMessage = error?.data?.message || error.message || 'Unknown error occurred';
-        setToast({ message: `Booking failed. Reason: ${errorMessage}`, type: 'error' });
-      }
-    } else {
-      setToast({ message: 'Please select at least one seat to proceed with payment.', type: 'error' });
-    }
-  };
-
-  const handleDownloadTicket = () => {
-    if (!isPaymentSuccessful) {
-      setToast({ message: 'Please complete the payment before downloading the ticket.', type: 'error' });
-    } else if (selectedSeats.length === 0) {
-      setToast({ message: 'Please select a seat to download the ticket.', type: 'error' });
-    } else {
-      setToast({ message: 'Ticket downloaded successfully!', type: 'success' });
-    }
-  };
-
-  if (isLoading) {
-    return <div>Loading buses...</div>;
-  }
+  useEffect(() => { }, [checkedState, busTypeState, expenseState, ratingsState]);
 
   return (
     <div>
-      <Header aboutCardRef={aboutCardRef} />
       <div className="container">
         <div className="d-flex align-items-start mt-5" style={{ marginLeft: '-100px' }}>
           <h5 className="mb-0 mt-5">
-            <span className="text-dark">{from} </span>
+            <span className="text-dark">{from}</span>
             <span style={{ color: colors.secondary }}>&rarr; </span>
-            <span className="text-dark">{to} </span>
+            <span className="text-dark">{to}</span>
             <span style={{ color: colors.secondary }}>on </span>
-            <span className="text-dark">&lt; {formattedDateString} &gt;</span>
+            <span className="text-dark">&lt; {formattedDate.toLocaleDateString()} &gt;</span>
           </h5>
           <Button
             className="btn mt-5 ms-3 text-white border-0 p-2"
-            style={{ backgroundColor: colors.pagecolor, height: space.xxl, borderRadius: '5px', width: '70px' }}
+            style={{ backgroundColor: colors.pagecolor, height: '40px', borderRadius: '5px', width: '70px' }}
             onClick={() => navigate('/home')}
           >
             Modify
@@ -156,32 +140,20 @@ const AvailableBuses = () => {
 
         <div className="d-flex mt-4">
           <div className="col-lg-3 w-25">
-            <Filters />
+            <Filters
+              checkedState={checkedState}
+              setCheckedState={setCheckedState}
+              busTypeState={busTypeState}
+              setBusTypeState={setBusTypeState}
+              expenseState={expenseState}
+              setExpenseState={setExpenseState}
+              ratingsState={ratingsState}
+              setRatingsState={setRatingsState}
+            />
           </div>
           <div className="col-md-8 col-lg-9">
-            <div className="d-flex mb-4 mt-2">
-              <strong className="ms-3 ">
-                {totalBusesCount} buses </strong> <span className='text-body-tertiary ms-2'>found </span>
-              
-              <strong className="ms-3">SORT BY:</strong>
-              <h6 className="ms-5 text-body-tertiary" >
-                Departure
-              </h6>
-              <h6 className="ms-5 text-body-tertiary" >
-                Duration
-              </h6>
-              <h6 className="ms-5 text-body-tertiary" style={{}} >
-                Arrival           
-              </h6>
-          
-            <h6 className="ms-5 text-body-tertiary">Ratings</h6>
-              <h6 className="ms-5 text-body-tertiary" >
-                Fare
-              </h6>
-            </div>
-
             <div className="row mt-3">
-              {availableBuses?.map((bus: any) => (
+              {availableBuses.map((bus: any) => (
                 <BusCard
                   key={bus.id}
                   bus={bus}
@@ -195,17 +167,15 @@ const AvailableBuses = () => {
                   rows={rows}
                   toggleSeatSelection={toggleSeatSelection}
                   handleBusClick={handleBusClick}
-                  handlePayment={handlePayment}
-                  handleDownloadTicket={handleDownloadTicket}
                   totalPrice={totalPrice}
                   expense={bus.expense}
+                  genderSeats={genderSeats}
                 />
               ))}
             </div>
           </div>
         </div>
       </div>
-     {toast.message && <Toast message={toast.message} type={toast.type} onClose={() => setToast({ message: '', type: undefined })} />}
     </div>
   );
 };

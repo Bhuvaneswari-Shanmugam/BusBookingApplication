@@ -1,8 +1,16 @@
 import {SignupFormField} from "../utils/entity/SignupInterface";
+import { FaEnvelope, FaPhone, FaInstagram,FaFacebook } from 'react-icons/fa';
 import catBus1 from '../assets/cat-bus1.png';
 import catBus2 from '../assets/cat-bus2.png'
 import catBus3 from  '../assets/cat-bus3.jpg'
 import {PassengerField,GenderOption, SeatDeatils} from '../utils/entity/PageEntity';
+import canada from '../assets/canada.jpg';
+import china from '../assets/china.jpg';
+import denmark from '../assets/denmark.jpg';
+import france from '../assets/france.jpg';
+import germany from '../assets/germany.jpg';
+import india from '../assets/india.jpg';
+import greece from '../assets/greece.jpg';
 
 export const SignupFormFields: SignupFormField[] = [
   { name: 'firstName', placeholder: 'First name', type: 'text', className: 'w-48 me-2', id: 'firstName' },
@@ -39,11 +47,14 @@ export const genderOptions: GenderOption[] = [
   { id: 'female', value: 'female', label: 'Female' },
 ];
 
-export const passengers :SeatDeatils []=
-[{ id: 1, seatNumber: "A1" },
-  {id: 2, seatNumber: "A2" }
+
+
+export const aboutContent = [
+  "Welcome to BigStanz! Your reliable partner for bus travel bookings. Whether you're commuting for work, embarking on a weekend getaway, or traveling for leisure, our app ensures you can easily find, book, and manage your bus tickets with just a few taps.",
+  "At BigStanz, we prioritize your convenience and safety. We offer multiple secure payment options, including credit/debit cards, e-wallets, and UPI, making it simple and safe to pay for your bus tickets. Rest assured, your payment information is encrypted to ensure a secure transaction every time.",
+  "Our user-friendly app not only streamlines the booking process but also provides real-time updates on bus schedules and routes. With BigStanz, you can say goodbye to long queues and last-minute hassles.",
+  "Join our community of happy travelers and experience seamless bus travel bookings with BigStanz today!"
 ];
-export const total = 1850.0;
 
 
 export const countries = [
@@ -56,14 +67,48 @@ export const countries = [
   'Vietnam',
 ];
 
+
+
 export const contactDetails = [
-  { label: "Email", value: "support@bigtrazetravels.com" },
-  { label: "Phone", value: "+1 (234) 567-890-987" },
-  {label: "Insta", value: "BigStanz_Booking"},
-  
+  { 
+    label: "Email", 
+    value: "bigtranzriders@gmail.com",
+    icon: <FaEnvelope color="#d44638" />
+  },
+  { 
+    label: "Phone", 
+    value: "+1 (234) 567-890-987",
+    icon: <FaPhone color="#34b7f1" />
+  },
+  {
+    label: "Facebook", 
+    value: "BigStanzRiders",
+    icon: <FaFacebook color="#1877f2" />
+  },
+  {
+    label: "Insta", 
+    value: "BigStanz_Booking",
+    icon: <FaInstagram color="#e1306c" />
+  }
+ 
 ];
 
-export const services = ['Sleeper Bus Service', 'AC and Non-AC Service', 'Luxury Bus Services'];
+
+export const services = [
+  {
+    name: 'Sleeper Bus Service',
+    description: 'Experience the comfort of our Sleeper Bus Service. These buses are equipped with reclining seats that convert into cozy beds, perfect for long-distance travel. Enjoy a restful journey and arrive at your destination refreshed and ready to go.'
+  },
+  {
+    name: 'AC and Non-AC Service',
+    description: 'Our fleet offers both Air-Conditioned (AC) and Non-Air-Conditioned (Non-AC) bus options to cater to your preferences and budget. Travel in comfort with our AC buses, which provide a cool and pleasant environment even during the hottest days. Alternatively, choose our Non-AC buses for a more economical travel experience.'
+  },
+  {
+    name: 'Luxury Bus Services',
+    description: 'Indulge in the ultimate travel experience with our Luxury Bus Services. These premium buses are designed to provide maximum comfort and convenience, featuring spacious seating, entertainment systems, onboard refreshments, and top-notch service. Ideal for travelers who seek a luxurious and enjoyable journey.'
+  }
+];
+
 
 export const navLinks = [
   { name: 'Home', to: '' },
@@ -101,22 +146,47 @@ export const busDetails = [
     }
   ];
 
-  export const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIiLCJVc2VyRW1haWwiOiIiLCJpYXQiOjE3MzUxNDI2NjYsImV4cCI6MTczNTI0ODg2NiwiRmlyc3ROYW1lIjoiTmFuZGhpbmkiLCJVc2VySWQiOiI2N2UxNGE0My03ZDUxLTQ1ZWUtYmFhZi1lMWNkNzUyNWU4YWQiLCJSb2xlIjoiQURNSU4ifQ.9_cf0yormKJk0_pL2_lhsnPoU-K_ZGDznslS60jRkzQ'; 
-
-  interface Bus {
-    name: string;
-    type: string;
-    departureTime: string;
-    departureLocation: string;
-    duration: string;
-    arrivalTime: string;
-    arrivalLocation: string;
-    rating: string;
-    originalPrice: number;
-    discountedPrice: number;
-    busId: number;
-  }
 
 
+  export const countryImages : Country[]= [
+    { src: canada, alt: "Canada" },
+    { src: china, alt: "China" },
+    { src: denmark, alt: "Denmark" },
+    { src: france, alt: "France" },
+    { src: germany, alt: "Germany" },
+    {src: greece, alt: "Greece"},
+    {src: india, alt: "India"},
+  ];
+  
+  export interface Country  {
+    src: string;
+    alt: string;
+  };
   
   
+  export const userProfilefields = [
+    { name: 'firstName', type: 'text', label: 'First Name' },
+    { name: 'lastName', type: 'text', label: 'Last Name' },
+    { name: 'email', type: 'email', label: 'Email' },
+    { name: 'age', type: 'number', label: 'Age' },
+    { name: 'gender', type: 'select', label: 'Gender', options: ['male', 'female', 'other'] },
+    { name: 'phoneNumber', type: 'tel', label: 'Phone Number' },
+    { name: 'address', type: 'text', label: 'Address' },
+  ];
+
+
+
+export const busFormFields = [
+  { label: 'Bus Number', name: 'number', type: 'text', placeholder: 'Enter Bus Number' },
+  { label: 'Trip Number', name: 'tripNumber', type: 'text', placeholder: 'Enter Trip Number' },
+  { label: 'Bus Type', name: 'type', type: 'text', placeholder: 'Enter Bus Type' },
+  { label: 'Capacity', name: 'capacity', type: 'number', placeholder: 'Enter Capacity', min: '1' },
+  { label: 'Bus Name', name: 'name', type: 'text', placeholder: 'Enter Bus Name' },
+  { label: 'Departure Time', name: 'departureTime', type: 'text', placeholder: 'Enter Departure Time' },
+  { label: 'Pickup Point', name: 'pickupPoint', type: 'text', placeholder: 'Enter Pickup Point' },
+  { label: 'Duration', name: 'duration', type: 'text', placeholder: 'Enter Duration' },
+  { label: 'Arrival Time', name: 'arrivalTime', type: 'text', placeholder: 'Enter Arrival Time' },
+  { label: 'Dropping Point', name: 'droppingPoint', type: 'text', placeholder: 'Enter Dropping Point' },
+  { label: 'Expense', name: 'expense', type: 'number', placeholder: 'Enter Expense', min: '0' },
+  { label: 'Ratings', name: 'ratings', type: 'number', placeholder: 'Enter Ratings', min: '1', max: '5', step: '0.1' },
+];

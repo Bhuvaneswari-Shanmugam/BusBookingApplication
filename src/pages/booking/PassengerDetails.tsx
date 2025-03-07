@@ -1,0 +1,324 @@
+import React, { useState, useEffect } from "react";
+import { useForm, Controller, SubmitHandler } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { jwtDecode } from "jwt-decode";
+import { useNavigate } from "react-router-dom";
+import Button from "../../components/Button";
+import Input from "../../components/Input";
+import Form from "../../components/Form";
+import Toast from "../../components/Toast";
+import { getPassengerDetailsValidationSchema } from "../../utils/schema/PassengerValidationSchema";
+import { genderOptions } from "../../constants/index";
+import { useCreatePassengerDetailsMutation } from "../../redux/services/PassengerDetailsApi";
+import { useCreateBookingMutation } from "../../redux/services/BookingApi";
+import { DecodedToken, Bus, PassengerData } from '../../utils/entity/PageEntity';
+import { Passenger } from "../../utils/entity/PassengerInterface";
+import { CreateBookingRequest } from "../../utils/entity/BookingInterface";
+import { useBooking } from "../../context/BookingProvider";
+import { usePassenger } from "../../context/PassengerProvider";
+import {colors} from '../../constants/Palette';
+
+const PassengerDetailsForm: React.FC = () => {
+  const navigate = useNavigate();
+  const { bookingDetails } = useBooking();
+  const { setPassengerDetails } = usePassenger();
+
+  const bus: Bus = bookingDetails?.bus || ({} as Bus);
+  const currentSelectedSeats = bookingDetails?.currentSelectedSeats || [];
+  const date = bookingDetails?.date || "";
+  const totalAmount = currentSelectedSeats.length * bus.expense;
+
+  const [loggedInEmail, setLoggedInEmail] = useState("");
+  const [isEmailEditable, setIsEmailEditable] = useState(false);
+  const [createBooking] = useCreateBookingMutation();
+  const [toastMessage, setToastMessage] = useState<string>("");
+  const [toastType, setToastType] = useState<"info" | "success" | "error">("info");
+  const [showToast, setShowToast] = useState<boolean>(false);
+
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(getPassengerDetailsValidationSchema),
+    defaultValues: {
+      passengers: currentSelectedSeats.map((seat) => ({
+        firstName: "",
+        lastName: "",
+        age: 0,
+        gender: "",
+        seatNumber: seat,
+      })),
+      email: "",
+      phoneNumber: "",
+      busNumber: bus?.number || 0,
+    },
+  });
+
+  useEffect(() => {
+    if (bookingDetails && currentSelectedSeats.length > 0) {
+      currentSelectedSeats.forEach((seat, index) => {
+        setValue(`passengers.${index}.seatNumber`, seat);
+      });
+      setValue("busNumber", bus?.number || 0); 
+      console.log("busNumber set to:", bus?.number); 
+    }
+  }, [bookingDetails, currentSelectedSeats, setValue, bus?.number]);
+
+  useEffect(() => {
+    const token = sessionStorage.getItem("Token");
+    if (token) {
+      try {
+        const decoded: DecodedToken = jwtDecode(token);
+        console.log("userId from passengerdetails:", decoded.userId);
+        setLoggedInEmail(decoded.email);
+        setValue("email", decoded.email);
+      } catch (error) {
+        console.error("Error decoding token:", error);
+      }
+    }
+  }, [setValue]);
+
+  const toggleEmailEdit = () => {
+    setIsEmailEditable(!isEmailEditable);
+  };
+
+  const [createPassengerDetails, { isLoading }] = useCreatePassengerDetailsMutation();
+
+  const generateTicketId = () => {
+    const randomSixDigit = Math.floor(100000 + Math.random() * 900000);
+    return `BT-${randomSixDigit}`;
+  };
+
+const onSubmit: SubmitHandler<any> = async (data) => {
+  try {
+    const ticketNumber = generateTicketId();
+    const busNumber = bus.number;
+
+    const bookingData: CreateBookingRequest = {
+      pickupPoint: bus.pickupPoint,
+      destinationPoint: bus.droppingPoint,
+      pickupTime: date,
+      busNumber: bus.number,
+      busType: bus.type,
+      bookedSeats: currentSelectedSeats,
+      perSeatAmount: bus.expense,
+      totalAmount: currentSelectedSeats.length * bus.expense,
+      ticketId: ticketNumber,
+    };
+
+    console.log("Booking Data:", bookingData); // Debugging log
+
+    const bookingResponse = await createBooking(bookingData).unwrap();
+    console.log("Booking stored in context",bookingResponse);
+
+    const passengerContextData: PassengerData = {
+      passengers: data.passengers.map((passenger: Passenger) => ({
+        ...passenger,
+      })),
+      email: data.email,
+      phoneNumber: data.phoneNumber,
+      ticketId: ticketNumber,
+      busNumber: busNumber,
+    };
+    setPassengerDetails(passengerContextData);
+
+    console.log(passengerContextData)
+    const passengerResponse = await createPassengerDetails(passengerContextData).unwrap();
+    
+    console.log("passenger data storing in context: ", passengerContextData);
+
+    setToastMessage("Booking and Passenger Details saved successfully!");
+    setToastType("success");
+    setShowToast(true);
+
+    navigate('/ticket');
+  } catch (error: any) {
+    console.error("Error:", error);
+    setToastMessage(error?.data?.message || "An error occurred while booking.");
+    setToastType("error");
+    setShowToast(true);
+  }
+};
+
+
+  return (
+    <div className="d-flex justify-content-center align-items-center" style={{ width: "670px" }}>
+      <Form onSubmit={handleSubmit(onSubmit)}>
+        <div>
+          <div className="d-flex align-items-center mt-0">
+            <img src="https://cdn-icons-png.flaticon.com/512/5464/5464651.png" alt="Passenger Icon" style={{ height: "45px", width: "44px", marginRight: "10px" }} />
+            <h3>Passenger Information</h3>
+          </div>
+
+          <div className="row">
+            {currentSelectedSeats.map((seat, index) => (
+              <div key={index}>
+                <h5 className="mb-4">Passenger {index + 1}</h5>
+                <div className="row">
+                  <div className="col-md-6">
+                    <Controller
+                      control={control}
+                      name={`passengers.${index}.firstName`}
+                      render={({ field }) => (
+                        <Input {...field} className="form-control" placeholder="First Name" />
+                      )}
+                    />
+                    {errors.passengers?.[index]?.firstName && (
+                      <small className="text-danger">{errors.passengers[index].firstName?.message}</small>
+                    )}
+                  </div>
+                  <div className="col-md-6">
+                    <Controller
+                      control={control}
+                      name={`passengers.${index}.lastName`}
+                      render={({ field }) => (
+                        <Input {...field} className="form-control" placeholder="Last Name" />
+                      )}
+                    />
+                    {errors.passengers?.[index]?.lastName && (
+                      <small className="text-danger">{errors.passengers[index].lastName?.message}</small>
+                    )}
+                  </div>
+                </div>
+                <div className="row mt-3">
+                  <div className="col-md-6">
+                    <Controller
+                      control={control}
+                      name={`passengers.${index}.age`}
+                      render={({ field }) => (
+                        <Input {...field} className="form-control" type="number" placeholder="Age" />
+                      )}
+                    />
+                    {errors.passengers?.[index]?.age && (
+                      <small className="text-danger">{errors.passengers[index].age?.message}</small>
+                    )}
+                  </div>
+                  <div className="col-md-6">
+                    {genderOptions.map(({ id, value, label }) => (
+                      <div className="form-check form-check-inline" key={id}>
+                        <Controller
+                          control={control}
+                          name={`passengers.${index}.gender`}
+                          render={({ field }) => (
+                            <Input {...field} type="radio" value={value} className="form-check-input" />
+                          )}
+                        />
+                        <label className="form-check-label">{label}</label>
+                      </div>
+                    ))}
+                    {errors.passengers?.[index]?.gender && (
+                      <small className="text-danger">{errors.passengers[index].gender?.message}</small>
+                    )}
+                  </div>
+                </div>
+                <div className="row mt-3">
+                  <div className="col-md-6">
+                    <Controller
+                      control={control}
+                      name={`passengers.${index}.seatNumber`}
+                      render={({ field }) => (
+                        <Input
+                            {...field}
+                            className="form-control"
+                            type="number"
+                            placeholder={`Seat Number: ${currentSelectedSeats[index]}`}
+                            disabled
+                            value={`Seat Number: ${currentSelectedSeats[index]}`}
+                          />
+                      )}
+                    />
+                    {errors.passengers?.[index]?.seatNumber && (
+                      <small className="text-danger">{errors.passengers[index].seatNumber?.message}</small>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            <hr />
+
+            <div className="d-flex align-items-center mb-2">
+              <img
+                src="https://cdn4.iconfinder.com/data/icons/green-shopper/1049/email.png"
+                alt="Contact Icon"
+                style={{ height: "45px", width: "44px", marginRight: "10px" }}
+              />
+              <h3>Contact Details</h3>
+            </div>
+
+            <div>
+              <div>
+                <Controller
+                  control={control}
+                  name="email"
+                  render={({ field }) => (
+                    <Input {...field} className="form-control" placeholder="Email" disabled={!isEmailEditable} />
+                  )}
+                />
+              </div>
+              <div className="mt-3">
+                <Controller
+                  control={control}
+                  name="phoneNumber"
+                  render={({ field }) => (
+                    <Input
+                      {...field}
+                      className="form-control"
+                      placeholder="Enter your phone number"
+                    />
+                  )}
+                />
+                {errors.phoneNumber && (
+                  <small className="text-danger">{errors.phoneNumber.message}</small>
+                )}
+              </div>
+              <div className="d-flex justify-content-end mb-3">
+                <div className="d-flex justify-content-end"  >
+                  <Button onClick={toggleEmailEdit} className="mt-3" type="button" style={{color:'white' , backgroundColor:colors.pagecolor, border:colors.pagecolor}}>
+                    Change Email
+                  </Button>
+                </div>
+              </div>
+            </div>
+            <hr />
+
+            <div className="text-start mt-2">
+              <p>
+                <strong>Note:</strong> You will receive your ticket details on the provided email. Ensure
+                accuracy. Once payment is confirmed, tickets will be available for download.
+              </p>
+            </div>
+
+            <div className="d-flex justify-content-between">
+              <div>
+                <p>
+                  <strong>Total Amount:</strong> INR {totalAmount}.00
+                </p>
+                <p>(*Exclusive of Taxes)</p>
+              </div>
+
+              <div className="mb-3" >
+                <Button type="submit" disabled={isLoading}  style={{color:'white' , backgroundColor:colors.pagecolor, border:colors.pagecolor}}>
+                  PROCEED TO PAY
+                </Button>
+              </div>
+            </div>
+
+            {showToast && (
+              <Toast
+                message={toastMessage}
+                type={toastType}
+                duration={3000}
+                onClose={() => setShowToast(false)}
+              />
+            )}
+          </div>
+        </div>
+      </Form>
+    </div>
+  );
+};
+
+export default PassengerDetailsForm;

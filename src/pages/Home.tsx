@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useSearchTripsMutation } from '../redux/services/TripApi';
 import { locations, busDetails, contactDetails, services, countries } from '../constants';
 import { useForm, Controller } from 'react-hook-form';
@@ -15,9 +15,11 @@ import Input from '../components/Input'
 import { InputData } from '../utils/entity/PageEntity';
 import '../App.css';
 import { colors } from '../constants/Palette';
+import { countryImages } from '../constants/index';
+import { Country } from '../constants/index';
+import { aboutContent } from '../constants';
 
 const Home = () => {
-  const location = useLocation();
   const navigate = useNavigate();
   const [searchTrips] = useSearchTripsMutation();
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -25,7 +27,10 @@ const Home = () => {
   const [toastType, setToastType] = useState<'info' | 'success' | 'error'>('info');
   const [showToast, setShowToast] = useState<boolean>(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
-  const aboutCardRef = useRef<HTMLDivElement>(null);
+  const contactCardRef = useRef<HTMLDivElement>(null);
+  const serviceCardRef= useRef<HTMLDivElement>(null);
+  const aboutCardRef=useRef<HTMLDivElement>(null);
+
 
   const {
     control,
@@ -83,7 +88,7 @@ const Home = () => {
 
   return (
     <div>
-      <Header aboutCardRef={aboutCardRef} />
+      <Header aboutCardRef={aboutCardRef}  serviceCardRef={serviceCardRef} contactCardRef={contactCardRef} />
       <div className="home-container min-vh-100 w-100 position-relative overflow-hidden">
         <div className="button-container " style={{ fontSize: '70px' }}>
           <h1 style={{ color: '#B966E2', fontSize: '70px' }}>
@@ -108,88 +113,107 @@ const Home = () => {
 
       <div ref={searchContainerRef} className="card search-container mt-4">
         <form onSubmit={handleSubmit(handleBookNowClick)}>
-          <div className="row g-3 d-flex align-items-center">
-            <div className="col-md-4 mb-3">
-              <Controller
-                name="pickupPoint"
-                control={control}
-                render={({ field }) => (
-                  <DropDown
-                    {...field}
-                    className='drop-down'
-                    options={locations}
-                    text="Select Pickup Point"
-                    style={{
-                      select: { width: '250px', height: '40px', padding: '5px', fontSize: '16px', borderRadius: '5px', border: '1px solid #B966E2', color: '#333',borderColor:colors.pagecolor}
-                    }}
-                  />
-                )}
-              />
-               <div className="float-start">
-              <span className="error text-danger">{errors.pickupPoint?.message}</span>
-              </div>
-            </div>
+        <div className="row g-3 d-flex align-items-center">
+  <div className="col-md-3 mb-3">
+    <Controller
+      name="pickupPoint"
+      control={control}
+      render={({ field }) => (
+        <DropDown
+          {...field}
+          className="drop-down"
+          options={locations}
+          text="Select Pickup Point"
+          style={{
+            select: {
+              width: '100%',  
+              height: '40px',
+              padding: '5px',
+              fontSize: '16px',
+              borderRadius: '5px',
+              border: '1px solid #B966E2',
+              color: '#333',
+              borderColor: colors.pagecolor,
+            },
+          }}
+        />
+      )}
+    />
+    <div className="float-start">
+      <span className="error text-danger">{errors.pickupPoint?.message}</span>
+    </div>
+  </div>
 
-            <div className="col-md-4">
-              <Controller
-                name="destinationPoint"
-                control={control}
-                render={({ field }) => (
-                  <DropDown
-                    {...field}
-                    className="drop-down"
-                    text="Select Destination Point"
-                    options={locations}
-                    style={{
-                      select: {width:'250px', height: '40px', padding: '5px', fontSize: '16px', borderRadius: '5px', border: '1px solid #B966E2', color: '#333',borderColor:colors.pagecolor},
-                      option: {},
-                    }}
-                  />
-                )}
-              />
-               <div className="">
-              <span className="error text-danger">{errors.destinationPoint?.message}</span>
-              </div>
-            </div>
-            <div className="col-md-2">
-              <Controller
-                name="pickupDate"
-                control={control}
-                render={({ field }) => (
-                  <Input
-                    type="date"
-                    className="form-control input-custom"
-                    style={{ borderColor: 'darkorchid' }}
-                    {...field}
-                    min={currentDate}
-                    value={field.value || ''}
-                  />
-                )}
-              />
-               <div className="float-start ">
-              <span className="error text-danger">{errors.pickupDate?.message}</span>
-              </div>
-            </div>
+  <div className="col-md-3 mb-3">
+    <Controller
+      name="destinationPoint"
+      control={control}
+      render={({ field }) => (
+        <DropDown
+          {...field}
+          className="drop-down"
+          text="Select Destination Point"
+          options={locations}
+          style={{
+            select: {
+              width: '100%', 
+              height: '40px',
+              padding: '5px',
+              fontSize: '16px',
+              borderRadius: '5px',
+              border: '1px solid #B966E2',
+              color: '#333',
+              borderColor: colors.pagecolor,
+            },
+            
+          }}
+        />
+      )}
+    />
+    <div className="">
+      <span className="error text-danger">{errors.destinationPoint?.message}</span>
+    </div>
+  </div>
 
-            <div className="col-md-2">
-              <Button
-                className="search-btn"
-                style={{
-                  width: '150px',
-                  border: 'none',
-                  borderRadius: '4px',
-                  height: '40px',
-                  backgroundColor: 'darkorchid',
-                  color: 'white',
-                  cursor: 'pointer'
-                }}
-                type="submit"
-                disabled={isLoading}
-              >
-                {isLoading ? 'Searching...' : 'Search'}
-              </Button>
-            </div>
-          </div>
+  <div className="col-md-2 mb-3">
+    <Controller
+      name="pickupDate"
+      control={control}
+      render={({ field }) => (
+        <Input
+          type="date"
+          className="form-control input-custom w-100"
+          style={{ borderColor: 'darkorchid' }}
+          {...field}
+          min={currentDate}
+          value={field.value || ''}
+        />
+      )}
+    />
+    <div className="float-start">
+      <span className="error text-danger">{errors.pickupDate?.message}</span>
+    </div>
+  </div>
+
+  <div className="col-md-3 mb-3">
+    <Button
+      className="search-btn w-75"
+      style={{
+        border: 'none',
+        borderRadius: '4px',
+        height: '40px',
+        backgroundColor: 'darkorchid',
+        color: 'white',
+        cursor: 'pointer',
+      }}
+      type="submit"
+      disabled={isLoading}
+    >
+      {isLoading ? 'Searching...' : 'Search'}
+    </Button>
+  </div>
+</div>
+
         </form>
       </div>
 
@@ -228,55 +252,76 @@ const Home = () => {
             </>
           }
         />
-         <div ref={aboutCardRef}>
+        <br></br>
+        <div >
+          <Card
+          ref={aboutCardRef}
+            description={
+              <>
+                <h4>ABOUT BIGSTANZ</h4>
+                {aboutContent.map((text, index) => (
+                  <p key={index} className="card-text mb-3 text-start">{text}</p>
+                ))}
+              </>
+            }
+          />
+        </div>
+        
         <Card
+          ref={serviceCardRef}
           description={
             <>
-              <h4>ABOUT BIGSTANZ</h4>
-              <p className="card-text mb-3">
-                Welcome to BigStanz! your reliable partner for bus travel bookings! Whether you're commuting for work, going on a weekend getaway, or traveling for leisure, our app ensures you can easily find, book, and manage your bus tickets with just a few taps.
-              </p>
+              <h5>SERVICES</h5>
+              <div className="container">
+                <div className="row">
+                  {services.map((service, index) => (
+                    <div key={index} className="col-md-4 mb-4 d-flex flex-column align-item-center text-start align">
+                      <strong className='align-item-center text-center'>{service.name}</strong>
+                      <p>{service.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </>
           }
         />
-      </div>
 
         <Card description={
-            <>
-              <h5>CONTACT US</h5>
-              {contactDetails.map((contact, index) => (
-                <p key={index} className={index === 2 ? 'mb-0' : 'mb-2'}>
-                  {contact.label}: {contact.value}
-                </p>
+          <div className="country-img">
+            <h5>GLOBAL SITES</h5>
+            <div className="image-container d-flex justify-content-center pt-2 pl-4" style={{ gap: '30px' }}>
+              {countryImages.map((country: Country, index: number) => (
+                <div key={index} className="image-item">
+                  <img
+                    src={country.src}
+                    alt={country.alt}
+                    height="100px"
+                    width="100px"
+                    style={{
+                      borderRadius: "50%",
+                    }}
+                  />
+                  <p>{country.alt}</p>
+                </div>
               ))}
-            </>
-          }/>
-        <Card description={
-            <>
-              <h5>SERVICES</h5>
-              <ul className='list-unstyled'>
-                {services.map((service, index) => (
-                  <li key={index} className={index === services.length - 1 ? 'mb-0' : 'mb-2'}>
-                    {service}
-                  </li>
-                ))}
-              </ul>
-            </>
-          }
-        />
-       <Card description={
-            <><h5>GLOBAL SITES</h5>
-              <ul className='list-unstyled'>
-                {countries.map((country: string, index: number) => (
-                  <li className={index === countries.length - 1 ? 'mb-0' : 'mb-2'} key={country}>
-                    {country}
-                  </li>
-                ))}
-              </ul>
-            </>
-          }/>
-       </div>
-     {showToast && (
+            </div>
+          </div>
+        } />
+        
+        <Card 
+        ref={contactCardRef}
+        description={
+          <>
+            <h5>CONTACT US</h5>
+            {contactDetails.map((contact, index) => (
+              <p key={index} className={index === contactDetails.length - 1 ? 'mb-0' : 'mb-2'}>
+                {contact.icon} <span className="ml-2">{contact.label}: {contact.value}</span>
+              </p>
+            ))}
+          </>
+        } />
+      </div>
+      {showToast && (
         <Toast
           message={toastMessage}
           type={toastType}

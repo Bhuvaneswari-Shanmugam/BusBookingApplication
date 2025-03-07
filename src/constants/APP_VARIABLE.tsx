@@ -19,7 +19,6 @@ export const ROUTE = {
     USER_PROFILE: "/profile/:userId",
     FOOTER: "/footer",
     BOOKING_DETAILS: "/booking-details",
-   
 };
 
 

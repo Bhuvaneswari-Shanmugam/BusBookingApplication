@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 export const SignupApi = createApi({
   reducerPath: "signupApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://localhost:8080" ,
+    baseUrl: process.env.REACT_APP_AUTH_URL ,
     prepareHeaders: (headers) => {
       const token = sessionStorage.getItem("Token");
       if (token) {
@@ -15,7 +15,7 @@ export const SignupApi = createApi({
   endpoints: (builder) => ({
     sendOtp: builder.mutation({
       query: ({email}: { email: string }) => ({
-        url: "/otp/send-otp",
+        url: "/email/send-otp",
         method: "POST",
         params: {email},
       }),
@@ -23,7 +23,7 @@ export const SignupApi = createApi({
 
     validateOtp: builder.mutation({
       query: ({ email, OTP }: { email: string; OTP: string }) => ({
-        url: '/otp/validate-otp',
+        url: '/auth/validate-otp',
         method: 'GET',
         params: { email, OTP }, 
       }),
@@ -46,10 +46,10 @@ export const SignupApi = createApi({
     }),
   
     forgotPassword: builder.mutation({
-      query: ({ email, password, confirmPassword }) => ({
+      query: ({ email, newPassword, confirmPassword }) => ({
         url: '/auth/reset-password',
         method: 'POST',
-        params: { email, password, confirmPassword },
+        body: { email, newPassword, confirmPassword },
       }),
     }),
   }),

@@ -4,9 +4,9 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 export const UsersApi = createApi({
   reducerPath: "usersApi",
   baseQuery: fetchBaseQuery({
-    baseUrl:process.env.REACT_APP_AUTH_URL,
+    baseUrl:"http://localhost:8080/auth/",
     prepareHeaders: (headers) => {
-      const token = localStorage.getItem("Token");
+      const token =sessionStorage.getItem("Token");
       if (token) {
         headers.set('Authorization', `Bearer ${token}`);
       }
@@ -17,23 +17,24 @@ export const UsersApi = createApi({
   endpoints: (builder) => ({
     getUserById: builder.query({
       query: (id) => ({
-        url: `retrieve-user-detail/${id}`,
+        url: `retrieve/${id}`,
         method: 'GET',
       }),
     }),
 
 
     getAllUsers: builder.query({
-      query: () => ({
-        url: 'retrieve-all-user',
-        method: 'GET',
+      query: (PaginationDTO) => ({
+        url: 'fetch',
+        method: 'POST',
+        body: PaginationDTO
       }),
     }),
 
 
     updateUser: builder.mutation({
       query: ({ id, data }) => ({
-        url: `update-user/${id}`,
+        url: `update/${id}`,
         method: 'PUT',
         body: data,
       }),
@@ -46,6 +47,7 @@ export const UsersApi = createApi({
         method: 'DELETE',
       }),
     }),
+
   }),
 });
 

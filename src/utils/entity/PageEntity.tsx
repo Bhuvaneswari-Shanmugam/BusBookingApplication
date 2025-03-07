@@ -7,32 +7,14 @@ export interface AccessRole {
 
 export interface DecodedToken {
   sub: string;
-  UserEmail: string;
+  email: string;
   iat: number;
   exp: number;
-  FirstName: string;
-  UserId: string;
+  firstName: string;
+  userId: string;
   Role: string;
 }
 
-export interface Bus {
-  id: number;
-  name: string;
-  type: string;
-  departureTime: string;
-  departureLocation: string;
-  duration: string;
-  arrivalTime: string;
-  arrivalLocation: string;
-  originalPrice: number;
-  discountedPrice: number;
-  busId: number;
-  expense:number;
-  number: string;
-  pickupPoint: string;
-  droppingPoint: string;
-  ratings:number;
-}
 
 
 export interface BookingDetails {
@@ -67,13 +49,35 @@ export interface TripDetailsModalProps {
   currentSelectedSeats?: string[];
   selectedPickupPoints?: Set<string>;
   selectedDroppingPoints?: Set<string>;
-  
-}
+  date: string;
+  bookingDetails?: BookingDetails;
+  children?: React.ReactNode;
 
+}
 
 export interface PickUpPointsProps {
   onSelectionChange: (selectedPoints: Set<string>) => void;
   onApply: (selectedPoints: Set<string>) => void;
+}
+
+export interface Bus {
+  id: number;
+  name: string;
+  type: string;
+  departureTime: string;
+  departureLocation: string;
+  duration: string;
+  arrivalTime: string;
+  arrivalLocation: string;
+  originalPrice: number;
+  discountedPrice: number;
+  busId: number;
+  expense: number;
+  number: 0,
+  pickupPoint: string;
+  droppingPoint: string;
+  ratings: number;
+  tripNumber?: number;
 }
 
 export interface BusCardProps {
@@ -89,9 +93,12 @@ export interface BusCardProps {
   rows: (number | null)[][];
   toggleSeatSelection: (seatNumber: number, e: React.MouseEvent) => void;
   handleBusClick: (bus: Bus) => void;
-  handlePayment: () => void;
-  handleDownloadTicket: () => void;
   totalPrice: number;
+  genderSeats: {
+    femaleSeats: number[];
+    maleSeats: number[];
+    availableSeats: number[];
+  };
 }
 
 export interface InputData {
@@ -103,47 +110,69 @@ export interface InputData {
 
 
 export interface PassengerField {
-    id: string;
-    label: string;
-    type: string;
-    placeholder: string;
-  }
-  
-  export interface GenderOption {
-    id: string;
-    value: string;
-    label: string;
-  }
-  
-  export interface Passenger {
+  id: string;
+  label: string;
+  type: string;
+  placeholder: string;
+}
+
+export interface GenderOption {
+  id: string;
+  value: string;
+  label: string;
+}
+
+export interface individualPassengerData {
+  firstName: string;
+  lastName: string;
+  age: number;
+  gender: string;
+  seatNumber: number;
+}
+
+export interface PassengerData {
+  passengers: individualPassengerData[];
+  email: string;
+  phoneNumber: string;
+  ticketId: string;
+  busNumber: number;
+
+}
+
+export interface PassengerContextType {
+  passengers: PassengerData[];
+  setPassengers: (passengers: PassengerData[]) => void;
+  setPassengerDetails: (passenger: PassengerData) => void;
+}
+
+
+export const defaultState: PassengerContextType = {
+  passengers: [],
+  setPassengers: () => { },
+  setPassengerDetails: () => { },
+};
+
+export interface CommonBackgroundProps {
+  children: React.ReactNode;
+}
+
+
+export interface FormData {
+  passengers?: {
     firstName: string;
     lastName: string;
     age: number;
     gender: string;
-    email: string; 
-    phoneNumber: string;
-  }
-  export interface CommonBackgroundProps {
-    children: React.ReactNode;
+  }[];
+  email: string;
+  phoneNumber: string;
 }
 
-
-  export interface FormData {
-    passengers?: {
-      firstName: string;
-      lastName: string;
-      age: number;
-      gender: string;
-    }[];  
-    email: string;
-    phoneNumber: string;
-  }
-  
-  export interface PassengerForTicket {
-    firstName: string;
-    lastName: string;
-    email: string;
-    phoneNumber: string;
+export interface PassengerForTicket {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
 }
 export interface Customer {
   name: string;
@@ -167,7 +196,7 @@ export interface FieldConfig {
 }
 
 export interface CommonFormProps {
-  title:String;
+  title: String;
   fields: FieldConfig[];
   errors: FieldErrors;
   register: any;
@@ -177,13 +206,51 @@ export interface CommonFormProps {
   forgotPasswordButton?: React.ReactNode;
   signUpLink?: React.ReactNode;
 }
-export interface SeatDeatils{
-  id:Number;
-  seatNumber:String;
+export interface SeatDeatils {
+  id: Number;
+  seatNumber: String;
 
 }
 
-// export interface DecodedToken {
-//   FirstName?: string;
-//   UserId?: string;
-// }
+export interface individualPassengerData {
+  firstName: string;
+  lastName: string;
+  age: number;
+  gender: string;
+  seatNumber: number;
+}
+export interface PassengerData {
+  passengers: individualPassengerData[];
+  email: string;
+  phoneNumber: string;
+  ticketId: string;
+  busNumber: number;
+
+}
+
+export interface PassengerContextType {
+  passengers: PassengerData[];
+  setPassengers: (passengers: PassengerData[]) => void;
+  setPassengerDetails: (passenger: PassengerData) => void;
+}
+
+
+
+export const defaultBusValues: Bus = {
+  id: 0,
+  name: '',
+  type: '',
+  departureTime: '',
+  departureLocation: '',
+  duration: '',
+  arrivalTime: '',
+  arrivalLocation: '',
+  originalPrice: 0,
+  discountedPrice: 0,
+  busId: 0,
+  expense: 0,
+  number: 0,
+  pickupPoint: '',
+  droppingPoint: '',
+  ratings: 0
+};

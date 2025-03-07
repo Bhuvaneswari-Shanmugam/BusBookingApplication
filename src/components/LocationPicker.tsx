@@ -5,6 +5,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { LocationPickerProps } from '../utils/entity/PageEntity';
 import { colors } from '../constants/Palette';
 import Checkbox from './CheckBox';
+import Input from '../components/Input';
 
 const LocationPicker: React.FC<LocationPickerProps> = ({
   title,
@@ -45,16 +46,15 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
       <Modal.Header closeButton>
         <Modal.Title>{title}</Modal.Title>
       </Modal.Header>
-      <input
+      <Input
   type="text"
-  className="form-control mt-3 w-50"
+  className="form-control mt-3 w-50 ms-3"
   placeholder="Search place"
   value={searchTerm}
   onChange={(e) => setSearchTerm(e.target.value)}
   style={{marginRight:'10px'}}
 />
-
-      <div className="mt-3 d-flex flex-wrap justify-content-evenly">
+   <div className="mt-3 d-flex flex-wrap justify-content-evenly ms-2">
         {filteredData.length > 0 ? (
           filteredData.map((point) => (
             <div
@@ -81,15 +81,15 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
       <Modal.Footer>
         <Button
           style={{ backgroundColor: colors.pagecolor, borderColor: colors.pagecolor }}
-          onClick={handleCancel}
-        >
-          Cancel
-        </Button>
-        <Button
-          style={{ backgroundColor: colors.pagecolor, borderColor: colors.pagecolor }}
           onClick={handleApply}
         >
           Apply
+        </Button>
+        <Button
+          style={{ backgroundColor: colors.pagecolor, borderColor: colors.pagecolor }}
+          onClick={handleCancel}
+        >
+          cancel
         </Button>
       </Modal.Footer>
     </Modal>
