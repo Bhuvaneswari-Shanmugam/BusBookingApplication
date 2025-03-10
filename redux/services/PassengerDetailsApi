@@ -14,7 +14,7 @@ export const PassengerDetailsApi = createApi({
   }),
   endpoints: (builder) => ({
     createPassengerDetails: builder.mutation({
-      query: ({ passengers, email, phoneNumber ,busNumber,ticketId}) => ({
+      query: ({ passengers, email, phoneNumber ,busNumber}) => ({
         url: '/create',
         method: 'POST',
         body: { 
@@ -22,7 +22,6 @@ export const PassengerDetailsApi = createApi({
           email,      
           phoneNumber, 
           busNumber,
-          ticketId,
         },
       }),
     }),

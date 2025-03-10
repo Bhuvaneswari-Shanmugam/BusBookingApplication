@@ -8,6 +8,7 @@ export interface CreateBookingRequest {
   perSeatAmount: number;
   totalAmount: number;
   ticketId:string;
+  
 }
 
 export interface CreateBookingResponse {

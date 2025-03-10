@@ -5,7 +5,6 @@ import { colors } from '../constants/Palette';
 import Badge from './Badge';
 import { FaStar } from 'react-icons/fa';
 import seat from '../assets/seat.jpg';
-import { useBookingContext } from '../context/Index';
 
 const BusCard: React.FC<BusCardProps> = ({
   bus,

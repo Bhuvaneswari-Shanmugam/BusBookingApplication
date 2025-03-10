@@ -42,10 +42,25 @@ export const BookingApi = createApi({
         method: 'DELETE',
       }),
     }),
+    retrievebookingByTicketId: builder.query<any, { ticketId: string }>({
+      query: ({ ticketId }) => ({
+        url: `/retrieve/ticketId?ticketId=${ticketId}`,
+        method: 'GET',
+      }),
+    }),
+    cancetTicket: builder.mutation<any, { passengerId: string }>({
+      query: ({ passengerId }) => ({
+        url: `/cancel-ticket?passengerId=${passengerId}`,
+        method: 'DELETE',
+      }),
+    }),
   }),
 });
 
 export const { useCreateBookingMutation, 
                useRetrievePastBookingQuery, 
                useRetrieveUpcomingBookingQuery ,
-               useDeleteBookingMutation} = BookingApi;
+               useDeleteBookingMutation,
+               useRetrievebookingByTicketIdQuery,
+               useCancetTicketMutation
+              } = BookingApi;

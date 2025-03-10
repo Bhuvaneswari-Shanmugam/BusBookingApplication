@@ -11,10 +11,12 @@ import { getPassengerDetailsValidationSchema } from "../../utils/schema/Passenge
 import { genderOptions } from "../../constants/index";
 import { useCreatePassengerDetailsMutation } from "../../redux/services/PassengerDetailsApi";
 import { useCreateBookingMutation } from "../../redux/services/BookingApi";
-import { DecodedToken, Bus, PassengerData, Passenger } from '../../utils/entity/PageEntity';
+import { DecodedToken, Bus, PassengerData } from '../../utils/entity/PageEntity';
+import { Passenger } from "../../utils/entity/PassengerInterface";
 import { CreateBookingRequest } from "../../utils/entity/BookingInterface";
 import { useBooking } from "../../context/BookingProvider";
 import { usePassenger } from "../../context/PassengerProvider";
+import {colors} from '../../constants/Palette';
 
 const PassengerDetailsForm: React.FC = () => {
   const navigate = useNavigate();
@@ -22,7 +24,6 @@ const PassengerDetailsForm: React.FC = () => {
   const { setPassengerDetails } = usePassenger();
 
   const bus: Bus = bookingDetails?.bus || ({} as Bus);
-  console.log("busNumber from passengers:", bus.number); // Debugging log
   const currentSelectedSeats = bookingDetails?.currentSelectedSeats || [];
   const date = bookingDetails?.date || "";
   const totalAmount = currentSelectedSeats.length * bus.expense;
@@ -60,8 +61,8 @@ const PassengerDetailsForm: React.FC = () => {
       currentSelectedSeats.forEach((seat, index) => {
         setValue(`passengers.${index}.seatNumber`, seat);
       });
-      setValue("busNumber", bus?.number || 0); // Set busNumber here
-      console.log("busNumber set to:", bus?.number); // Debugging log
+      setValue("busNumber", bus?.number || 0); 
+      console.log("busNumber set to:", bus?.number); 
     }
   }, [bookingDetails, currentSelectedSeats, setValue, bus?.number]);
 
@@ -90,55 +91,52 @@ const PassengerDetailsForm: React.FC = () => {
     return `BT-${randomSixDigit}`;
   };
 
-  const onSubmit: SubmitHandler<any> = async (data) => {
-    try {
-      const ticketId = generateTicketId();
-      const busNumber = bus.number;
+const onSubmit: SubmitHandler<any> = async (data) => {
+  try {
+    const ticketNumber = generateTicketId();
+    const busNumber = bus.number;
 
-      const bookingData: CreateBookingRequest = {
-        pickupPoint: bus.pickupPoint,
-        destinationPoint: bus.droppingPoint,
-        pickupTime: date,
-        busNumber: bus.number,
-        busType: bus.type,
-        bookedSeats: currentSelectedSeats,
-        perSeatAmount: bus.expense,
-        totalAmount: currentSelectedSeats.length * bus.expense,
-        ticketId: ticketId,
-      };
+    const bookingData: CreateBookingRequest = {
+      pickupPoint: bus.pickupPoint,
+      destinationPoint: bus.droppingPoint,
+      pickupTime: date,
+      busNumber: bus.number,
+      busType: bus.type,
+      bookedSeats: currentSelectedSeats,
+      perSeatAmount: bus.expense,
+      totalAmount: currentSelectedSeats.length * bus.expense,
+      ticketId: ticketNumber,
+    };
 
-      console.log("Booking Data:", bookingData); // Debugging log
 
-      const bookingResponse = await createBooking(bookingData).unwrap();
-      console.log("Booking Response:", bookingResponse);
+    const bookingResponse = await createBooking(bookingData).unwrap();
+    console.log("Booking stored in context",bookingResponse);
 
-      const passengerContextData: PassengerData = {
-        passengers: data.passengers.map((passenger: Passenger) => ({
-          ...passenger,
-        })),
-        email: data.email,
-        phoneNumber: data.phoneNumber,
-        ticketId: ticketId,
-        busNumber: busNumber,
-      };
+    const passengerContextData: PassengerData = {
+      passengers: data.passengers.map((passenger: Passenger) => ({
+        ...passenger,
+      })),
+      email: data.email,
+      phoneNumber: data.phoneNumber,
+      ticketId: ticketNumber,
+      busNumber: busNumber,
+    };
+    setPassengerDetails(passengerContextData);
+    const passengerResponse = await createPassengerDetails(passengerContextData).unwrap();
+    
+    setToastMessage("Booking and Passenger Details saved successfully!");
+    setToastType("success");
+    setShowToast(true);
 
-      console.log("Passenger Data Before API Call:", passengerContextData); // Debugging log
+    navigate('/ticket');
+  } catch (error: any) {
+    console.error("Error:", error);
+    setToastMessage(error?.data?.message || "An error occurred while booking.");
+    setToastType("error");
+    setShowToast(true);
+  }
+};
 
-      await createPassengerDetails(passengerContextData).unwrap();
-      setPassengerDetails(passengerContextData);
-      console.log("passenger data stored into context: ", passengerContextData);
-      setToastMessage("Booking and Passenger Details saved successfully!");
-      setToastType("success");
-      setShowToast(true);
-
-      navigate('/ticket');
-    } catch (error: any) {
-      console.error("Error:", error);
-      setToastMessage(error?.data?.message || "An error occurred while booking.");
-      setToastType("error");
-      setShowToast(true);
-    }
-  };
 
   return (
     <div className="d-flex justify-content-center align-items-center" style={{ width: "670px" }}>
@@ -152,7 +150,7 @@ const PassengerDetailsForm: React.FC = () => {
           <div className="row">
             {currentSelectedSeats.map((seat, index) => (
               <div key={index}>
-                <h5 className="mb-4">Passenger {seat} | Seat</h5>
+                <h5 className="mb-4">Passenger {index + 1}</h5>
                 <div className="row">
                   <div className="col-md-6">
                     <Controller
@@ -217,13 +215,13 @@ const PassengerDetailsForm: React.FC = () => {
                       name={`passengers.${index}.seatNumber`}
                       render={({ field }) => (
                         <Input
-                          {...field}
-                          className="form-control"
-                          type="number"
-                          placeholder="Seat Number"
-                          disabled
-                          value={currentSelectedSeats[index]}
-                        />
+                            {...field}
+                            className="form-control"
+                            type="number"
+                            placeholder={`Seat Number: ${currentSelectedSeats[index]}`}
+                            disabled
+                            value={`Seat Number: ${currentSelectedSeats[index]}`}
+                          />
                       )}
                     />
                     {errors.passengers?.[index]?.seatNumber && (
@@ -272,8 +270,8 @@ const PassengerDetailsForm: React.FC = () => {
                 )}
               </div>
               <div className="d-flex justify-content-end mb-3">
-                <div className="d-flex justify-content-end">
-                  <Button onClick={toggleEmailEdit} className="mt-3" type="button">
+                <div className="d-flex justify-content-end"  >
+                  <Button onClick={toggleEmailEdit} className="mt-3" type="button" style={{color:'white' , backgroundColor:colors.pagecolor, border:colors.pagecolor}}>
                     Change Email
                   </Button>
                 </div>
@@ -296,8 +294,8 @@ const PassengerDetailsForm: React.FC = () => {
                 <p>(*Exclusive of Taxes)</p>
               </div>
 
-              <div className="mb-3">
-                <Button type="submit" disabled={isLoading}>
+              <div className="mb-3" >
+                <Button type="submit" disabled={isLoading}  style={{color:'white' , backgroundColor:colors.pagecolor, border:colors.pagecolor}}>
                   PROCEED TO PAY
                 </Button>
               </div>

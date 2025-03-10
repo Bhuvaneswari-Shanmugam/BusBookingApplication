@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { Bus } from '../utils/entity/PageEntity';
 
-// Define the type for booking details
 interface BookingDetails {
   bus: Bus;
   currentSelectedSeats: number[];
@@ -9,16 +8,13 @@ interface BookingDetails {
   totalAmount: number;
 }
 
-// Define the type for the context value
 interface BookingContextType {
   bookingDetails: BookingDetails | null;
   setBookingDetails: React.Dispatch<React.SetStateAction<BookingDetails | null>>;
 }
 
-// Create Context with an initial undefined value
 const BookingContext = createContext<BookingContextType | undefined>(undefined);
 
-// Provider Component
 export const BookingProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [bookingDetails, setBookingDetails] = useState<BookingDetails | null>(null);
 
@@ -29,7 +25,7 @@ export const BookingProvider: React.FC<{ children: ReactNode }> = ({ children })
   );
 };
 
-// Custom Hook for using context
+
 export const useBooking = () => {
   const context = useContext(BookingContext);
   if (!context) {

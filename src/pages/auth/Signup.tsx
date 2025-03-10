@@ -14,6 +14,7 @@ import { SignupFormInputs, SignupErrorResponse } from '../../utils/entity/Signup
 import { colors } from '../../constants/Palette';
 import Card from '../../components/Card';
 import Toast from '../../components/Toast';
+import Label from '../../components/Label';
 
 const Signup: React.FC = () => {
     const validationSchema = getSignupValidationSchema();
@@ -35,11 +36,11 @@ const Signup: React.FC = () => {
     const onSubmit = async (data: SignupFormInputs) => {
         try {
             const response = await signup(data).unwrap();
-            setToastMessage(response?.data?.message || 'Email sent to the mail address');
+            setToastMessage(response?.data?.message || 'Weve sent an email! Check your inbox to verify your email.');
             setToastType('success');
             setShowToast(true);
             reset();
-           // navigate('/');
+            // navigate('/');
         } catch (err) {
             const errorMessage =
                 (err as SignupErrorResponse)?.data?.message || 'Signup failed. Please try again.';
@@ -53,10 +54,10 @@ const Signup: React.FC = () => {
         <div className="container mt-5">
             <Card
                 description={
-                    <Form onSubmit={handleSubmit(onSubmit)}>
-                        <h3>Sign up</h3>
+                    <Form onSubmit={handleSubmit(onSubmit)} style={{ height: '520px', width: '350px' }}>
+                        <h3 className=' mb-2'>Sign up</h3>
                         {SignupFormFields.map((field, index) => (
-                            <div key={index} className="mb-3 w-100">
+                            <div key={index} className=" w-100 mb-4">
                                 {field.type === "select" ? (
                                     <>
                                         <select
@@ -64,34 +65,36 @@ const Signup: React.FC = () => {
                                             className="form-select w-100"
                                             id={field.id}
                                         >
-                                            <option value="" disabled>
+                                            {/* <option value="" disabled selected>
                                                 {field.placeholder}
-                                            </option>
+                                            </option> */}
                                             {field.options?.map((option, optIndex) => (
                                                 <option key={optIndex} value={option.value}>
                                                     {option.label}
                                                 </option>
                                             ))}
                                         </select>
-                                        <div className='float-start'>
-                                            <span className="error text-danger">
+                                        <div className='float-start mb-2'>
+                                            <span className="error text-danger ">
                                                 {errors[field.name as keyof SignupFormInputs]?.message}
                                             </span>
                                         </div>
                                     </>
                                 ) : field.isCheckbox ? (
-                                    <div className="form-check w-100">
-                                        <Input
-                                            type="checkbox"
-                                            {...register(field.name as keyof SignupFormInputs)}
-                                            className={field.className}
-                                            id={field.id}
-                                            style={{ borderColor: colors.pagecolor }}
-                                        />
-                                        <label className="form-check-label" htmlFor={field.id}>
-                                            {field.label}
-                                        </label>
-                                        <div>
+                                    <div className="form-check w-100 ">
+                                        <div className="d-flex justify-content-start align-items-center gap-0">
+                                            <Input
+                                                type="checkbox"
+                                                {...register(field.name as keyof SignupFormInputs)}
+                                                className={field.className}
+                                                id={field.id}
+                                                style={{ borderColor: colors.pagecolor }}
+                                            />
+                                            <Label className="form-check-label ms-0" htmlFor={field.id}>
+                                                {field.label}
+                                            </Label>
+                                        </div>
+                                        <div className="float-start mb-2" style={{ marginLeft: "-22px" }} >
                                             <span className="error text-danger">
                                                 {errors[field.name as keyof SignupFormInputs]?.message}
                                             </span>
@@ -106,7 +109,7 @@ const Signup: React.FC = () => {
                                             className="form-control w-100"
                                             id={field.id}
                                         />
-                                        <div className="float-start">
+                                        <div className="float-start mb-2">
                                             <span className="error text-danger">
                                                 {errors[field.name as keyof SignupFormInputs]?.message}
                                             </span>

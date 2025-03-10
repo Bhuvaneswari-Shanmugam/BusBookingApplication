@@ -11,6 +11,7 @@ export interface Passenger {
   lastName: string;
   age: number | undefined;
   gender: string;
+  seatNumber:number;
   
 }
 

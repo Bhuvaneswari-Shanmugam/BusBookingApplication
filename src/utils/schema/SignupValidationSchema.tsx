@@ -13,9 +13,14 @@ export const getSignupValidationSchema = () => {
                 /^[A-Za-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/,
                 'Invalid email format'
             ),
-        password: Yup.string()
-            .required("Password is required")
-            .min(6, "Password must be at least 6 characters"),
+            password: Yup.string()
+            .required('Password is required')
+            .min(5, 'Password must be at least 8 characters')
+            .matches(/[a-z]/, 'Password must contain at least one lowercase letter')
+            .matches(/[A-Z]/, 'Password must contain at least one uppercase letter')
+            .matches(/[0-9]/, 'Password must contain at least one number')
+            .matches(/[!@#$%^&*(),.?":{}|<>]/, 'Password must contain at least one special character'),
+        
         role: Yup.string()
              .required("Role is required")
             .oneOf(['ADMIN', 'CUSTOMER'], "role must be either Admin or Customer"),

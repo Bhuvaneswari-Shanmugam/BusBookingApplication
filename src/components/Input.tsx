@@ -10,6 +10,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   maxLength?: number; 
   minLength?: number; 
   pattern?: string;  
+  value?:string | number;
   required?: boolean; 
   autoFocus?: boolean;
   autoComplete?: "on" | "off"; 
@@ -25,6 +26,7 @@ const Input: React.FC<InputProps> = ({
   className,
   maxLength,
   minLength,
+  value,
   pattern,
   required = false,
   autoFocus = false,
@@ -52,6 +54,7 @@ const Input: React.FC<InputProps> = ({
         pattern={pattern}
         required={required}
         autoFocus={autoFocus}
+        value={value}
         autoComplete={autoComplete}
         onChange={handleChange} 
         id={name} 

@@ -91,16 +91,11 @@ const SignIn: React.FC = () => {
 
     try {
       const response = await sendOtp({ email }).unwrap();
-      if (response.statusCode === 200) {
         setToastMessage(response.message || "OTP sent successfully!");
         setToastType('success');
         setShowToast(true);
         setOtpModalVisible(true);
-      } else {
-        setToastMessage(response.message || "Failed to send OTP.");
-        setToastType('error');
-        setShowToast(true);
-      }
+    
     } catch (error) {
       setToastMessage("An error occurred while sending OTP. Please try again.");
       setToastType('error');
@@ -148,7 +143,7 @@ const SignIn: React.FC = () => {
     }
 
     try {
-      const response = await forgotPassword({ email, password: resetPassword, newPassword: resetPassword, confirmPassword: confirmPassword }).unwrap();
+      const response = await forgotPassword({ email, newPassword: resetPassword, confirmPassword: confirmPassword }).unwrap();
       if (response.statusCode === 200) {
         setToastMessage("Password reset successful. You can now log in.");
         setToastType('success');
@@ -170,10 +165,8 @@ const SignIn: React.FC = () => {
   };
 
   return (
-    <div className="">
-
+    <div >
       <Card
-
         description={
           <>
             {!forgotPasswordMode && !resetPasswordMode && !otpVerified && (
@@ -182,7 +175,7 @@ const SignIn: React.FC = () => {
 
             {!forgotPasswordMode && !resetPasswordMode && (
               <div className="" style={{ border: "none", boxShadow: "none" }}>
-                <Form onSubmit={handleSubmit(onSubmit)} className="d-flex flex-column align-items-center">
+                <Form onSubmit={handleSubmit(onSubmit)} className="d-flex flex-column align-items-center" style={{height:'220px' , width:'350px'}}>
                   <div className="mb-3 w-100">
                     <Input
                       {...register("email")}
@@ -217,7 +210,7 @@ const SignIn: React.FC = () => {
                       Forgot Password?
                     </Button>
                   </div>
-                  <div className="justify-content-center mt-3 w-100">
+                  <div className="justify-content-center mt-3 w-100 mb-4">
                     <Button type="submit" className="btn w-100" disabled={isSigninLoading} style={{
                       backgroundColor: colors.pagecolor, borderColor: colors.pagecolor
 

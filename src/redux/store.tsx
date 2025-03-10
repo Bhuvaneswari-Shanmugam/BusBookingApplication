@@ -5,6 +5,7 @@ import { SignupApi } from './services/SignupApi';
 import { PassengerDetailsApi } from './services/PassengerDetailsApi';
 import { BookingApi } from './services/BookingApi';
 import { UsersApi } from './services/UserApi';
+import { TicketApi } from './services/TicketApi';
 
 const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ const store = configureStore({
     [PassengerDetailsApi.reducerPath]: PassengerDetailsApi.reducer,
     [BookingApi.reducerPath]: BookingApi.reducer,
     [UsersApi.reducerPath]: UsersApi.reducer,
+    [TicketApi.reducerPath] : TicketApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -22,7 +24,8 @@ const store = configureStore({
       SignupApi.middleware,
       PassengerDetailsApi.middleware,
       BookingApi.middleware,
-      UsersApi.middleware
+      UsersApi.middleware,
+      TicketApi.middleware,
     ),
 });
 

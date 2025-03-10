@@ -11,6 +11,7 @@ export interface DecodedToken {
   iat: number;
   exp: number;
   firstName: string;
+  lastName : string;
   userId: string;
   role: string;
 }
@@ -44,6 +45,12 @@ export const defaultBusValues: Bus = {
 };
 
 
+export interface BookingDetails {
+  bus: Bus;
+  currentSelectedSeats: number[];
+  date: string;
+  totalAmount: number;
+}
 
 export interface Bus {
   id: number;
@@ -64,12 +71,12 @@ export interface Bus {
   ratings:number;
   tripNumber?:number;
 }
+
 export type  ContactDetail = {
   label: string;
   value: string;
   icon: React.ReactNode; 
 };
-
 
 export interface BookingDetails {
   pickupPoint: string;
@@ -144,7 +151,6 @@ export interface TripDetailsModalProps {
   currentSelectedSeats?: string[];
   selectedPickupPoints?: Set<string>;
   selectedDroppingPoints?: Set<string>;
-  
 }
 
 export interface InputData {
@@ -152,8 +158,6 @@ export interface InputData {
   destinationPoint: string;
   pickupDate: string;
 }
-
-
 
 export interface PassengerField {
     id: string;
@@ -224,7 +228,6 @@ export interface CommonFormProps {
 export interface SeatDeatils{
   id:Number;
   seatNumber:String;
-
 }
 
 export interface individualPassengerData{

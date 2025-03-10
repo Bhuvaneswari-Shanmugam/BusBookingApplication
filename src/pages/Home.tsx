@@ -28,8 +28,8 @@ const Home = () => {
   const [showToast, setShowToast] = useState<boolean>(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const contactCardRef = useRef<HTMLDivElement>(null);
-  const serviceCardRef= useRef<HTMLDivElement>(null);
-  const aboutCardRef=useRef<HTMLDivElement>(null);
+  const serviceCardRef = useRef<HTMLDivElement>(null);
+  const aboutCardRef = useRef<HTMLDivElement>(null);
 
 
   const {
@@ -68,7 +68,7 @@ const Home = () => {
         setToastType('success');
         setShowToast(true);
       } else {
-        setToastMessage('No trips available for the given criteria.');
+        setToastMessage('No Buses available for the given criteria.');
         setToastType('error');
         setShowToast(true);
       }
@@ -88,7 +88,7 @@ const Home = () => {
 
   return (
     <div>
-      <Header aboutCardRef={aboutCardRef}  serviceCardRef={serviceCardRef} contactCardRef={contactCardRef} />
+      <Header aboutCardRef={aboutCardRef} serviceCardRef={serviceCardRef} contactCardRef={contactCardRef} />
       <div className="home-container min-vh-100 w-100 position-relative overflow-hidden">
         <div className="button-container " style={{ fontSize: '70px' }}>
           <h1 style={{ color: '#B966E2', fontSize: '70px' }}>
@@ -113,107 +113,107 @@ const Home = () => {
 
       <div ref={searchContainerRef} className="card search-container mt-4">
         <form onSubmit={handleSubmit(handleBookNowClick)}>
-        <div className="row g-3 d-flex align-items-center">
-  <div className="col-md-3 mb-3">
-    <Controller
-      name="pickupPoint"
-      control={control}
-      render={({ field }) => (
-        <DropDown
-          {...field}
-          className="drop-down"
-          options={locations}
-          text="Select Pickup Point"
-          style={{
-            select: {
-              width: '100%',  
-              height: '40px',
-              padding: '5px',
-              fontSize: '16px',
-              borderRadius: '5px',
-              border: '1px solid #B966E2',
-              color: '#333',
-              borderColor: colors.pagecolor,
-            },
-          }}
-        />
-      )}
-    />
-    <div className="float-start">
-      <span className="error text-danger">{errors.pickupPoint?.message}</span>
-    </div>
-  </div>
+          <div className="row g-3 d-flex justify-content-between align-items-start">
 
-  <div className="col-md-3 mb-3">
-    <Controller
-      name="destinationPoint"
-      control={control}
-      render={({ field }) => (
-        <DropDown
-          {...field}
-          className="drop-down"
-          text="Select Destination Point"
-          options={locations}
-          style={{
-            select: {
-              width: '100%', // Set width to 100% to take full column space
-              height: '40px',
-              padding: '5px',
-              fontSize: '16px',
-              borderRadius: '5px',
-              border: '1px solid #B966E2',
-              color: '#333',
-              borderColor: colors.pagecolor,
-            },
-            option: {},
-          }}
-        />
-      )}
-    />
-    <div className="">
-      <span className="error text-danger">{errors.destinationPoint?.message}</span>
-    </div>
-  </div>
+            <div className="col-md-3 mb-3 ps-4"  >
+              <Controller
+                name="pickupPoint"
+                control={control}
+                render={({ field }) => (
+                  <DropDown
+                    {...field}
+                    className="drop-down"
+                    options={locations}
+                    text="Select Pickup Point"
+                    style={{
+                      select: {
+                        width: '100%',
+                        height: '40px',
+                        padding: '5px',
+                        fontSize: '16px',
+                        borderRadius: '5px',
+                        border: '1px solid #B966E2',
+                        color: '#333',
+                        borderColor: colors.pagecolor,
+                      },
+                    }}
+                  />
+                )}
+              />
+              <div className='text-start' style={{ display: "block", width: "100%" }}>
+                <span className="error text-danger">{errors.pickupPoint?.message}</span>
+              </div>
+            </div>
 
-  <div className="col-md-2 mb-3">
-    <Controller
-      name="pickupDate"
-      control={control}
-      render={({ field }) => (
-        <Input
-          type="date"
-          className="form-control input-custom w-100"
-          style={{ borderColor: 'darkorchid' }}
-          {...field}
-          min={currentDate}
-          value={field.value || ''}
-        />
-      )}
-    />
-    <div className="float-start">
-      <span className="error text-danger">{errors.pickupDate?.message}</span>
-    </div>
-  </div>
+            <div className="col-md-3 mb-3">
+              <Controller
+                name="destinationPoint"
+                control={control}
+                render={({ field }) => (
+                  <DropDown
+                    {...field}
+                    className="drop-down"
+                    text="Select Destination Point"
+                    options={locations}
+                    style={{
+                      select: {
+                        width: '100%',
+                        height: '40px',
+                        padding: '5px',
+                        fontSize: '16px',
+                        borderRadius: '5px',
+                        border: '1px solid #B966E2',
+                        color: '#333',
+                        borderColor: colors.pagecolor,
+                      },
+                    }}
+                  />
+                )}
+              />
+              <div style={{ display: "block", width: "100%" }}>
+                <span className="error text-danger">{errors.destinationPoint?.message}</span>
+              </div>
+            </div>
 
-  <div className="col-md-3 mb-3">
-    <Button
-      className="search-btn w-75"
-      style={{
-        border: 'none',
-        borderRadius: '4px',
-        height: '40px',
-        backgroundColor: 'darkorchid',
-        color: 'white',
-        cursor: 'pointer',
-      }}
-      type="submit"
-      disabled={isLoading}
-    >
-      {isLoading ? 'Searching...' : 'Search'}
-    </Button>
-  </div>
-</div>
+            <div className="col-md-2 mb-3">
+              <Controller
+                name="pickupDate"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    type="date"
+                    className="form-control input-custom w-100"
+                    style={{ borderColor: '#d3d3d3  ' }}
+                    {...field}
+                    min={currentDate}
+                    value={field.value || ''
+                    }
+                  />
+                )}
+              />
+              <div style={{ display: "block", width: "100%" }}>
+                <span className="error text-danger">{errors.pickupDate?.message}</span>
+              </div>
+            </div>
 
+            <div className="col-md-3 mb-3">
+              <Button
+                className="search-btn w-75"
+                style={{
+                  border: 'none',
+                  borderRadius: '4px',
+                  height: '40px',
+                  backgroundColor: 'darkorchid',
+                  color: 'white',
+                  cursor: 'pointer',
+                }}
+                type="submit"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Searching...' : 'Search'}
+              </Button>
+            </div>
+          </div>
         </form>
       </div>
 
@@ -255,7 +255,7 @@ const Home = () => {
         <br></br>
         <div >
           <Card
-          ref={aboutCardRef}
+            ref={aboutCardRef}
             description={
               <>
                 <h4>ABOUT BIGSTANZ</h4>
@@ -266,7 +266,7 @@ const Home = () => {
             }
           />
         </div>
-        
+
         <Card
           ref={serviceCardRef}
           description={
@@ -307,19 +307,19 @@ const Home = () => {
             </div>
           </div>
         } />
-        
-        <Card 
-        ref={contactCardRef}
-        description={
-          <>
-            <h5>CONTACT US</h5>
-            {contactDetails.map((contact, index) => (
-              <p key={index} className={index === contactDetails.length - 1 ? 'mb-0' : 'mb-2'}>
-                {contact.icon} <span className="ml-2">{contact.label}: {contact.value}</span>
-              </p>
-            ))}
-          </>
-        } />
+
+        <Card
+          ref={contactCardRef}
+          description={
+            <>
+              <h5>CONTACT US</h5>
+              {contactDetails.map((contact, index) => (
+                <p key={index} className={index === contactDetails.length - 1 ? 'mb-0' : 'mb-2'}>
+                  {contact.icon} <span className="ml-2">{contact.label}: {contact.value}</span>
+                </p>
+              ))}
+            </>
+          } />
       </div>
       {showToast && (
         <Toast

@@ -16,6 +16,7 @@ import store from '../src/redux/store';
 import { defaultBusValues } from '../src/utils/entity/PageEntity';
 import TripDetails from './components/TripDetails';
 import ProfileLayout from './components/layout/ProfileLayout';
+import CancelTicket from './pages/auth/CancelTicket';
 
 
 const App = () => {
@@ -27,6 +28,7 @@ const App = () => {
             <Route element={<Layout />}>
               <Route path="/" element={<Signin />} />
               <Route path="/signup" element={<Signup />} />
+            
             </Route>
             <Route element={<ProtectedRoute />}>
               <Route path="*" element={<MissMatch />} />
@@ -36,9 +38,10 @@ const App = () => {
               <Route path="/ticket" element={<Ticket />} />
               <Route path="/profile-layout" element={<ProfileLayout />} />
               <Route path="/trip-details" element={<TripDetails  bus={defaultBusValues} date="" />}/>
+              <Route path="cancel-ticket" element={<CancelTicket />}/>
               <Route  path="/passenger-details" element={<PassengerDetailsForm />}/>                                                                                         
             </Route>
-            
+         
           
           </Routes>
         </BrowserRouter>

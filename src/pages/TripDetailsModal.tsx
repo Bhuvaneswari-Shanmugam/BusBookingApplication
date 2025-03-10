@@ -53,7 +53,7 @@ const TripDetailsModal: React.FC<TripDetailsModalProps> = ({
   const handleCloseOffcanvas = () => {
     setShowPassengerDetailsOffcanvas(false);
   };
-
+  {console.log(showPassengerDetailsOffcanvas)}
   return (
     <>
       <Modal show={show} onHide={onClose} backdrop="static" keyboard={false}>
@@ -99,6 +99,7 @@ const TripDetailsModal: React.FC<TripDetailsModalProps> = ({
           </div>
         </Modal.Body>
       </Modal>
+
 
       {showPassengerDetailsOffcanvas && (
         <>

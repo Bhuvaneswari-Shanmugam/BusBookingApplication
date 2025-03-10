@@ -16,8 +16,8 @@ export const UsersApi = createApi({
 
   endpoints: (builder) => ({
     getUserById: builder.query({
-      query: (id) => ({
-        url: `retrieve/${id}`,
+      query: (userId) => ({
+        url: `retrieve/${userId}`,
         method: 'GET',
       }),
     }),
@@ -30,15 +30,14 @@ export const UsersApi = createApi({
       }),
     }),
 
-
     updateUser: builder.mutation({
-      query: ({ id, data }) => ({
-        url: `update/${id}`,
-        method: 'PUT',
-        body: data,
+      query: ({ userId, data }) => ({
+          url: `update/${userId}`,
+          method: 'PUT',
+          body: data,
       }),
-    }),
-
+  }),
+  
 
     deleteUser: builder.mutation({
       query: (id) => ({

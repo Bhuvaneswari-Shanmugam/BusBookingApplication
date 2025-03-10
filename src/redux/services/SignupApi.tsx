@@ -23,7 +23,7 @@ export const SignupApi = createApi({
 
     validateOtp: builder.mutation({
       query: ({ email, OTP }: { email: string; OTP: string }) => ({
-        url: '/email/validate-otp',
+        url: '/auth/validate-otp',
         method: 'GET',
         params: { email, OTP }, 
       }),
@@ -46,10 +46,10 @@ export const SignupApi = createApi({
     }),
   
     forgotPassword: builder.mutation({
-      query: ({ email, password, confirmPassword }) => ({
+      query: ({ email, newPassword, confirmPassword }) => ({
         url: '/auth/reset-password',
         method: 'POST',
-        params: { email, password, confirmPassword },
+        body: { email, newPassword, confirmPassword },
       }),
     }),
   }),
