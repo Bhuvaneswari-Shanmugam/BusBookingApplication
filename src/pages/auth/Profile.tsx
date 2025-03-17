@@ -15,7 +15,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import Toast from '../../components/Toast';
 import { jwtDecode } from 'jwt-decode';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faEdit } from '@fortawesome/free-solid-svg-icons';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 type Gender = 'male' | 'female' | 'other';
@@ -36,7 +36,11 @@ const Profile: React.FC = () => {
     const navigate = useNavigate();
     const aboutCardRef = useRef<HTMLDivElement>(null);
     const [userData, setUserData] = useState<CustomJwtPayload | null>(null);
-    const [toastMessage, setToastMessage] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+    const [toastMessage, setToastMessage] = useState<string>('');
+    const [toastType, setToastType] = useState<'info' | 'success' | 'error'>('info');
+    const [showToast, setShowToast] = useState<boolean>(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [updateUser] = useUpdateUserMutation();
 
     useEffect(() => {
         const token = sessionStorage.getItem('Token');
@@ -44,14 +48,11 @@ const Profile: React.FC = () => {
             try {
                 const decodedToken = jwtDecode<CustomJwtPayload>(token);
                 setUserData(decodedToken);
-                console.log("User data from token:", decodedToken);
             } catch (error) {
                 console.error("Error decoding token:", error);
             }
         }
     }, []);
-
-    const [updateUser] = useUpdateUserMutation();
 
     const {
         register,
@@ -75,125 +76,157 @@ const Profile: React.FC = () => {
     }, [userData, setValue]);
 
     const onSubmit = async (formData: UserProfile) => {
-        if (userData?.userId) {
-            const id = userData?.userId;
-            try {
-                await updateUser({ userId: id, data: formData }).unwrap();
-                setToastMessage({ message: "Profile updated successfully!", type: "success" });
-            } catch (err) {
-                setToastMessage({ message: "Failed to update profile.", type: "error" });
-            }
+        if (!userData?.userId) return;
+
+        try {
+            const response = await updateUser({ userId: userData.userId, data: formData }).unwrap();
+            setToastMessage(response?.data?.message || 'Profile updated successfully');
+            setToastType('success');
+            setShowToast(true);
+            setIsEditing(false);
+        } catch (error: any) {
+            const errorMessage = error?.data?.message || 'Profile cannot be updated, please try again.';
+            setToastMessage(errorMessage);
+            setToastType('error');
+            setShowToast(true);
         }
     };
 
     const handleCancel = () => {
-        navigate('/home');
+        setIsEditing(false);
     };
 
     if (!userData) return <p>Loading...</p>;
 
     return (
         <div className="d-flex flex-column mt-5" style={{ height: '90vh', width: '1100px' }}>
-            <div className="sidebar mb-4">
-                <FontAwesomeIcon icon={faArrowLeft} onClick={() => navigate(-1)} style={{ cursor: 'pointer', color: 'black', fontSize: '24px', marginTop: '0px', marginLeft: '0px' }} />
-            </div>
             <Header aboutCardRef={aboutCardRef} />
             <div className="d-flex justify-content-center align-items-center">
                 <Card
                     className="profile-details shadow-lg"
-                    style={{ width: '1100px' }}
+                    style={{ width: '1000px' }}
                     description={
-                        <form onSubmit={handleSubmit(onSubmit)}>
-                            <div className="row mb-3">
-                                <h3 className="card-title text-center mb-4">My Profile</h3>
-                                <div className="col-md-6">
-                                    {userProfilefields.slice(0, 4).map(({ name, type, label, options }) => (
-                                        <div className="row mb-3 align-items-center" key={name}>
-                                            <div className="col-md-4 text-md-start">
-                                                <Label htmlFor={name} className="form-label mb-0">
-                                                    <strong>{label}</strong>
-                                                </Label>
-                                            </div>
+                        !isEditing ? (
+                            <div>
+                                <div className=" d-flex justify-content-between position-relative text-center mb-3">
+                                    <div className="sidebar mb-4">
+                                        <FontAwesomeIcon icon={faArrowLeft} onClick={() => navigate(-1)} style={{ cursor: 'pointer', color: 'black', fontSize: '24px' }} />
+                                    </div>
+                                    <FontAwesomeIcon
+                                        icon={faEdit}
+                                        onClick={() => setIsEditing(true)}
+                                        style={{
+                                            cursor: 'pointer',
+                                            fontSize: '24px',
+                                            color: colors.pagecolor,
+                                            position: 'absolute',
+                                            right: '0',
+                                            transform: 'translateY(-50%)'
+                                        }}
+                                    />
+                                </div>
 
-                                            <div className="col-md-8">
-                                                {type === 'select' ? (
-                                                    <select
-                                                        className={`form-select ${errors[name as keyof UserProfile] ? 'is-invalid' : ''}`}
-                                                        {...register(name as keyof UserProfile)}
-                                                    >
-                                                        {/* <option value="" disabled selected>Select {label}</option> */}
-                                                        {options?.map((option) => (
-                                                            <option key={option} value={option}>
-                                                                {option.charAt(0).toUpperCase() + option.slice(1)}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                ) : (
-                                                    <Input
-                                                        type={type}
-                                                        className={`form-control ${errors[name as keyof UserProfile] ? 'is-invalid' : ''}`}
-                                                        {...register(name as keyof UserProfile)}
-                                                        disabled={name === 'email'} 
-                                                    />
-                                                )}
-                                                {errors[name as keyof UserProfile]?.message && (
-                                                    <span className="error text-danger">{errors[name as keyof UserProfile]?.message}</span>
-                                                )}
+                                {/* Personal Details Section */}
+                                <div className=" text-center mb-4">
+                                    <h4 className="mb-3" style={{ color: colors.pagecolor }}>Personal Details</h4>
+                                    <div className="row p-4 ">
+                                        {["firstName", "lastName", "age", "gender"].map((field, index) => (
+                                            <div className="col-md-6 d-flex mb-4" key={field}>
+                                                <strong className="me-2 ">{userProfilefields.find(f => f.name === field)?.label}:</strong>
+                                                <span>{userData[field as keyof CustomJwtPayload]}</span>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
-                                <div className="col-md-6">
-                                    {userProfilefields.slice(4).map(({ name, type, label, options }) => (
-                                        <div className="row mb-3 align-items-center" key={name}>
-                                            <div className="col-md-4 text-md-start">
-                                                <Label htmlFor={name} className="form-label mb-0">
-                                                    <strong>{label}</strong>
-                                                </Label>
+
+                                {/* Contact Details Section */}
+                                <div>
+                                    <h4 className="mb-3" style={{ color: colors.pagecolor }}>Contact Details</h4>
+                                    <div className="row p-4">
+                                        {["email", "phoneNumber", "address"].map((field, index) => (
+                                            <div className="col-md-6 d-flex mb-4" key={field}>
+                                                <strong className="me-2" >{userProfilefields.find(f => f.name === field)?.label}:</strong>
+                                                <span>{userData[field as keyof CustomJwtPayload]}</span>
                                             </div>
-                                            <div className="col-md-8">
-                                                {type === 'select' ? (
-                                                    <select
-                                                        className={`form-select ${errors[name as keyof UserProfile] ? 'is-invalid' : ''}`}
-                                                        {...register(name as keyof UserProfile)}
-                                                    >
-                                                        <option value="">Select {label}</option>
-                                                        {options?.map((option) => (
-                                                            <option key={option} value={option}>
-                                                                {option.charAt(0).toUpperCase() + option.slice(1)}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                ) : (
-                                                    <Input
-                                                        type={type}
-                                                        className={`form-control ${errors[name as keyof UserProfile] ? 'is-invalid' : ''}`}
-                                                        {...register(name as keyof UserProfile)}
-                                                        disabled={name === 'email'} 
-                                                    />
-                                                )}
-                                                {errors[name as keyof UserProfile]?.message && (
-                                                    <span className="error text-danger">{errors[name as keyof UserProfile]?.message}</span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
-                            <div className="text-center">
-                                <Button type="submit" className="btn mt-3 border-0 me-2" style={{ color: 'white', backgroundColor: colors.pagecolor, width: '150px' }}>
-                                    Update
-                                </Button>
-                                <Button type="button" onClick={handleCancel} className="btn mt-3 border-0" style={{ color: 'white', backgroundColor: 'gray', width: '150px' }}>
-                                    Cancel
-                                </Button>
-                            </div>
-                        </form>
+                        ) : (
+                            <form onSubmit={handleSubmit(onSubmit)}>
+                                <div className="row mb-4">
+                                    <h3 className="card-title text-center mb-4">Edit Profile</h3>
+                                    <div className="col-md-6">
+                                        {userProfilefields.slice(0, 4).map(({ name, type, label, options }) => (
+                                            <div className="row mb-3 align-items-center" key={name}>
+                                                <div className="col-md-4 text-md-start">
+                                                    <Label htmlFor={name} className="form-label mb-0">
+                                                        <strong>{label}</strong>
+                                                    </Label>
+                                                </div>
+                                                <div className="col-md-8">
+                                                    {type === 'select' ? (
+                                                        <select
+                                                            className={`form-select ${errors[name as keyof UserProfile] ? 'is-invalid' : ''}`}
+                                                            {...register(name as keyof UserProfile)}
+                                                        >
+                                                            {options?.map((option) => (
+                                                                <option key={option} value={option}>
+                                                                    {option.charAt(0).toUpperCase() + option.slice(1)}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    ) : (
+                                                        <Input
+                                                            type={type}
+                                                            className={`form-control ${errors[name as keyof UserProfile] ? 'is-invalid' : ''}`}
+                                                            {...register(name as keyof UserProfile)}
+                                                            disabled={name === 'email'}
+                                                        />
+                                                    )}
+                                                    {errors[name as keyof UserProfile]?.message && (
+                                                        <span className="error text-danger">{errors[name as keyof UserProfile]?.message}</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="col-md-6">
+                                        {userProfilefields.slice(4).map(({ name, type, label, options }) => (
+                                            <div className="row mb-3 align-items-center" key={name}>
+                                                <div className="col-md-4 text-md-start">
+                                                    <Label htmlFor={name} className="form-label mb-0">
+                                                        <strong>{label}</strong>
+                                                    </Label>
+                                                </div>
+                                                <div className="col-md-8">
+                                                    <Input type={type} className={`form-control ${errors[name as keyof UserProfile] ? 'is-invalid' : ''}`} {...register(name as keyof UserProfile)} />
+                                                    {errors[name as keyof UserProfile]?.message && <span className="error text-danger">{errors[name as keyof UserProfile]?.message}</span>}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="text-center">
+                                    <Button type="submit" className="btn mt-3 border-0 me-2" style={{ color: 'white', backgroundColor: colors.pagecolor, width: '150px' }}>
+                                        Update
+                                    </Button>
+                                    <Button type="button" onClick={handleCancel} className="btn mt-3 border-0" style={{ color: 'white', backgroundColor: 'gray', width: '150px' }}>
+                                        Cancel
+                                    </Button>
+                                </div>
+                            </form>
+                        )
                     }
                 />
             </div>
-            {toastMessage && (
-                <Toast message={toastMessage.message} type={toastMessage.type} duration={3000} onClose={() => setToastMessage(null)} />
+            {showToast && (
+                <Toast
+                    message={toastMessage}
+                    type={toastType}
+                    duration={3000}
+                    onClose={() => setShowToast(false)}
+                />
             )}
         </div>
     );

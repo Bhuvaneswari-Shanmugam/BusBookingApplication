@@ -2,11 +2,11 @@ import { FaEnvelope, FaPhone, FaFacebook, FaInstagram } from "react-icons/fa";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
-import {SignupFormField} from "../utils/entity/SignupInterface";
+import { SignupFormField } from "../utils/entity/SignupInterface";
 import catBus1 from '../assets/cat-bus1.png';
 import catBus2 from '../assets/cat-bus2.png'
-import catBus3 from  '../assets/cat-bus3.jpg'
-import {PassengerField,GenderOption, SeatDeatils} from '../utils/entity/PageEntity';
+import catBus3 from '../assets/cat-bus3.jpg'
+import { PassengerField, GenderOption, SeatDeatils } from '../utils/entity/PageEntity';
 import Checkbox from "../components/CheckBox";
 import canada from '../assets/canada.jpg';
 import china from '../assets/china.jpg';
@@ -24,12 +24,12 @@ export const SignupFormFields: SignupFormField[] = [
   { name: 'lastName', placeholder: 'Last name', type: 'text', className: 'w-48', id: 'lastName' },
   { name: 'email', placeholder: 'Email', type: 'email', className: 'w-100', id: 'email' },
   { name: 'password', placeholder: 'Password', type: 'password', className: 'w-100', id: 'password' },
-  { 
-    name: 'role', 
-    placeholder: 'Role', 
-    type: 'select', 
-    className: 'w-100', 
-    id: 'role', 
+  {
+    name: 'role',
+    placeholder: 'Role',
+    type: 'select',
+    className: 'w-100',
+    id: 'role',
     options: [
       { value: 'CUSTOMER', label: 'Customer' },
       { value: 'ADMIN', label: 'Admin' }
@@ -55,10 +55,10 @@ export const genderOptions: GenderOption[] = [
   { id: 'others', value: 'others', label: 'Others' },
 ];
 
-export const passengers :SeatDeatils []=
-[{ id: 1, seatNumber: "A1" },
-  {id: 2, seatNumber: "A2" }
-];
+export const passengers: SeatDeatils[] =
+  [{ id: 1, seatNumber: "A1" },
+  { id: 2, seatNumber: "A2" }
+  ];
 export const total = 1850.0;
 
 
@@ -99,64 +99,64 @@ export const navLinks = [
 export const locations = ['Salem', 'Namakkal', 'Chennai', 'Coimbatore', 'Bangalore'];
 
 export const busDetails = [
-    {
-      title: "Luxury Travel",
-      description: "As India's infrastructure continues to evolve, the demand for comfortable and efficient travel options is on the rise. Whether it's long-distance travel, corporate commuting, or tourist excursions, Bigtraze Travels provides the perfect solution.",
-      imgSrc: catBus1, 
-      imgWidth: "200px",
-      imgHeight: "110px",
-      alignment: "center"
-    },
-    {
-      title: "AC Bus Travel",
-      description: "Bus air conditioners are indispensable for providing a comfortable and enjoyable journey for passengers. Understanding the benefits and maintenance tips associated with bus air conditioners can enhance passenger experience.",
-      imgSrc: catBus2, 
-      imgWidth: "200px",
-      imgHeight: "110px",
-      alignment: "center"
-    },
-    {
-      title: "Non-AC Bus Travel",
-      description: "The all-new BS VI Range of Starbus comes with unmatched features of excellent seating comfort with wider seats, armrests, mobile chargers, more leg space, reclining seats, improved suspension and reduced NVH, making it convenient and comfortable for passengers.",
-      imgSrc: catBus3, 
-      imgWidth: "330px",
-      imgHeight: "150px",
-      alignment: "start"
-    }
-  ];
-
-  
-  interface Bus {
-    name: string;
-    type: string;
-    departureTime: string;
-    departureLocation: string;
-    duration: string;
-    arrivalTime: string;
-    arrivalLocation: string;
-    rating: string;
-    originalPrice: number;
-    discountedPrice: number;
-    busId: number;
+  {
+    title: "Luxury Travel",
+    description: "As India's infrastructure continues to evolve, the demand for comfortable and efficient travel options is on the rise. Whether it's long-distance travel, corporate commuting, or tourist excursions, Bigtraze Travels provides the perfect solution.",
+    imgSrc: catBus1,
+    imgWidth: "200px",
+    imgHeight: "110px",
+    alignment: "center"
+  },
+  {
+    title: "AC Bus Travel",
+    description: "Bus air conditioners are indispensable for providing a comfortable and enjoyable journey for passengers. Understanding the benefits and maintenance tips associated with bus air conditioners can enhance passenger experience.",
+    imgSrc: catBus2,
+    imgWidth: "200px",
+    imgHeight: "110px",
+    alignment: "center"
+  },
+  {
+    title: "Non-AC Bus Travel",
+    description: "The all-new BS VI Range of Starbus comes with unmatched features of excellent seating comfort with wider seats, armrests, mobile chargers, more leg space, reclining seats, improved suspension and reduced NVH, making it convenient and comfortable for passengers.",
+    imgSrc: catBus3,
+    imgWidth: "330px",
+    imgHeight: "150px",
+    alignment: "start"
   }
+];
 
 
-  export const countryImages : Country[]= [
-    { src: canada, alt: "Canada" },
-    { src: china, alt: "China" },
-    { src: denmark, alt: "Denmark" },
-    { src: france, alt: "France" },
-    { src: germany, alt: "Germany" },
-    {src: greece, alt: "Greece"},
-    {src: india, alt: "India"},
-  ];
-  
-  export interface Country  {
-    src: string;
-    alt: string;
-  };
+interface Bus {
+  name: string;
+  type: string;
+  departureTime: string;
+  departureLocation: string;
+  duration: string;
+  arrivalTime: string;
+  arrivalLocation: string;
+  rating: string;
+  originalPrice: number;
+  discountedPrice: number;
+  busId: number;
+}
 
-  
+
+export const countryImages: Country[] = [
+  { src: canada, alt: "Canada" },
+  { src: china, alt: "China" },
+  { src: denmark, alt: "Denmark" },
+  { src: france, alt: "France" },
+  { src: germany, alt: "Germany" },
+  { src: greece, alt: "Greece" },
+  { src: india, alt: "India" },
+];
+
+export interface Country {
+  src: string;
+  alt: string;
+};
+
+
 
 export const userProfilefields = [
   { name: 'firstName', type: 'text', label: 'First Name' },
@@ -172,7 +172,7 @@ export const termsAndConditions = [
     content: "Arrival Time: Passengers must arrive at least 30 minutes before the scheduled departure time. This allows for sufficient time to complete the boarding process and avoid delays. Arriving early also helps ensure that all passengers can comfortably board the bus without any rush or confusion.",
   },
   {
-  
+
     content: "ID Verification: It is mandatory to carry a valid photo ID proof during the journey. The ticket and the ID will be verified before boarding to ensure the safety and security of all passengers. Without a valid ID, boarding will not be allowed, and no refunds will be provided.",
   },
   {
@@ -180,7 +180,7 @@ export const termsAndConditions = [
     content: "No Refunds: Once a ticket has been issued and the payment has been processed, the ticket is non-refundable. In case of cancellations, no amount will be refunded, regardless of the reason for cancellation. Please ensure you are committed to the journey before booking the ticket.",
   },
   {
-   
+
     content: "Lost or Stolen Items: The bus company is not responsible for any lost or stolen belongings during the journey. Passengers are advised to keep their personal belongings safe and secure at all times. It is recommended to avoid carrying valuables unless necessary.",
   },
   {
@@ -188,36 +188,36 @@ export const termsAndConditions = [
     content: "Safety Guidelines: Passengers must adhere to all safety guidelines provided by the bus company during the trip. This includes following instructions from the staff, wearing seat belts (if provided), and staying seated during the journey for your safety and the safety of others.",
   },
   {
-   
+
     content: "Prohibited Items: Smoking, consuming alcohol, or engaging in any inappropriate behavior is strictly prohibited on the bus. Passengers who violate these rules may be asked to leave the bus at the nearest stop without any refund. The company reserves the right to take further legal action if necessary.",
   },
   {
-  
+
     content: "Trip Cancellation or Rescheduling: The company reserves the right to cancel or reschedule the trip due to unforeseen circumstances, such as technical issues, weather conditions, or other emergencies. In such cases, passengers will be informed in advance, and alternate arrangements will be made where possible.",
   },
   {
- 
+
     content: "Behavior During the Journey: Passengers must follow the instructions of the bus staff and behave respectfully during the trip. Any form of harassment, disturbance, or inappropriate behavior towards fellow passengers or staff will not be tolerated and may lead to removal from the bus.",
   },
 ];
 export const contactDetails: ContactDetail[] = [
-  { 
-    label: "Email", 
+  {
+    label: "Email",
     value: "bigtranzriders@gmail.com",
     icon: <FaEnvelope color="#d44638" />
   },
-  { 
-    label: "Phone", 
+  {
+    label: "Phone",
     value: "+1 (234) 567-890-987",
     icon: <FaPhone color="#34b7f1" />
   },
   {
-    label: "Facebook", 
+    label: "Facebook",
     value: "BigStanzRiders",
     icon: <FaFacebook color="#1877f2" />
   },
   {
-    label: "Insta", 
+    label: "Insta",
     value: "BigStanz_Booking",
     icon: <FaInstagram color="#e1306c" />
   }
@@ -237,9 +237,9 @@ export const tripActions = (
   onDelete: (tripId: string) => void
 ): TripAction[] => [
 
-  {
+    {
       label: "Delete",
       icon: <FontAwesomeIcon icon={faTrash} color="#dc3545" />,
       handler: () => onDelete(tripId),
-  },
-];
+    },
+  ];

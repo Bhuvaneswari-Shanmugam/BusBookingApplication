@@ -20,6 +20,6 @@ export interface PassengerContextType {
   setPassengers: (passengers: Passenger[]) => void;
   email: string;
   setEmail: (email: string) => void;
-  phoneNumber: string;
+  phoneNumber?: string;
   setPhoneNumber: (phoneNumber: string) => void;
 }

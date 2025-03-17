@@ -25,7 +25,6 @@ export const getPassengerDetailsValidationSchema = Yup.object().shape({
     .email("Invalid email")
     .matches(/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/, 'Invalid email format'),
   phoneNumber: Yup.string()
-    .required("Phone number is required")
     .matches(/^\d{10}$/, "Phone number must be 10 digits"),
   busNumber: Yup.number()
     .required("Bus number is required")

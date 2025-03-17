@@ -36,7 +36,7 @@ const BusCard: React.FC<BusCardProps> = ({
 
   const handleSeatSelection = (seatNumber: string, event: React.MouseEvent) => {
     if (bookedSeats.includes(Number(seatNumber)) || genderSeats.femaleSeats.includes(Number(seatNumber))) {
-      return; // Do nothing if the seat is booked or a female seat
+      return; 
     }
 
     toggleSeatSelection(Number(seatNumber), event);
@@ -97,22 +97,22 @@ const BusCard: React.FC<BusCardProps> = ({
       {selectedBus && selectedBus.number === bus.number && viewSeats && (
         <>
           <div className="hide-content d-flex justify-content-around">
-            <div className="" style={{ paddingRight: '10px', marginLeft: '150px' }}>
+              <div className="" style={{ paddingRight: '10px', marginLeft: '150px' }}>
               <h4>Booking Summary</h4>
-              {[{ label: 'Bus Number', value: selectedBus.number },
-              { label: 'From', value: from },
-              { label: 'To', value: to },
-              { label: 'Date', value: date },
-              { label: 'Expense', value: selectedBus.expense },
-              { label: 'Bus Type', value: selectedBus.type },
-              { label: 'Selected Seats', value: currentSelectedSeats.join(', ') || 'None' },
-              { label: 'Total Price', value: `₹${currentTotalPrice}` }]
-                .map(({ label, value }) => (
-                  <div className="summary-item" key={label}>
-                    <label htmlFor={label}>{label}:</label>
-                    <input type="text" id={label} value={value} readOnly />
-                  </div>
-                ))}
+               {[{ label: 'Bus Number', value: selectedBus.number },
+               { label: 'From', value: from },
+               { label: 'To', value: to },
+               { label: 'Date', value: date },
+               { label: 'Expense', value: selectedBus.expense },
+               { label: 'Bus Type', value: selectedBus.type },
+               { label: 'Selected Seats', value: currentSelectedSeats.join(', ') || 'None' },
+               { label: 'Total Price', value: `₹${currentTotalPrice}` }]
+                 .map(({ label, value }) => (
+                   <div className="summary-item" key={label}>
+                     <label htmlFor={label}>{label}:</label>
+                     <input type="text" id={label} value={value} readOnly />
+                   </div>
+               ))}
               <div className="btn-container d-flex justify-content-between mt-5">
                 <button
                   className="pay-button btn text-white"
@@ -122,7 +122,7 @@ const BusCard: React.FC<BusCardProps> = ({
                   Proceed Booking
                 </button>
               </div>
-            </div>
+            </div>  
             <div className="bus" style={{ flexGrow: '1', marginTop: '50px' }}>
               {rows.map((row, rowIndex) => (
                 <div key={rowIndex} className="bus-row">
@@ -139,7 +139,7 @@ const BusCard: React.FC<BusCardProps> = ({
                         className={`seat ${currentSelectedSeats.includes(seatNumber.toString()) ? 'selected' : ''}`}
                         onClick={(e) => {
                           if (bookedSeats.includes(Number(seatNumber)) || genderSeats.femaleSeats.includes(Number(seatNumber)) || !genderSeats.availableSeats.includes(Number(seatNumber))) {
-                            return; // Do nothing if the seat is booked, a female seat, or unavailable
+                            return; 
                           }
                           handleSeatSelection(seatNumber.toString(), e);
                         }}

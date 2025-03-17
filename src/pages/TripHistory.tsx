@@ -49,7 +49,7 @@ const TripHistory: React.FC = () => {
                         <div className="flex-grow-1 d-flex justify-content-center">
                             <div className="btn-group" role="group" style={{ maxWidth: '400px' }}>
                                 <Button
-                                    className={`btn ${activeTab === "booked" ? "btn-#9932CC" : "btn-#A629C2"}`}
+                                    className={`btn ${activeTab === "booked" ? "btn-primary" : "btn-secondary"}`}
                                     onClick={() => {
                                         setActiveTab("booked");
                                         refetchPast();
