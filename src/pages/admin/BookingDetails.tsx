@@ -4,8 +4,8 @@ import { useFetchAllBookingQuery } from '../../redux/services/BookingDetailApi';
 import { colors } from '../../constants/Palette';
 
 const AllBookingDetails = () => {
-    const [page, setPage] = useState(0); // Default to first page
-    const size = 10;  // Number of items per page
+    const [page, setPage] = useState(0); 
+    const size = 10;  
 
     const { data, error, isLoading, isError } = useFetchAllBookingQuery({ page, size });
 
@@ -49,7 +49,7 @@ const AllBookingDetails = () => {
                                 <th>TicketID</th>
                                 <th>Bus Number</th>
                                 <th>Pickup Date & Time</th>
-                                <th>Booked Seats</th>
+                                <th>Seat Number</th>
                                  <th>Per Seat Amount</th>
                                 <th>Total Amount</th>
                             </tr>
@@ -61,9 +61,7 @@ const AllBookingDetails = () => {
                                         <td>{index + 1 + page * size}</td>
                                         <td>{`${booking.ticketId}` }</td>
                                         <td>{booking.busNumber}</td>
-                                        <td>
-                                            {new Date(booking.tripDate).toLocaleString()}
-                                        </td>
+                                        <td>{new Date(booking.tripDate).toLocaleString()}</td>
                                         <td>{booking.bookedSeat}</td>
                                         <td>₹{booking.perSeatAmount || 'N/A'}</td>
                                         <td>₹{booking.totalPrice || 'N/A'}</td>
@@ -82,7 +80,7 @@ const AllBookingDetails = () => {
 
                 <div className="d-flex justify-content-end my-3 bordeer-0" style={{ width: '85%', margin: 'auto' }}>
                     <button
-                        className="btn  me-4"
+                        className="btn  me-4 text-white"
                         onClick={handlePrevPage}
                         disabled={page === 0}
                         style={{backgroundColor:colors.pagecolor}}
@@ -90,7 +88,7 @@ const AllBookingDetails = () => {
                         Previous
                     </button>
                     <button
-                        className="btn border-0 "
+                        className="btn border-0 text-white "
                         onClick={handleNextPage}
                         disabled={data && data.data.length < size} 
                         style={{backgroundColor:colors.pagecolor}}

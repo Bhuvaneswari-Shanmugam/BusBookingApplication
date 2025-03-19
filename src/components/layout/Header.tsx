@@ -62,9 +62,16 @@ const Header: React.FC<HeaderProps> = ({ aboutCardRef, contactCardRef, serviceCa
     }
   };
 
-  const isBusesPage = location.pathname === '/buses';
+  const isBusesPage = location.pathname.startsWith('/buses');
   const isProfilePage = location.pathname.startsWith('/profile/');
-  const isProfileLayout= location.pathname.startsWith('/profile-layout')
+  const isProfileLayout= location.pathname.startsWith('/profile-layout');
+  const adminPage= location.pathname.startsWith('/admin');
+  const isCustomerDetails=location.pathname.startsWith('/customer-details');
+  const isBusDetails=location.pathname.startsWith('/bus-details');
+  const isTripInfo=location.pathname.startsWith('/trip-info');
+  const isSeatInfo=location.pathname.startsWith('/seat');
+  const isBookingInfo=location.pathname.startsWith('/all-booking-details')
+
 
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light fixed-top">
@@ -76,7 +83,7 @@ const Header: React.FC<HeaderProps> = ({ aboutCardRef, contactCardRef, serviceCa
           height="60"
           className="d-inline-block align-text-top ms-3"
         />
-        {!isProfilePage && !isBusesPage && !isProfileLayout && (
+        {!isBusesPage && !isBookingInfo && !isSeatInfo &&  !isTripInfo &&!isBusDetails && !isCustomerDetails &&!adminPage && !isProfilePage && !isProfileLayout &&  (
           <>
             <div className="collapse navbar-collapse" id="navbarNav">
               <ul className="navbar-nav me-auto mb-2 mb-lg-0">

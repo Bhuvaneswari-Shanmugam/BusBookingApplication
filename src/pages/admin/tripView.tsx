@@ -7,7 +7,8 @@ import Input from '../../components/Input';
 import Label from '../../components/Label';
 import { colors } from '../../constants/Palette';
 import { FaEdit, FaTrash } from 'react-icons/fa';
-import { toast } from 'react-toastify'; 
+import { toast } from 'react-toastify';
+import DeletionConfirmationPopup from '../../components/ConfirmDelete';
 
 interface TripData {
     tripNumber: string;
@@ -41,14 +42,15 @@ const TripInfo: React.FC = () => {
     const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
     const [page, setPage] = useState<number>(0);
     const size = 10;
+    const [tripToDelete, setTripToDelete] = useState<string | null>(null);
 
-    const { data, isLoading, error } = useFetchTripsQuery({ page, size });
+    const { data, isLoading, error, refetch } = useFetchTripsQuery({ page, size });
     const trips = data?.data || [];
     const totalPages = data?.totalPages || 1;
 
     const [createTrip] = useCreateTripMutation();
     const [updateTrip] = useUpdateTripMutation();
-    const [deleteTrip] = useDeleteTripMutation(); // Initialize deleteTrip mutation hook
+    const [deleteTrip] = useDeleteTripMutation();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -79,10 +81,10 @@ const TripInfo: React.FC = () => {
                     id: selectedTripId,
                     ...dataToSend,
                 }).unwrap();
-                alert('Trip updated successfully!');
+                toast.success('Trip updated successfully!');
             } else {
                 await createTrip(dataToSend).unwrap();
-                alert('Trip created successfully!');
+                toast.success('Trip created successfully!');
             }
 
             setTripData({
@@ -95,20 +97,32 @@ const TripInfo: React.FC = () => {
             });
             setSelectedTripId(null);
             setSelectedOption('display');
+            refetch(); // Refetch the trip details after creating or updating a trip
         } catch (err) {
             console.error(err);
-            alert('Failed to submit trip.');
+            toast.error('Failed to submit trip.');
         }
     };
 
     const handleDelete = async (trip: Trip) => {
-        const { id } = trip;
-        try {
-            await deleteTrip(id).unwrap(); // Pass id directly here
-            toast.success('Trip deleted successfully!');
-        } catch (error) {
-            toast.error('Failed to delete trip. Please try again.');
+        setTripToDelete(trip.id);
+    };
+
+    const confirmDelete = async () => {
+        if (tripToDelete) {
+            try {
+                await deleteTrip(tripToDelete).unwrap();
+                toast.success('Trip deleted successfully!');
+                setTripToDelete(null);
+                refetch(); // Refetch the trip details after deleting a trip
+            } catch (error) {
+                toast.error('Failed to delete trip. Please try again.');
+            }
         }
+    };
+
+    const cancelDelete = () => {
+        setTripToDelete(null);
     };
 
     const handleUpdate = (trip: Trip) => {
@@ -185,6 +199,7 @@ const TripInfo: React.FC = () => {
                                 className="form-control"
                                 id="pickupTime"
                                 name="pickupTime"
+                                placeholder='Enter Pickup Time'
                                 value={tripData.pickupTime ? tripData.pickupTime.slice(0, 16) : ''}
                                 onChange={handleChange}
                             />
@@ -212,16 +227,16 @@ const TripInfo: React.FC = () => {
                                 onChange={handleChange}
                             />
                         </div>
-                        <Button type="submit" className="btn border-0" style={{ backgroundColor: colors.pagecolor }}>
-                            {selectedTripId ? 'Update' : 'Submit'}
-                        </Button>
                         <Button
                             type="button"
-                            className="btn border-0 ms-2"
+                            className="btn border-0 "
                             onClick={() => setSelectedOption('display')}
                             style={{ backgroundColor: colors.pagecolor }}
                         >
                             Cancel
+                        </Button>
+                        <Button type="submit" className="btn border-0 ms-2" style={{ backgroundColor: colors.pagecolor }}>
+                            {selectedTripId ? 'Update' : 'Submit'}
                         </Button>
                     </form>
                 </div>
@@ -246,7 +261,6 @@ const TripInfo: React.FC = () => {
                                         <th>Destination Point</th>
                                         <th>Pickup Time</th>
                                         <th>Reaching Time</th>
-                                        <th>Expense</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -259,7 +273,6 @@ const TripInfo: React.FC = () => {
                                             <td>{trip.destinationPoint}</td>
                                             <td>{trip.pickupTime}</td>
                                             <td>{trip.reachingTime}</td>
-                                            <td>{trip.expense}</td>
                                             <td>
                                                 <div className="d-flex justify-content-center align-item-center">
                                                     <FaEdit onClick={() => handleUpdate(trip)} style={{ color: colors.pagecolor, marginRight: '10px' }} />
@@ -306,6 +319,9 @@ const TripInfo: React.FC = () => {
                 </div>
             )}
             {renderContent()}
+            {tripToDelete && (
+                <DeletionConfirmationPopup onConfirm={confirmDelete} onCancel={cancelDelete} />
+            )}
         </div>
     );
 };

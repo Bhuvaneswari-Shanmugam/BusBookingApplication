@@ -50,7 +50,7 @@ const Signup: React.FC = () => {
     };
 
     return (
-        <div className=" mt-5">
+        <div className="mt-5">
             <Card
                 description={
                     <Form onSubmit={handleSubmit(onSubmit)}>

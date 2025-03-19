@@ -168,8 +168,7 @@ const SignIn: React.FC = () => {
     <div >
 
       <Card
-
-        description={
+      description={
           <>
             {!forgotPasswordMode && !resetPasswordMode && !otpVerified && (
               <h3 className="p-4 d-flex justify-content-center">Login</h3>

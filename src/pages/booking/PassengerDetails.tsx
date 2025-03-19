@@ -101,7 +101,7 @@ const onSubmit: SubmitHandler<any> = async (data) => {
       destinationPoint: bus.droppingPoint,
       pickupTime: date,
       busNumber: bus.number,
-      busType: bus.type,
+      busType: bus.busType,
       bookedSeats: currentSelectedSeats,
       perSeatAmount: bus.expense,
       totalAmount: currentSelectedSeats.length * bus.expense,

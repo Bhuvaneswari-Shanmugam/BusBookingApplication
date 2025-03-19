@@ -14,9 +14,6 @@ export interface DecodedToken {
   userId: string;
   Role: string;
 }
-
-
-
 export interface BookingDetails {
   pickupPoint: string;
   destinationPoint: string;
@@ -63,16 +60,17 @@ export interface PickUpPointsProps {
 export interface Bus {
   id: number;
   name: string;
-  type: string;
-  departureTime: string;
+  busType: string;
   departureLocation: string;
   duration: string;
+  departureTime: string;
   arrivalTime: string;
   arrivalLocation: string;
   originalPrice: number;
   discountedPrice: number;
   busId: number;
   expense: number;
+  busCategory:string;
   number: 0,
   pickupPoint: string;
   droppingPoint: string;
@@ -239,7 +237,7 @@ export interface PassengerContextType {
 export const defaultBusValues: Bus = {
   id: 0,
   name: '',
-  type: '',
+  busType: '',
   departureTime: '',
   departureLocation: '',
   duration: '',
@@ -252,5 +250,6 @@ export const defaultBusValues: Bus = {
   number: 0,
   pickupPoint: '',
   droppingPoint: '',
-  ratings: 0
+  ratings: 0,
+  busCategory:''
 };

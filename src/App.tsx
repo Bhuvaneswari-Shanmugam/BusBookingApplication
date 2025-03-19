@@ -16,7 +16,6 @@ import { defaultBusValues } from './utils/entity/PageEntity';
 import { BookingProvider } from './context/BookingProvider';
 import TripInfo from './pages/admin/tripView';
 import AdminLayout from './pages/admin/AdminLayout';
-import SeatManagement from './pages/admin/SeatDetail';
 import CustomerDetails from './pages/admin/CustomerDetails';
 import BusDetails from './pages/admin/BusDetails';
 import AllBookingDetails from './pages/admin/BookingDetails';
@@ -51,9 +50,7 @@ const App = () => {
                 <Route path="/customer-details" element={<CustomerDetails/>} />
                 <Route path="/bus-details" element={<BusDetails />} />
                 <Route path="/trip-info" element={<TripInfo />} />
-                <Route path="seat" element={<SeatManagement />} /> 
                <Route path="/all-booking-details" element={<AllBookingDetails />} />
-           
               </Route>
             </Route>
           </Routes>

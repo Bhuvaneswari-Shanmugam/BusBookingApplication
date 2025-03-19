@@ -20,6 +20,7 @@ export interface CheckboxProps {
   checked: boolean;
   type: 'checkbox' | 'radio';
   onChange: (checked: boolean) => void;
+  name?: string;
 }
 
 export interface ToastProps {

@@ -13,13 +13,16 @@ const Filters = ({
   setCheckedState,
   busTypeState,
   setBusTypeState,
+  busCategoryState,
+  setBusCategoryState,
   expenseState,
   setExpenseState,
   ratingsState,
   setRatingsState,
   buses,
 }: any) => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [pickupSearchTerm, setPickupSearchTerm] = useState('');
+  const [dropoffSearchTerm, setDropoffSearchTerm] = useState('');
   const location = useLocation();
   const { from, to, date } = location.state as { from: string; to: string; date: string } || {};
   const [showPickUpPoints, setShowPickUpPoints] = useState(false);
@@ -27,24 +30,92 @@ const Filters = ({
   const [selectedPickupPoints, setSelectedPickupPoints] = useState<Set<string>>(new Set());
   const [selectedDroppingPoints, setSelectedDroppingPoints] = useState<Set<string>>(new Set());
 
-  const handleCheckboxChange = (label: string, state: any, setState: any) => {
-    setState({
-      ...state,
-      [label]: !state[label],
+  const handleDepartureChange = (type: string, label: string) => {
+    setCheckedState((prevState: any) => {
+      const newState = { ...prevState };
+      const key = label.toLowerCase().replace(' ', '');
+      if (newState[key]) {
+        delete newState[key];
+      } else {
+        newState[key] = label;
+      }
+      return newState;
+    });
+  };
+
+  const handleArrivalChange = (type: string, label: string) => {
+    setCheckedState((prevState: any) => {
+      const newState = { ...prevState };
+      const key = label.toLowerCase().replace(' ', '');
+      if (newState[key]) {
+        delete newState[key];
+      } else {
+        newState[key] = label;
+      }
+      return newState;
     });
   };
 
   const handleBusTypeChange = (label: string) => {
-    setBusTypeState({
-      seater: label === 'Seater',
-      sleeper: label === 'Sleeper',
-      ac: label === 'AC',
-      nonAc: label === 'Non-AC',
+    setBusTypeState((prevState: any) => {
+      const newState = { ...prevState };
+      const key = label.toLowerCase();
+      if (newState[key]) {
+        delete newState[key];
+      } else {
+        newState[key] = label;
+      }
+      return newState;
     });
   };
 
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
+  const handleBusCategoryChange = (label: string) => {
+    setBusCategoryState((prevState: any) => {
+      const newState = { ...prevState };
+      const key = label.toLowerCase().replace(' ', '');
+      if (newState[key]) {
+        delete newState[key];
+      } else {
+        newState[key] = label;
+      }
+      return newState;
+    });
+  };
+
+  const handleBusRatingChange = (label: string) => {
+    setRatingsState((prevState: any) => {
+      const newState = { ...prevState };
+      const key = label.replace(' ', '').toLowerCase();
+      if (newState[key]) {
+        delete newState[key];
+      } else {
+        newState[key] = label;
+      }
+      return newState;
+    });
+  };
+
+  const handleBusExpenseChange = (label: string) => {
+    setExpenseState((prevState: any) => {
+      const newState = { ...prevState };
+      const key = label.toLowerCase().replace(' ', '');
+      if (newState[key]) {
+        delete newState[key];
+      } else {
+        newState[key] = label;
+      }
+      return newState;
+    });
+  };
+
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>, type: string) => {
+    if (type === 'pickup') {
+      setPickupSearchTerm(event.target.value);
+      setShowPickUpPoints(true);
+    } else {
+      setDropoffSearchTerm(event.target.value);
+      setShowDropOffPoints(true);
+    }
   };
 
   const renderSelectedPoints = (points: Set<string>) => {
@@ -65,28 +136,40 @@ const Filters = ({
     console.log('Selected Dropping Points:', Array.from(selected).join(', '));
   };
 
-
-
   return (
-    <div className="container">
-      <div>
-        <h6 className="fw-bold">Departure Time</h6>
+    <div className="container bg-light mt-4" style={{ marginLeft: '-240px' }}>
+      <div className="ms-3">
+        <h5 className="fw-bold mt-5">Departure Time</h5>
         {['Before 6 AM', '6AM-12 PM', '12PM-6PM', 'After 6PM'].map((label) => (
-          <div key={label} className="form-check mb-2">
+          <div key={label} className="form-check mb-2 ms-2">
             <Checkbox
               label={label}
               checked={checkedState[label.toLowerCase().replace(' ', '')]}
               type="checkbox"
-              onChange={() => handleCheckboxChange(label, checkedState, setCheckedState)}
+              onChange={() => handleDepartureChange('departure', label)}
             />
           </div>
         ))}
       </div>
 
-      <div className="mb-4">
-        <h6 className="fw-bold">Bus Type</h6>
-        {['Seater', 'Sleeper', 'AC', 'Non-AC'].map((label) => (
-          <div key={label} className="form-check mb-2">
+      <div className="ms-3">
+        <h5 className="fw-bold mt-5">Arrival Time</h5>
+        {['Before 6 AM', '6AM-12 PM', '12PM-6PM', 'After 6PM'].map((label) => (
+          <div key={label} className="form-check mb-2 ms-2">
+            <Checkbox
+              label={label}
+              checked={checkedState[label.toLowerCase().replace(' ', '')]}
+              type="checkbox"
+              onChange={() => handleArrivalChange('arrival', label)}
+            />
+          </div>
+        ))}
+      </div>
+
+      <div className="mb-4 ms-3">
+        <h5 className="fw-bold">Bus Type</h5>
+        {['Seater', 'Sleeper'].map((label) => (
+          <div key={label} className="form-check mb-2 ms-2">
             <Checkbox
               label={label}
               checked={busTypeState[label.toLowerCase()]}
@@ -97,29 +180,43 @@ const Filters = ({
         ))}
       </div>
 
-      <div className="mb-4">
-        <h6 className="fw-bold">Expense Range</h6>
-        {['Below ₹500', '₹500 - ₹1000', 'Above ₹1000'].map((label) => (
-          <div key={label} className="form-check mb-2">
+      <div className="mb-4 ms-3">
+        <h5 className="fw-bold">Bus Category</h5>
+        {['AC', 'Non-Ac'].map((label) => (
+          <div key={label} className="form-check mb-2 ms-2">
             <Checkbox
               label={label}
-              checked={expenseState[label.toLowerCase().replace(' ', '')]}
+              checked={busCategoryState[label.toLowerCase().replace(' ', '')]}
               type="checkbox"
-              onChange={() => handleCheckboxChange(label, expenseState, setExpenseState)}
+              onChange={() => handleBusCategoryChange(label)}
             />
           </div>
         ))}
       </div>
 
-      <div className="mb-4">
-        <h6 className="fw-bold">Ratings</h6>
-        {['below4', '4.0 and above', '4.5 and above', '5.0 (Perfect)'].map((label) => (
-          <div key={label} className="form-check mb-2">
+      <div className="mb-4 ms-3">
+        <h5 className="fw-bold">Expense Range</h5>
+        {['Below ₹500', '₹500 - ₹1000', 'Above ₹1000'].map((label) => (
+          <div key={label} className="form-check mb-2 ms-2">
+            <Checkbox
+              label={label}
+              checked={expenseState[label.toLowerCase().replace(' ', '')]}
+              type="checkbox"
+              onChange={() => handleBusExpenseChange(label)}
+            />
+          </div>
+        ))}
+      </div>
+
+      <div className="mb-4 ms-3">
+        <h5 className="fw-bold">Ratings</h5>
+        {['Below 4', '4.0 and above', '4.5 and above', '5.0 (Perfect)'].map((label) => (
+          <div key={label} className="form-check mb-2 ms-2">
             <Checkbox
               label={label}
               checked={ratingsState[label.replace(' ', '').toLowerCase()]}
               type="checkbox"
-              onChange={() => handleCheckboxChange(label, ratingsState, setRatingsState)}
+              onChange={() => handleBusRatingChange(label)}
             />
           </div>
         ))}
@@ -130,8 +227,8 @@ const Filters = ({
         <div className="input-group">
           <Input
             type="text"
-            value={searchTerm}
-            onChange={handleSearchChange}
+            value={pickupSearchTerm}
+            onChange={(e) => handleSearchChange(e, 'pickup')}
             placeholder="Search pickup Point"
             className="form-control"
             onClick={() => setShowPickUpPoints(true)}
@@ -146,11 +243,12 @@ const Filters = ({
       </div>
 
       <div className="mb-4">
+        <h6 className="fw-bold">Dropping Point</h6>
         <div className="input-group">
           <Input
             type="text"
-            value={searchTerm}
-            onChange={handleSearchChange}
+            value={dropoffSearchTerm}
+            onChange={(e) => handleSearchChange(e, 'dropoff')}
             placeholder="Search dropping point"
             className="form-control"
             onClick={() => setShowDropOffPoints(true)}
@@ -165,19 +263,14 @@ const Filters = ({
       </div>
 
       {showPickUpPoints && (
-        <PickUpPoints
-          onSelectionChange={setSelectedPickupPoints}
-          onApply={handlePickupPointSelect}
-        />
+        <PickUpPoints onSelectionChange={setSelectedPickupPoints} onApply={handlePickupPointSelect} />
       )}
 
       {showDropOffPoints && (
-        <DroppingPoints
-          onSelectionChange={setSelectedDroppingPoints}
-          onApply={handleDropOffPointSelect}
-        />
+        <DroppingPoints onSelectionChange={setSelectedDroppingPoints} onApply={handleDropOffPointSelect} />
       )}
- <TripDetailsModal
+
+      <TripDetailsModal
         bus={buses && buses.length > 0 ? buses[0] : {}}
         selectedPickupPoints={selectedPickupPoints}
         selectedDroppingPoints={selectedDroppingPoints}

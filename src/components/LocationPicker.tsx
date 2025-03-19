@@ -21,13 +21,9 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
     point.location.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleCheckboxChange = (location: string) => {
-    const newSelected = new Set(selectedPoints);
-    if (newSelected.has(location)) {
-      newSelected.delete(location);
-    } else {
-      newSelected.add(location);
-    }
+  const handleRadioChange = (location: string) => {
+    const newSelected = new Set<string>();
+    newSelected.add(location);
     onSelectionChange(newSelected);
   };
 
@@ -37,7 +33,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
   };
 
   const handleCancel = () => {
-    onSelectionChange(new Set());
+    onSelectionChange(new Set<string>());
     setShowModal(false);
   };
 
@@ -47,14 +43,14 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
         <Modal.Title>{title}</Modal.Title>
       </Modal.Header>
       <Input
-  type="text"
-  className="form-control mt-3 w-50 ms-3"
-  placeholder="Search place"
-  value={searchTerm}
-  onChange={(e) => setSearchTerm(e.target.value)}
-  style={{marginRight:'10px'}}
-/>
-   <div className="mt-3 d-flex flex-wrap justify-content-evenly ms-2">
+        type="text"
+        className="form-control mt-3 w-50 ms-3"
+        placeholder="Search place"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        style={{ marginRight: '10px' }}
+      />
+      <div className="mt-3 d-flex flex-wrap justify-content-evenly ms-2">
         {filteredData.length > 0 ? (
           filteredData.map((point) => (
             <div
@@ -69,8 +65,9 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
               <Checkbox
                 label={point.location}
                 checked={selectedPoints.has(point.location)}
-                type="checkbox"
-                onChange={(checked) => handleCheckboxChange(point.location)}
+                type="radio"
+                name="location"
+                onChange={(checked) => handleRadioChange(point.location)}
               />
             </div>
           ))
@@ -89,7 +86,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({
           style={{ backgroundColor: colors.pagecolor, borderColor: colors.pagecolor }}
           onClick={handleCancel}
         >
-          cancel
+          Cancel
         </Button>
       </Modal.Footer>
     </Modal>

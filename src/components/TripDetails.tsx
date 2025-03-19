@@ -75,15 +75,13 @@ const TripDetailsModal: React.FC<TripDetailsModalProps> = ({
           <p className="text-secondary">
             {selectedDroppingPoints.size > 0 ? Array.from(selectedDroppingPoints).join(', ') : 'None'}
           </p>
-
           <p>
             <strong>Seat No:</strong>
             <span className="d-inline mx-2">
               {currentSelectedSeats?.length > 0 ? currentSelectedSeats.join(', ') : 'None'}
             </span>
           </p>
-
-          <strong>Fare Details</strong>
+           <strong>Fare Details</strong>
           <p>
             <span>Amount:</span>
             <span className="d-inline mx-2">₹{totalPrice}</span>
@@ -92,8 +90,7 @@ const TripDetailsModal: React.FC<TripDetailsModalProps> = ({
           <div className="d-flex justify-content-center">
             <Button
               onClick={handleProceed}
-              style={{ backgroundColor: colors.pagecolor, borderColor: colors.pagecolor }}
-            >
+              style={{ backgroundColor: colors.pagecolor, borderColor: colors.pagecolor }}>
               Proceed to Booking
             </Button>
           </div>

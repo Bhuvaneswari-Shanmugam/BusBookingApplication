@@ -6,7 +6,7 @@ export const UsersApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl:"http://localhost:8080/auth/",
     prepareHeaders: (headers) => {
-      const token =sessionStorage.getItem("Token");
+      const token = localStorage.getItem("Token");
       if (token) {
         headers.set('Authorization', `Bearer ${token}`);
       }
@@ -16,30 +16,28 @@ export const UsersApi = createApi({
 
   endpoints: (builder) => ({
     getUserById: builder.query({
-      query: (id) => ({
-        url: `retrieve/${id}`,
+      query: (userId) => ({
+        url: `retrieve/${userId}`,
         method: 'GET',
       }),
     }),
 
 
     getAllUsers: builder.query({
-      query: (PaginationDTO) => ({
-        url: 'fetch',
-        method: 'POST',
-        body: PaginationDTO
+      query: () => ({
+        url: 'retrieve-all-user',
+        method: 'GET',
       }),
     }),
-
 
     updateUser: builder.mutation({
-      query: ({ id, data }) => ({
-        url: `update/${id}`,
-        method: 'PUT',
-        body: data,
+      query: ({ userId, data }) => ({
+          url: `update/${userId}`,
+          method: 'PUT',
+          body: data,
       }),
-    }),
-
+  }),
+  
 
     deleteUser: builder.mutation({
       query: (id) => ({

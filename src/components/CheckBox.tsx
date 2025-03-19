@@ -3,12 +3,14 @@ import { CheckboxProps } from '../utils/entity/CommonEntity';
 import { colors } from '../constants/Palette';
 import { space } from '../constants/Palette';
 
-const Checkbox: React.FC<CheckboxProps> = ({ label, checked, type, onChange }) => {
+
+const Checkbox: React.FC<CheckboxProps> = ({ label, checked, type, onChange, name }) => {
   return (
     <div>
       <label style={{ display: 'flex', alignItems: 'center', gap: space.extraLarge }}>
         <input
           type={type}
+          name={type === 'radio' ? name : undefined} 
           checked={checked}
           onChange={(event: React.ChangeEvent<HTMLInputElement>) => onChange(event.target.checked)}
           className="form-check-input"

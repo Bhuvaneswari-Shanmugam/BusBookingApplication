@@ -1,12 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useGetBusesForTripQuery } from '../../redux/services/TripApi';
 import { useRetrieveGenderListQuery } from '../../redux/services/PassengerDetailsApi';
 import { Bus } from '../../utils/entity/PageEntity';
 import Filters from '../filters/Filters';
+import Header from '../../components/layout/Header';
 import BusCard from '../../components/BusCard';
 import Button from '../../components/Button';
 import { colors } from '../../constants/Palette';
+import { sortOptions } from '../../constants';
 
 const AvailableBuses = () => {
   const location = useLocation();
@@ -20,11 +22,11 @@ const AvailableBuses = () => {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' | undefined }>({ message: '', type: undefined });
   const [genderSeats, setGenderSeats] = useState<{ femaleSeats: number[]; maleSeats: number[]; availableSeats: number[] }>({ femaleSeats: [], maleSeats: [], availableSeats: [] });
   const [rows, setRows] = useState<(number | null)[][]>([]);
+  const [sortCriteria, setSortCriteria] = useState<{ sortBy: string; sortOrder: string }>({ sortBy: '', sortOrder: 'asc' });
 
   const { data: genderListData, isLoading: isGenderListLoading } = useRetrieveGenderListQuery(selectedBus?.number || '', {
     skip: !selectedBus?.number,
   });
-
 
   const [checkedState, setCheckedState] = useState({
     before6AM: false,
@@ -32,17 +34,23 @@ const AvailableBuses = () => {
     twelveTo6PM: false,
     after6PM: false,
   });
+
   const [busTypeState, setBusTypeState] = useState({
     seater: false,
     sleeper: false,
+  });
+
+  const [busCategoryState, setBusCategoryState] = useState({
     ac: false,
     nonAc: false,
   });
+
   const [expenseState, setExpenseState] = useState({
     below500: false,
     between500and1000: false,
     above1000: false,
   });
+
   const [ratingsState, setRatingsState] = useState({
     below4: false,
     above4: false,
@@ -54,22 +62,26 @@ const AvailableBuses = () => {
     pickupPoint: from,
     destinationPoint: to,
     pickupTime: date,
-    busType: busTypeState.seater ? 'Seater' : busTypeState.sleeper ? 'Sleeper' : busTypeState.ac ? 'AC' : busTypeState.nonAc ? 'Non-AC' : undefined,
-    timeSlot: checkedState.before6AM ? 'Before 6 AM' : checkedState.sixTo12PM ? '6AM-12 PM' : checkedState.twelveTo6PM ? '12PM-6PM' : checkedState.after6PM ? 'After 6PM' : undefined,
+    busType: busTypeState.seater ? 'Seater' : busTypeState.sleeper ? 'Sleeper' : undefined,
+    busCategory: busCategoryState.ac ? 'AC' : busCategoryState.nonAc ? 'Non-AC' : undefined,
+    arrivalTime: checkedState.before6AM ? 'Before 6 AM' : checkedState.sixTo12PM ? '6AM-12 PM' : checkedState.twelveTo6PM ? '12PM-6PM' : checkedState.after6PM ? 'After 6PM' : undefined,
     expenseRange: expenseState.below500 ? 'Below ₹500' : expenseState.between500and1000 ? '₹500 - ₹1000' : expenseState.above1000 ? 'Above ₹1000' : undefined,
     ratingRange: ratingsState.below4 ? 'below4' : ratingsState.above4 ? '4.0 and above' : ratingsState.above4_5 ? '4.5 and above' : ratingsState.perfect5 ? '5.0 (Perfect)' : undefined,
+    sortBy: sortCriteria.sortBy,
+    sortOrder: sortCriteria.sortOrder,
   });
 
   const availableBuses = Array.isArray(buses?.data) ? buses.data : [];
+
   const handleBusClick = (bus: Bus) => {
     if (selectedBus?.number === bus.number) {
       setViewSeats(!viewSeats);
     } else {
-      setSelectedBus(bus)
-        ;
+      setSelectedBus(bus);
       setViewSeats(true);
     }
   };
+
   const toggleSeatSelection = (seatNumber: number, e: React.MouseEvent) => {
     e.stopPropagation();
     if (bookedSeats[selectedBus?.id || '']?.includes(seatNumber) || (genderSeats.femaleSeats.includes(seatNumber) && !genderSeats.availableSeats.includes(seatNumber))) {
@@ -84,8 +96,10 @@ const AvailableBuses = () => {
   };
 
   const totalPrice = selectedSeats.length * (selectedBus?.expense || 0);
+  const totalBusesCount = availableBuses.length;
+
   useEffect(() => {
-    if (selectedBus?.type === 'SLEEPER') {
+    if (selectedBus?.busType === 'SLEEPER') {
       setRows([
         [1, 2, 3, 4, 5],
         [6, 7, 8, 9, 10],
@@ -115,18 +129,16 @@ const AvailableBuses = () => {
     }
   }, [genderListData]);
 
-
-  useEffect(() => { }, [checkedState, busTypeState, expenseState, ratingsState]);
-
   return (
     <div>
+      <Header />
       <div className="container">
         <div className="d-flex align-items-start mt-5" style={{ marginLeft: '-100px' }}>
-          <h5 className="mb-0 mt-5">
+          <h5 className="mb-0 mt-5 ">
             <span className="text-dark">{from}</span>
             <span style={{ color: colors.secondary }}>&rarr; </span>
             <span className="text-dark">{to}</span>
-            <span style={{ color: colors.secondary }}>on </span>
+            <span style={{ color: colors.secondary }}> on </span>
             <span className="text-dark">&lt; {formattedDate.toLocaleDateString()} &gt;</span>
           </h5>
           <Button
@@ -139,12 +151,15 @@ const AvailableBuses = () => {
         </div>
 
         <div className="d-flex mt-4">
-          <div className="col-lg-3 w-25">
+          <h5 className="fw-bold">Filters</h5>
+          <div className="col-lg-3">
             <Filters
               checkedState={checkedState}
               setCheckedState={setCheckedState}
               busTypeState={busTypeState}
               setBusTypeState={setBusTypeState}
+              busCategoryState={busCategoryState}
+              setBusCategoryState={setBusCategoryState}
               expenseState={expenseState}
               setExpenseState={setExpenseState}
               ratingsState={ratingsState}
@@ -152,10 +167,26 @@ const AvailableBuses = () => {
             />
           </div>
           <div className="col-md-8 col-lg-9">
-            <div className="row mt-3">
-              {availableBuses.map((bus: any) => (
+            <div className="d-flex mb-4 mt-2 align-items-center">
+              <strong className="ms-3 ">{totalBusesCount} buses</strong> <span className="text-body-tertiary ms-2 mx-3">found</span>
+              <strong className="ms-3">SORT BY:</strong>
+              {sortOptions.map((option) => (
+                <Button
+                  key={option.value}
+                  className={`ms-5 mx-3 border-0 ${sortCriteria.sortBy === option.value ? 'active' : ''}`}
+                  onClick={() => setSortCriteria({ sortBy: option.value, sortOrder: sortCriteria.sortOrder === 'asc' ? 'desc' : 'asc' })}
+                  style={{ background: 'none', color: colors.pagecolor }}
+                >
+                  {option.label}
+                  {sortCriteria.sortBy === option.value && (sortCriteria.sortOrder === 'asc' ? '↓' : '↑')}
+                </Button>
+              ))}
+            </div>
+
+            <div className="row mt-2 ml-3">
+              {availableBuses.map((bus: Bus) => (
                 <BusCard
-                  key={bus.id}
+                  key={bus.number}
                   bus={bus}
                   from={from}
                   to={to}

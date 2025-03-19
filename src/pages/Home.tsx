@@ -85,6 +85,7 @@ const Home = () => {
       searchContainerRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   };
+  
 
   return (
     <div>

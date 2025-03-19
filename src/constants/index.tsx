@@ -11,6 +11,9 @@ import france from '../assets/france.jpg';
 import germany from '../assets/germany.jpg';
 import india from '../assets/india.jpg';
 import greece from '../assets/greece.jpg';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTrash } from "@fortawesome/free-solid-svg-icons";
+// import { TripAction } from '../utils/entity/TripInterface'; 
 
 export const SignupFormFields: SignupFormField[] = [
   { name: 'firstName', placeholder: 'First name', type: 'text', className: 'w-48 me-2', id: 'firstName' },
@@ -190,3 +193,31 @@ export const busFormFields = [
   { label: 'Expense', name: 'expense', type: 'number', placeholder: 'Enter Expense', min: '0' },
   { label: 'Ratings', name: 'ratings', type: 'number', placeholder: 'Enter Ratings', min: '1', max: '5', step: '0.1' },
 ];
+
+
+export const tripActions = (
+  tripId: string,
+  onDelete: (tripId: string) => void
+): TripAction[] => [
+
+  {
+      label: "Delete",
+      icon: <FontAwesomeIcon icon={faTrash} color="#dc3545" />,
+      handler: () => onDelete(tripId),
+  },
+];
+
+export interface TripAction {
+  label: string;
+  icon: React.ReactNode; 
+  handler: (tripId: string) => void;
+}
+
+
+export const sortOptions =[
+  {label:'Departure', value:'departureTime'},
+  {label:'Duration', value:'duration'},
+  {label:'Arrival', value:'arrival'},
+  {label:'Ratings', value:'ratings'},
+  {label:'Expense', value:'expense'},
+]

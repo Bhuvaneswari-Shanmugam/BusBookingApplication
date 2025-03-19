@@ -1,13 +1,36 @@
-import Header from "./layout/Header";
-import ProfileSideBar from '../components/ProfileSideBar'
+import React, { useEffect, useState } from 'react';
+import { Outlet } from 'react-router-dom';
+import Header from '../components/layout/Header';
+import ProfileSidebar from '../components/ProfileSideBar';
+import { DecodedToken } from '../utils/entity/PageEntity';
+import { jwtDecode } from 'jwt-decode';
 
 const ProfileLayout: React.FC = () => {
-   return(
-        <div className="container mt-5">
-        <Header  />
-         <ProfileSideBar /> 
-        </div>
-    )
+    const [userId, setUserId] = useState<string | null>(null);
 
-}
+    useEffect(() => {
+        const token = sessionStorage.getItem('token');
+        if (token) {
+            const decodedToken = jwtDecode<DecodedToken>(token);
+            console.log("UserID from Profile Layout:", decodedToken.userId);
+            setUserId(decodedToken.userId || null);
+            console.log("id:", userId);
+        }
+    }, []);
+
+    return (
+        <div className="container mt-5 100-vh" >
+            <Header />
+            <div className="row">
+                <div className="col-md-3">
+                    <ProfileSidebar userId={userId || ''} />
+                </div>
+                <div className="col-md-9">
+                    <Outlet />
+                </div>
+            </div>
+        </div>
+    );
+};
+
 export default ProfileLayout;

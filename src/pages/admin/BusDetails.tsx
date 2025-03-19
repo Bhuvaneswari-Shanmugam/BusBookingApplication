@@ -7,12 +7,12 @@ import Input from '../../components/Input';
 import Button from '../../components/Button';
 import { colors } from '../../constants/Palette';
 import { FaEdit, FaTrash } from 'react-icons/fa';
-import Form from '../../components/Form';  
+import Form from '../../components/Form';
 
 const BusDetails = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const pageSize = 10;
-  const { data: busDetails = [], error: fetchError, isFetching } = useGetAllBusDetailsQuery({ page: currentPage, size: pageSize });
+  const { data: busDetails = [], error: fetchError, isFetching, refetch } = useGetAllBusDetailsQuery({ page: currentPage, size: pageSize });
   const [createBus] = useCreateBusMutation();
   const [updateBus] = useUpdateBusMutation();
   const [deleteBus] = useDeleteBusMutation();
@@ -50,6 +50,7 @@ const BusDetails = () => {
       toast.success('Bus created successfully!');
       setSelectedOption('display');
       resetForm();
+      refetch(); 
     } catch (error) {
       toast.error('Failed to create bus. Please try again.');
     } finally {
@@ -65,6 +66,7 @@ const BusDetails = () => {
       toast.success('Bus updated successfully!');
       setSelectedOption('display');
       resetForm();
+      refetch(); 
     } catch (error) {
       toast.error('Failed to update bus. Please try again.');
     } finally {
@@ -96,6 +98,7 @@ const BusDetails = () => {
     try {
       await deleteBus({ id }).unwrap();
       toast.success('Bus deleted successfully!');
+      refetch(); 
     } catch (error) {
       toast.error('Failed to delete bus. Please try again.');
     }
@@ -134,184 +137,190 @@ const BusDetails = () => {
         <div>
           <h2 className='mt-7'>{isUpdatingMode ? 'Update Bus' : 'Create New Bus'}</h2>
           <Form onSubmit={isUpdatingMode ? handleUpdateBus : handleCreateBus}>
-            <div className="d-flex flex-column flex-sm-row mb-3">
-              <Label htmlFor="busNumber" className="form-label me-2 label-width">Bus Number</Label>
-              <Input
-                type="text"
-                className="form-control"
-                id="busNumber"
-                name="number"
-                value={formData.number}
-                onChange={handleInputChange}
-                placeholder="Enter Bus Number"
-                required
-              />
-            </div>
+            <div className="row mt-5">
+              <div className="col-md-6">
+                <div className="d-flex flex-column flex-sm-row mb-3">
+                  <Label htmlFor="busNumber" className="form-label me-2 label-width">Bus Number</Label>
+                  <Input
+                    type="text"
+                    className="form-control"
+                    id="busNumber"
+                    name="number"
+                    value={formData.number}
+                    onChange={handleInputChange}
+                    placeholder="Enter Bus Number"
+                    required
+                  />
+                </div>
 
-            <div className="d-flex flex-column flex-sm-row mb-3">
-              <Label htmlFor="tripNumber" className="form-label me-2 label-width">Trip Number</Label>
-              <Input
-                type="text"
-                className="form-control"
-                id="tripNumber"
-                name="tripNumber"
-                value={formData.tripNumber}
-                onChange={handleInputChange}
-                placeholder="Enter Trip Number"
-                required
-              />
-            </div>
+                <div className="d-flex flex-column flex-sm-row mb-3">
+                  <Label htmlFor="tripNumber" className="form-label me-2 label-width ">Trip Number</Label>
+                  <Input
+                    type="text"
+                    className="form-control"
+                    id="tripNumber"
+                    name="tripNumber"
+                    value={formData.tripNumber}
+                    onChange={handleInputChange}
+                    placeholder="Enter Trip Number"
+                    required
+                  />
+                </div>
 
-            <div className="d-flex flex-column flex-sm-row mb-3">
-              <Label htmlFor="type" className="form-label me-2 label-width">Bus Type</Label>
-              <Input
-                type="text"
-                className="form-control"
-                id="type"
-                name="type"
-                value={formData.type}
-                onChange={handleInputChange}
-                placeholder="Enter Bus Type"
-                required
-              />
-            </div>
+                <div className="d-flex flex-column flex-sm-row mb-3">
+                  <Label htmlFor="type" className="form-label me-2 label-width">Bus Type</Label>
+                  <Input
+                    type="text"
+                    className="form-control"
+                    id="type"
+                    name="type"
+                    value={formData.type}
+                    onChange={handleInputChange}
+                    placeholder="Enter Bus Type"
+                    required
+                  />
+                </div>
 
-            <div className="d-flex flex-column flex-sm-row mb-3">
-              <Label htmlFor="capacity" className="form-label me-2 label-width">Capacity</Label>
-              <Input
-                type="number"
-                className="form-control"
-                id="capacity"
-                name="capacity"
-                value={formData.capacity}
-                onChange={handleInputChange}
-                placeholder="Enter Capacity"
-                min="1"
-                required
-              />
-            </div>
+                <div className="d-flex flex-column flex-sm-row mb-3">
+                  <Label htmlFor="capacity" className="form-label me-2 label-width">Capacity</Label>
+                  <Input
+                    type="number"
+                    className="form-control me-2"
+                    id="capacity"
+                    name="capacity"
+                    value={formData.capacity}
+                    onChange={handleInputChange}
+                    placeholder="Enter Capacity"
+                    min="1"
+                    required
+                  />
+                </div>
 
-            <div className="d-flex flex-column flex-sm-row mb-3">
-              <Label htmlFor="name" className="form-label me-2 label-width">Bus Name</Label>
-              <Input
-                type="text"
-                className="form-control"
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                placeholder="Enter Bus Name"
-                required
-              />
-            </div>
+                <div className="d-flex flex-column flex-sm-row mb-3">
+                  <Label htmlFor="name" className="form-label me-2 label-width">Bus Name</Label>
+                  <Input
+                    type="text"
+                    className="form-control me-2"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    placeholder="Enter Bus Name"
+                    required
+                  />
+                </div>
 
-            <div className="d-flex flex-column flex-sm-row mb-3">
-              <Label htmlFor="departureTime" className="form-label me-2 label-width">Departure Time</Label>
-              <Input
-                type="text"
-                className="form-control"
-                id="departureTime"
-                name="departureTime"
-                value={formData.departureTime}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
+                <div className="d-flex flex-column flex-sm-row mb-3">
+                  <Label htmlFor="departureTime" className="form-label me-2 label-width">Departure Time</Label>
+                  <Input
+                    type="text"
+                    className="form-control me-2"
+                    id="departureTime"
+                    name="departureTime"
+                    placeholder="Enter  Departure Time"
+                    value={formData.departureTime}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+              </div>
 
-            <div className="d-flex flex-column flex-sm-row mb-3">
-              <Label htmlFor="pickupPoint" className="form-label me-2 label-width">Pickup Point</Label>
-              <Input
-                type="text"
-                className="form-control"
-                id="pickupPoint"
-                name="pickupPoint"
-                value={formData.pickupPoint}
-                onChange={handleInputChange}
-                placeholder="Enter Pickup Point"
-                required
-              />
-            </div>
+              <div className="col-md-6">
+                <div className="d-flex flex-column flex-sm-row mb-3">
+                  <Label htmlFor="pickupPoint" className="form-label me-2 label-width">Pickup Point</Label>
+                  <Input
+                    type="text"
+                    className="form-control"
+                    id="pickupPoint"
+                    name="pickupPoint"
+                    value={formData.pickupPoint}
+                    onChange={handleInputChange}
+                    placeholder="Enter Pickup Point"
+                    required
+                  />
+                </div>
 
-            <div className="d-flex flex-column flex-sm-row mb-3">
-              <Label htmlFor="duration" className="form-label me-2 label-width">Duration</Label>
-              <Input
-                type="text"
-                className="form-control"
-                id="duration"
-                name="duration"
-                value={formData.duration}
-                onChange={handleInputChange}
-                placeholder="Enter Duration"
-                required
-              />
-            </div>
+                <div className="d-flex flex-column flex-sm-row mb-3">
+                  <Label htmlFor="duration" className="form-label me-2 label-width">Duration</Label>
+                  <Input
+                    type="text"
+                    className="form-control"
+                    id="duration"
+                    name="duration"
+                    value={formData.duration}
+                    onChange={handleInputChange}
+                    placeholder="Enter Duration"
+                    required
+                  />
+                </div>
 
-            <div className="d-flex flex-column flex-sm-row mb-3">
-              <Label htmlFor="arrivalTime" className="form-label me-2 label-width">Arrival Time</Label>
-              <Input
-                type="text"
-                className="form-control"
-                id="arrivalTime"
-                name="arrivalTime"
-                value={formData.arrivalTime}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
+                <div className="d-flex flex-column flex-sm-row mb-3">
+                  <Label htmlFor="arrivalTime" className="form-label me-2 label-width">Arrival Time</Label>
+                  <Input
+                    type="text"
+                    className="form-control"
+                    placeholder="Enter the Arrival Time"
+                    id="arrivalTime"
+                    name="arrivalTime"
+                    value={formData.arrivalTime}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
 
-            <div className="d-flex flex-column flex-sm-row mb-3">
-              <Label htmlFor="droppingPoint" className="form-label me-2 label-width">Dropping Point</Label>
-              <Input
-                type="text"
-                className="form-control"
-                id="droppingPoint"
-                name="droppingPoint"
-                value={formData.droppingPoint}
-                onChange={handleInputChange}
-                placeholder="Enter Dropping Point"
-                required
-              />
-            </div>
+                <div className="d-flex flex-column flex-sm-row mb-3">
+                  <Label htmlFor="droppingPoint" className="form-label me-2 label-width">Dropping Point</Label>
+                  <Input
+                    type="text"
+                    className="form-control"
+                    id="droppingPoint"
+                    name="droppingPoint"
+                    value={formData.droppingPoint}
+                    onChange={handleInputChange}
+                    placeholder="Enter Dropping Point"
+                    required
+                  />
+                </div>
 
-            <div className="d-flex flex-column flex-sm-row mb-3">
-              <Label htmlFor="expense" className="form-label me-2 label-width">Expense</Label>
-              <Input
-                type="number"
-                className="form-control"
-                id="expense"
-                name="expense"
-                value={formData.expense}
-                onChange={handleInputChange}
-                placeholder="Enter Expense"
-                min="0"
-                required
-              />
-            </div>
+                <div className="d-flex flex-column flex-sm-row mb-3">
+                  <Label htmlFor="expense" className="form-label me-2 label-width">Expense</Label>
+                  <Input
+                    type="number"
+                    className="form-control"
+                    id="expense"
+                    name="expense"
+                    value={formData.expense}
+                    onChange={handleInputChange}
+                    placeholder="Enter Expense"
+                    min="0"
+                    required
+                  />
+                </div>
 
-            <div className="d-flex flex-column flex-sm-row mb-3">
-              <Label htmlFor="ratings" className="form-label me-2 label-width">Ratings</Label>
-              <Input
-                type="number"
-                className="form-control"
-                id="ratings"
-                name="ratings"
-                value={formData.ratings}
-                onChange={handleInputChange}
-                placeholder="Enter Ratings"
-                min="1"
-                max="5"
-                step="0.1"
-                required
-              />
+                <div className="d-flex flex-column flex-sm-row mb-3">
+                  <Label htmlFor="ratings" className="form-label me-2 label-width custom-margin border-2">Ratings</Label>
+                  <Input
+                    type="number"
+                    className="form-control"
+                    id="ratings"
+                    name="ratings"
+                    value={formData.ratings}
+                    onChange={handleInputChange}
+                    placeholder="Enter Ratings"
+                    min="3"
+                    max="6"
+                    step="2"
+                    required
+                  />
+                </div>
+              </div>
             </div>
 
             <div className="d-flex justify-content-center flex-column flex-sm-row">
-              <Button type="submit" className="btn me-4 border-0" style={{ backgroundColor: colors.pagecolor }} disabled={isProcessing}>
-                {isProcessing ? 'Processing...' : isUpdatingMode ? 'Update' : 'Create'}
-              </Button>
               <Button
                 type="button"
-                className="btn border-0" style={{ backgroundColor: colors.pagecolor }}
+                className="btn border-0 me-2"
+                style={{ backgroundColor: colors.pagecolor }}
                 onClick={() => {
                   setSelectedOption('display');
                   resetForm();
@@ -319,7 +328,16 @@ const BusDetails = () => {
               >
                 Cancel
               </Button>
+              <Button
+                type="submit"
+                className="btn me-4 border-0"
+                style={{ backgroundColor: colors.pagecolor }}
+                disabled={isProcessing}
+              >
+                {isProcessing ? 'Processing...' : isUpdatingMode ? 'Update' : 'Create'}
+              </Button>
             </div>
+
           </Form>
         </div>
       );
@@ -334,7 +352,7 @@ const BusDetails = () => {
       return (
         <div>
           <div>
-            <div className="d-flex justify-content-end align-items-center">
+            <div className="d-flex justify-content-end align-items-center ">
               <Button className="btn border-0" onClick={() => setSelectedOption('create')} style={{ backgroundColor: colors.pagecolor }}>
                 Create New Bus
               </Button>

@@ -1,4 +1,3 @@
-// src/services/TripApi.ts
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 export const TripApi = createApi({
@@ -44,7 +43,7 @@ export const TripApi = createApi({
     }),
     deleteTrip: builder.mutation({
       query: (id) => ({
-        url: `trip/remove-trip/${id}`,
+        url: `trip/remove/${id}`,
         method: 'DELETE',
       }),
     }),

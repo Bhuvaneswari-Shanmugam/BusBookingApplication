@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useFetchPickUpPointsQuery } from '../../redux/services/TripApi';
-// import {LocationPicker} from '../../components/LocationPicker';
 import { useLocation } from 'react-router-dom';
 import { PickUpPointsProps } from '../../utils/entity/PageEntity';
 import LocationPicker from '../../components/LocationPicker';

@@ -5,6 +5,8 @@ import { colors } from '../constants/Palette';
 import Badge from './Badge';
 import { FaStar } from 'react-icons/fa';
 import seat from '../assets/seat.jpg';
+import Button from './Button';
+
 
 const BusCard: React.FC<BusCardProps> = ({
   bus,
@@ -36,7 +38,7 @@ const BusCard: React.FC<BusCardProps> = ({
 
   const handleSeatSelection = (seatNumber: string, event: React.MouseEvent) => {
     if (bookedSeats.includes(Number(seatNumber)) || genderSeats.femaleSeats.includes(Number(seatNumber))) {
-      return; // Do nothing if the seat is booked or a female seat
+      return; 
     }
 
     toggleSeatSelection(Number(seatNumber), event);
@@ -54,11 +56,11 @@ const BusCard: React.FC<BusCardProps> = ({
   };
 
   return (
-    <div key={bus.number} className="card p-4 mb-2" style={{ width: '1100px', marginRight: ' 0 px' }}>
+    <div key={bus.number} className="card p-4 mb-2" style={{ width: '1100px', marginRight: '0px' }}>
       <div className="card-content d-flex justify-content-between align-items-center">
         <div>
           <h5>{bus.name}</h5>
-          <p>{bus.type}</p>
+          <p>{bus.busType}/{bus.busCategory}</p>
         </div>
         <div>
           <h5>{bus.departureTime}</h5>
@@ -77,7 +79,7 @@ const BusCard: React.FC<BusCardProps> = ({
           className="ms-2 bg-success"
         />
         <div>{bus.expense}</div>
-        <button
+        <Button
           onClick={() => handleBusClick(bus)}
           style={{
             backgroundColor: 'darkorchid',
@@ -89,40 +91,40 @@ const BusCard: React.FC<BusCardProps> = ({
           }}
         >
           {selectedBus?.number === bus.number && viewSeats ? 'Close' : 'View Seats'}
-        </button>
+        </Button>
       </div>
 
       <hr style={{ height: '2px', border: 'none', backgroundColor: 'black' }} />
 
-      {selectedBus && selectedBus.number === bus.number && viewSeats && (
+      {selectedBus && selectedBus.number  === bus.number && viewSeats && (
         <>
-          <div className="hide-content d-flex justify-content-around">
-            <div className="" style={{ paddingRight: '10px', marginLeft: '150px' }}>
+          <div className="hide-content d-flex">
+              <div className="card" style={{ paddingRight: '10px', marginLeft: '150px' }}>
               <h4>Booking Summary</h4>
-              {[{ label: 'Bus Number', value: selectedBus.number },
-              { label: 'From', value: from },
-              { label: 'To', value: to },
-              { label: 'Date', value: date },
-              { label: 'Expense', value: selectedBus.expense },
-              { label: 'Bus Type', value: selectedBus.type },
-              { label: 'Selected Seats', value: currentSelectedSeats.join(', ') || 'None' },
-              { label: 'Total Price', value: `₹${currentTotalPrice}` }]
-                .map(({ label, value }) => (
-                  <div className="summary-item" key={label}>
-                    <label htmlFor={label}>{label}:</label>
-                    <input type="text" id={label} value={value} readOnly />
-                  </div>
-                ))}
+               {[{ label: 'Bus Number', value: selectedBus.number },
+               { label: 'From', value: from },
+               { label: 'To', value: to },
+               { label: 'Date', value: date },
+               { label: 'Expense', value: selectedBus.expense },
+               { label: 'Bus Type', value: selectedBus.busType},
+               { label: 'Selected Seats', value: currentSelectedSeats.join(', ') || 'None' },
+               { label: 'Total Price', value: `₹${currentTotalPrice}` }]
+                 .map(({ label, value }) => (
+                   <div className="summary-item" key={label}>
+                     <label htmlFor={label}>{label}:</label>
+                     <input type="text" id={label} value={value} readOnly />
+                   </div>
+               ))}
               <div className="btn-container d-flex justify-content-between mt-5">
-                <button
+                <Button
                   className="pay-button btn text-white"
                   style={{ backgroundColor: colors.pagecolor }}
                   onClick={handleProceedBooking}
                 >
                   Proceed Booking
-                </button>
+                </Button>
               </div>
-            </div>
+            </div>  
             <div className="bus" style={{ flexGrow: '1', marginTop: '50px' }}>
               {rows.map((row, rowIndex) => (
                 <div key={rowIndex} className="bus-row">
@@ -139,7 +141,7 @@ const BusCard: React.FC<BusCardProps> = ({
                         className={`seat ${currentSelectedSeats.includes(seatNumber.toString()) ? 'selected' : ''}`}
                         onClick={(e) => {
                           if (bookedSeats.includes(Number(seatNumber)) || genderSeats.femaleSeats.includes(Number(seatNumber)) || !genderSeats.availableSeats.includes(Number(seatNumber))) {
-                            return; // Do nothing if the seat is booked, a female seat, or unavailable
+                            return; 
                           }
                           handleSeatSelection(seatNumber.toString(), e);
                         }}
@@ -149,16 +151,16 @@ const BusCard: React.FC<BusCardProps> = ({
                           margin: '3px',
                           cursor: bookedSeats.includes(seatNumber) || genderSeats.femaleSeats.includes(seatNumber) || !genderSeats.availableSeats.includes(seatNumber) ? 'not-allowed' : 'pointer',
                           backgroundColor: genderSeats.femaleSeats.includes(seatNumber)
-                            ? colors.lightRed
+                            ? colors.pagecolor
                             : genderSeats.maleSeats.includes(seatNumber)
                               ? colors.secondary
                               : 'transparent',
                           backgroundImage: genderSeats.femaleSeats.includes(seatNumber) || genderSeats.maleSeats.includes(seatNumber) ? 'none' : `url(${seat})`,
                           backgroundSize: 'cover',
                           border: currentSelectedSeats.includes(seatNumber.toString())
-                            ? `3px solid ${colors.pagecolor}`
+                            ? `3px solid ${colors.success}`
                             : genderSeats.femaleSeats.includes(seatNumber)
-                              ? `2px solid ${colors.lightRed}`
+                              ? `2px solid ${colors.pagecolor}`
                               : genderSeats.maleSeats.includes(seatNumber)
                                 ? `2px solid ${colors.secondary}`
                                 : genderSeats.availableSeats.includes(seatNumber)
@@ -171,16 +173,17 @@ const BusCard: React.FC<BusCardProps> = ({
                     )
                   )}
                 </div>
+                
               ))}
               <div className="seat-legend" style={{ marginTop: '20px' }}>
                 <strong>SEAT LEGEND</strong>
                 <div className="d-flex justify-content-start mt-2">
-                  <div className="legend-item d-flex align-items-center" style={{ marginRight: '20px' }}>
+                  <div className="legend-item d-flex align-items-center " style={{ marginRight: '20px' }}>
                     <div
                       style={{
                         width: '20px',
                         height: '20px',
-                        border: `2px solid ${colors.pagecolor}`,
+                        border: `2px solid ${colors.success}`,
                         marginRight: '8px',
                       }}
                     ></div>
@@ -191,8 +194,8 @@ const BusCard: React.FC<BusCardProps> = ({
                       style={{
                         width: '20px',
                         height: '20px',
-                        backgroundColor: colors.lightRed,
-                        border: `2px solid ${colors.lightRed}`,
+                        backgroundColor: colors.pagecolor,
+                        border: `2px solid ${colors.pagecolor}`,
                         marginRight: '8px',
                       }}
                     ></div>
