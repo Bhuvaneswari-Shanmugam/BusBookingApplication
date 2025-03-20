@@ -1,4 +1,4 @@
-import { FaEnvelope, FaPhone, FaFacebook, FaInstagram } from "react-icons/fa";
+import { FaEnvelope, FaPhone, FaFacebook, FaInstagram, FaUserAlt, FaBus, FaClipboardList, FaTicketAlt } from "react-icons/fa";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
@@ -243,3 +243,9 @@ export const tripActions = (
       handler: () => onDelete(tripId),
     },
   ];
+  export const sidebarList = [
+    { path: '/customer-details', label: 'Customer Details', icon: <FaUserAlt /> },
+    { path: '/bus-details', label: 'Bus Details', icon: <FaBus /> },
+    { path: '/trip-info', label: 'Trip Details', icon: <FaClipboardList /> },
+    { path: '/all-booking-details', label: 'Booking Details', icon: <FaTicketAlt /> },
+];

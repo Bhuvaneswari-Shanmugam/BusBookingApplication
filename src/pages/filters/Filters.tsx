@@ -146,12 +146,26 @@ const Filters: React.FC = () => {
     setSearchTerm(event.target.value);
   };
 
+  useEffect(() => {
+    const handleRefresh = () => {
+      sessionStorage.removeItem('selectedPickupPoints');
+      sessionStorage.removeItem('selectedDroppingPoints');
+    };
+  
+    window.addEventListener('beforeunload', handleRefresh);
+  
+    return () => {
+      window.removeEventListener('beforeunload', handleRefresh);
+    };
+  }, []);
+  
+
   const handlePickupPointSelect = (selected: Set<string>) => {
     setSelectedPickupPoints(selected);
     setShowPickUpPoints(false);
     // Store in sessionStorage
     sessionStorage.setItem('selectedPickupPoints', JSON.stringify(Array.from(selected)));
-    console.log('Selected Pickup Points:', Array.from(selected).join(', '));
+    console.log('Selected Pickup Points:', selectedPickupPoints);
   };
 
   const handleDropOffPointSelect = (selected: Set<string>) => {
@@ -159,7 +173,7 @@ const Filters: React.FC = () => {
     setShowDropOffPoints(false);
     // Store in sessionStorage
     sessionStorage.setItem('selectedDroppingPoints', JSON.stringify(Array.from(selected)));
-    console.log('Selected Dropping Points:', Array.from(selected).join(', '));
+    console.log('Selected Dropping Points:', selectedDroppingPoints);
   };
 
   const renderSelectedPoints = (points: Set<string>) => {

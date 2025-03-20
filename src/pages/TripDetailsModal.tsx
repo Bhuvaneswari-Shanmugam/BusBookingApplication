@@ -12,10 +12,16 @@ const TripDetailsModal: React.FC<TripDetailsModalProps> = ({
   currentSelectedSeats = [],
   date,
 }) => {
-  const { setBookingDetails, bookingDetails } = useBooking();
+
+  console.log('TripDetailsModal rendered');
+  const { bookingDetails, setBookingDetails } = useBooking();
+
+  console.log("booking data from trip model : ", bookingDetails);
   const [selectedPickupPoints, setSelectedPickupPoints] = useState<Set<string>>(new Set());
   const [selectedDroppingPoints, setSelectedDroppingPoints] = useState<Set<string>>(new Set());
   const [showPassengerDetailsOffcanvas, setShowPassengerDetailsOffcanvas] = useState(false);
+
+
 
   const totalPrice = bus?.expense * (currentSelectedSeats?.length ?? 0);
 
@@ -23,13 +29,12 @@ const TripDetailsModal: React.FC<TripDetailsModalProps> = ({
     const storedPickupPoints = sessionStorage.getItem('selectedPickupPoints');
     const storedDroppingPoints = sessionStorage.getItem('selectedDroppingPoints');
 
-    if (storedPickupPoints) {
-      setSelectedPickupPoints(new Set(JSON.parse(storedPickupPoints)));
-    }
-    if (storedDroppingPoints) {
-      setSelectedDroppingPoints(new Set(JSON.parse(storedDroppingPoints)));
-    }
+    console.log('Stored Pickup Points:', storedPickupPoints);
+    console.log('Stored Dropping Points:', storedDroppingPoints);
+
+    
   }, []);
+
 
   const handleProceed = () => {
     if (!currentSelectedSeats) {
@@ -42,6 +47,8 @@ const TripDetailsModal: React.FC<TripDetailsModalProps> = ({
       currentSelectedSeats: currentSelectedSeats.map(Number),
       date,
       totalAmount: totalPrice,
+      pickupStop: bookingDetails?.bus?.departureLocation as string,
+      droppingStop: bookingDetails?.bus?.arrivalLocation as string,
     });
 
     setShowPassengerDetailsOffcanvas(true);
@@ -50,10 +57,11 @@ const TripDetailsModal: React.FC<TripDetailsModalProps> = ({
     }
   };
 
+
   const handleCloseOffcanvas = () => {
     setShowPassengerDetailsOffcanvas(false);
   };
-  {console.log(showPassengerDetailsOffcanvas)}
+  { console.log(showPassengerDetailsOffcanvas) }
   return (
     <>
       <Modal show={show} onHide={onClose} backdrop="static" keyboard={false}>
@@ -69,11 +77,11 @@ const TripDetailsModal: React.FC<TripDetailsModalProps> = ({
           <br />
           <strong>{bus?.pickupPoint}</strong>
           <p className="text-secondary">
-            {selectedPickupPoints.size > 0 ? Array.from(selectedPickupPoints).join(', ') : 'None'}
+            {selectedPickupPoints}
           </p>
           <strong>{bus?.droppingPoint}</strong>
           <p className="text-secondary">
-            {selectedDroppingPoints.size > 0 ? Array.from(selectedDroppingPoints).join(', ') : 'None'}
+            {selectedDroppingPoints}
           </p>
 
           <p>
@@ -103,7 +111,7 @@ const TripDetailsModal: React.FC<TripDetailsModalProps> = ({
 
       {showPassengerDetailsOffcanvas && (
         <>
-          <div className="modal-backdrop fade show"></div> 
+          <div className="modal-backdrop fade show"></div>
           <div
             className="offcanvas offcanvas-end show"
             tabIndex={-1}
@@ -115,13 +123,13 @@ const TripDetailsModal: React.FC<TripDetailsModalProps> = ({
               <h4 className="offcanvas-title  fw-bold" id="offcanvasEndLabel">
                 Passenger Details
               </h4>
-             <Button
+              <Button
                 type="button"
                 className="btn-close text-reset"
                 data-bs-dismiss="offcanvas"
                 aria-label="Close"
                 onClick={handleCloseOffcanvas}
-                style={{ backgroundColor: colors.pagecolor}}
+                style={{ backgroundColor: colors.pagecolor }}
               ></Button>
             </div>
             <div className="offcanvas-body" style={{ overflowY: 'auto', maxHeight: '80vh' }}>

@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { useUpdateUserMutation } from '../../redux/services/UserApi';
+import { useGetUserByIdQuery, useUpdateUserMutation } from '../../redux/services/UserApi';
 import { colors } from '../../constants/Palette';
 import Header from '../../components/layout/Header';
 import Card from '../../components/Card';
@@ -15,44 +15,20 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import Toast from '../../components/Toast';
 import { jwtDecode } from 'jwt-decode';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faEdit } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faEdit, faRefresh } from '@fortawesome/free-solid-svg-icons';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { ProfileProps, CustomJwtPayload } from '../../utils/entity/UserProfileInterface';
 
-type Gender = 'male' | 'female' | 'other';
 
-interface CustomJwtPayload {
-    userId: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    age: number;
-    gender: Gender;
-    phoneNumber: string;
-    address: string;
-    role: string;
-}
-
-const Profile: React.FC = () => {
+const Profile: React.FC<ProfileProps> = ({ userId }) => {
     const navigate = useNavigate();
     const aboutCardRef = useRef<HTMLDivElement>(null);
-    const [userData, setUserData] = useState<CustomJwtPayload | null>(null);
     const [toastMessage, setToastMessage] = useState<string>('');
     const [toastType, setToastType] = useState<'info' | 'success' | 'error'>('info');
     const [showToast, setShowToast] = useState<boolean>(false);
     const [isEditing, setIsEditing] = useState(false);
     const [updateUser] = useUpdateUserMutation();
-
-    useEffect(() => {
-        const token = sessionStorage.getItem('Token');
-        if (token) {
-            try {
-                const decodedToken = jwtDecode<CustomJwtPayload>(token);
-                setUserData(decodedToken);
-            } catch (error) {
-                console.error("Error decoding token:", error);
-            }
-        }
-    }, []);
+    const { data, isLoading, error, refetch } = useGetUserByIdQuery(userId, { skip: !userId });
 
     const {
         register,
@@ -64,26 +40,33 @@ const Profile: React.FC = () => {
     });
 
     useEffect(() => {
-        if (userData) {
-            setValue("firstName", userData.firstName || "");
-            setValue("lastName", userData.lastName || "");
-            setValue("email", userData.email || "");
-            setValue("age", userData.age || 0);
-            setValue("gender", userData.gender || "other");
-            setValue("phoneNumber", userData.phoneNumber || "");
-            setValue("address", userData.address || "");
+        console.log('Fetched data:', data);
+        if (data?.data) {
+            setValue("firstName", data.data.firstName || "");
+            setValue("lastName", data.data.lastName || "");
+            setValue("email", data.data.email || "");
+            setValue("age", data.data.age || 0);
+            setValue("gender", data.data.gender || "other");
+            setValue("phoneNumber", data.data.phoneNumber || "");
+            setValue("address", data.data.address || "");
         }
-    }, [userData, setValue]);
+    }, [data, setValue]);
+
+    if (isLoading) return <p>Loading...</p>;
+    if (error) return <p>Error loading data</p>;
+
 
     const onSubmit = async (formData: UserProfile) => {
-        if (!userData?.userId) return;
+        if (!userId) return;
 
         try {
-            const response = await updateUser({ userId: userData.userId, data: formData }).unwrap();
+            const response = await updateUser({ userId: data?.data?.id, data: formData }).unwrap();
             setToastMessage(response?.data?.message || 'Profile updated successfully');
             setToastType('success');
             setShowToast(true);
             setIsEditing(false);
+
+            await refetch();
         } catch (error: any) {
             const errorMessage = error?.data?.message || 'Profile cannot be updated, please try again.';
             setToastMessage(errorMessage);
@@ -92,11 +75,11 @@ const Profile: React.FC = () => {
         }
     };
 
+
     const handleCancel = () => {
         setIsEditing(false);
     };
 
-    if (!userData) return <p>Loading...</p>;
 
     return (
         <div className="d-flex flex-column mt-5" style={{ height: '90vh', width: '1100px' }}>
@@ -104,7 +87,7 @@ const Profile: React.FC = () => {
             <div className="d-flex justify-content-center align-items-center">
                 <Card
                     className="profile-details shadow-lg"
-                    style={{ width: '1000px' }}
+                    style={{ width: '1000px' , marginLeft:'-40px'}}
                     description={
                         !isEditing ? (
                             <div>
@@ -133,7 +116,7 @@ const Profile: React.FC = () => {
                                         {["firstName", "lastName", "age", "gender"].map((field, index) => (
                                             <div className="col-md-6 d-flex mb-4" key={field}>
                                                 <strong className="me-2 ">{userProfilefields.find(f => f.name === field)?.label}:</strong>
-                                                <span>{userData[field as keyof CustomJwtPayload]}</span>
+                                                <span>{data.data[field as keyof CustomJwtPayload]}</span>
                                             </div>
                                         ))}
                                     </div>
@@ -146,7 +129,7 @@ const Profile: React.FC = () => {
                                         {["email", "phoneNumber", "address"].map((field, index) => (
                                             <div className="col-md-6 d-flex mb-4" key={field}>
                                                 <strong className="me-2" >{userProfilefields.find(f => f.name === field)?.label}:</strong>
-                                                <span>{userData[field as keyof CustomJwtPayload]}</span>
+                                                <span>{data.data[field as keyof CustomJwtPayload]}</span>
                                             </div>
                                         ))}
                                     </div>

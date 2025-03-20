@@ -22,6 +22,8 @@ export interface PassengerDetailsFormProps {
     currentSelectedSeats: number[];
     date: string;
     totalAmount: number;
+    pickupPoint: string;
+    droppingPoint:string;
   };
 }
 
@@ -50,6 +52,8 @@ export interface BookingDetails {
   currentSelectedSeats: number[];
   date: string;
   totalAmount: number;
+  pickupPoint:string;
+  droppingPoint:string;
 }
 
 export interface Bus {
@@ -78,17 +82,18 @@ export type  ContactDetail = {
   icon: React.ReactNode; 
 };
 
-export interface BookingDetails {
-  pickupPoint: string;
-  destinationPoint: string;
-  pickupTime: string;
-  busNumber: number;
-  busType: string;
-  bookedNoOfSeats: number[];
-  perSeatAmount: number;
-  totalAmount: number;
-  userId : string;
-}
+// export interface BookingDetails {
+//   pickupPoint: string;
+//   destinationPoint: string;
+//   pickupTime: string;
+//   busNumber: number;
+//   busType: string;
+//   bookedNoOfSeats: number[];
+//   perSeatAmount: number;
+//   totalAmount: number;
+//   userId : string;
+
+// }
 
 export interface PointsSelectorProps {
   title: string;
@@ -114,6 +119,7 @@ export interface TripDetailsModalProps {
   date: string;  
   
 }
+
 
 export interface PickUpPointsProps {
   onSelectionChange: (selectedPoints: Set<string>) => void;

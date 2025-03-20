@@ -22,7 +22,7 @@ const Header: React.FC<HeaderProps> = ({ aboutCardRef, contactCardRef, serviceCa
   const [lastName, setLastName] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
   const [hover, setHover] = useState<{ [key: string]: boolean }>({});
-  const [activeItem, setActiveItem] = useState<string | null>(null); // Track clicked item
+  const [activeItem, setActiveItem] = useState<string | null>(null); 
 
   useEffect(() => {
     const token = sessionStorage.getItem("Token");

@@ -28,6 +28,7 @@ export const colors = {
     lightRed : "#fa8072 ",
     
     // Dark colors
+    darkSecondary : "#808080 ",
     darkPageColor:"#A629C2",
     darkText: "#343a40",   
     darkBackground: "#212529",  

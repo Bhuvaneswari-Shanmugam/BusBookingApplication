@@ -137,7 +137,7 @@ const Ticket: React.FC = () => {
         { key: 'from', label: 'From', value: bookingDetails?.bus.pickupPoint },
         { key: 'to', label: 'To', value: bookingDetails?.bus.droppingPoint },
         { key: 'date', label: 'Date', value: bookingDetails?.date },
-        { key: 'ticketid', label: 'Ticket No', value: bookingDetails?.bus.tripNumber },
+        { key: 'ticketid', label: 'Ticket Id', value: ticketId },
         { key: 'boardingPoint', label: 'Boarding Point', value: bookingDetails?.bus.pickupPoint },
         { key: 'busName', label: 'Bus Name', value: `${bookingDetails?.bus.name} ${bookingDetails?.bus.type}` },
         { key: 'reportingTime', label: 'Reporting Time', value: bookingDetails?.bus.departureTime },

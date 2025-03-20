@@ -24,11 +24,20 @@ const PassengerDetailsForm: React.FC = () => {
   const navigate = useNavigate();
   const { bookingDetails } = useBooking();
   const { setPassengerDetails } = usePassenger();
+  
 
   const bus: Bus = bookingDetails?.bus || ({} as Bus);
   const currentSelectedSeats = bookingDetails?.currentSelectedSeats || [];
   const date = bookingDetails?.date || "";
   const totalAmount = currentSelectedSeats.length * bus.expense;
+
+  console.log("passenger page pickup stop : ", bookingDetails?.pickupStop);
+  console.log("passenger page dropping stop :", bookingDetails?.droppingStop);
+
+  const cleanPickupStop = bookingDetails?.pickupStop?.replace(/[\[\]"]+/g, "") || "";
+  const cleanDroppingStop = bookingDetails?.droppingStop?.replace(/[\[\]"]+/g, "") || "";
+  
+
 
   const [loggedInEmail, setLoggedInEmail] = useState("");
   const [isEmailEditable, setIsEmailEditable] = useState(false);
@@ -37,11 +46,13 @@ const PassengerDetailsForm: React.FC = () => {
   const [toastMessage, setToastMessage] = useState<string>("");
   const [toastType, setToastType] = useState<"info" | "success" | "error">("info");
   const [showToast, setShowToast] = useState<boolean>(false);
+  const [isSameDetails, setIsSameDetails] = useState(false);
 
   const {
     control,
     handleSubmit,
     setValue,
+    getValues,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(getPassengerDetailsValidationSchema),
@@ -83,6 +94,20 @@ const PassengerDetailsForm: React.FC = () => {
     }
   }, [setValue]);
 
+  useEffect(() => {
+    if (isSameDetails) {
+      const firstPassenger = getValues("passengers.0");
+      currentSelectedSeats.forEach((_, index) => {
+        if (index > 0) {
+          setValue(`passengers.${index}.firstName`, firstPassenger.firstName);
+          setValue(`passengers.${index}.lastName`, firstPassenger.lastName);
+          setValue(`passengers.${index}.age`, firstPassenger.age);
+          setValue(`passengers.${index}.gender`, firstPassenger.gender);
+        }
+      });
+    }
+  }, [isSameDetails, getValues, setValue, currentSelectedSeats]);
+
   const toggleEmailEdit = () => {
     setIsEmailEditable(!isEmailEditable);
   };
@@ -101,7 +126,6 @@ const PassengerDetailsForm: React.FC = () => {
     navigate('/buses');
   }
 
-
   const onSubmit: SubmitHandler<any> = async (data) => {
     try {
       const ticketNumber = generateTicketId();
@@ -117,6 +141,9 @@ const PassengerDetailsForm: React.FC = () => {
         perSeatAmount: bus.expense,
         totalAmount: currentSelectedSeats.length * bus.expense,
         ticketId: ticketNumber,
+        pickupStop: cleanPickupStop,
+        droppingStop:cleanDroppingStop,
+        
       };
 
       const bookingResponse = await createBooking(bookingData).unwrap();
@@ -238,6 +265,24 @@ const PassengerDetailsForm: React.FC = () => {
                     )}
                   </div>
                 </div>
+
+                
+
+                {index === 0 && currentSelectedSeats.length > 1 && (
+                  <div className=" d-flex justify-content-end align-items-center form-check mt-3 " style={{marginLeft:'0px'}}>
+                    <input
+                      type="checkbox"
+                      className="form-check-input " style={{borderColor:colors.secondary}}
+                      checked={isSameDetails}
+                      onChange={() => setIsSameDetails(!isSameDetails)
+                        
+                      }
+                    />
+                    <label className="form-check-label">
+                      Same details for all passengers
+                    </label>
+                  </div>
+                )}
               </div>
             ))}
 

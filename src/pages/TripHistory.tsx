@@ -5,12 +5,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useRetrievePastBookingQuery, useRetrieveUpcomingBookingQuery, useDeleteBookingMutation } from "../redux/services/BookingApi";
 import Button from "../components/Button";
 import Card from "../components/Card";
+import { colors } from "../constants/Palette";
 
 const TripHistory: React.FC = () => {
     const navigate = useNavigate();
     const { data: pastTrips, error: pastError, isLoading: pastLoading, refetch: refetchPast } = useRetrievePastBookingQuery();
     const { data: upcomingTrips, error: upcomingError, isLoading: upcomingLoading, refetch: refetchUpcoming } = useRetrieveUpcomingBookingQuery();
-    const [deleteBooking] = useDeleteBookingMutation();
     const [activeTab, setActiveTab] = useState<'booked' | 'upcoming'>('booked');
     const [trips, setTrips] = useState<any[]>([]);
     const [apiMessage, setApiMessage] = useState<string | null>(null);
@@ -18,10 +18,10 @@ const TripHistory: React.FC = () => {
     useEffect(() => {
         if (activeTab === "booked" && pastTrips?.data) {
             setTrips(pastTrips.data);
-            setApiMessage(null); // Reset the API message when data is loaded
+            setApiMessage(null);
         } else if (activeTab === "upcoming" && upcomingTrips?.data) {
             setTrips(upcomingTrips.data);
-            setApiMessage(null); // Reset the API message when data is loaded
+            setApiMessage(null);
         } else {
             setTrips([]);
             if (activeTab === "booked" && pastTrips?.message) {
@@ -42,8 +42,8 @@ const TripHistory: React.FC = () => {
     return (
         <div className="d-flex flex-column" style={{ height: '100vh', marginTop: '30px' }}>
             <div className="text-center mt-4">
-                <div className="d-flex flex-column top-0 align-items-center" style={{ height: '100%', overflowY: 'auto' }}>
-                    <h4>Trip History</h4>
+                <div className="d-flex flex-column top-0 align-items-center" style={{ height: '100%', overflowY: 'auto'}}>
+
                     <div className="d-flex align-items-center my-4 w-100">
                         <FontAwesomeIcon icon={faArrowLeft} onClick={handleBack} style={{ cursor: 'pointer', marginRight: '10px' }} />
                         <div className="flex-grow-1 d-flex justify-content-center">
@@ -69,7 +69,7 @@ const TripHistory: React.FC = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="d-flex flex-column align-items-center" style={{ width: "750px" }}>
+                    <div className="d-flex flex-column align-items-center w-100">
                         {isLoading ? (
                             <Card description={<p>Loading trips...</p>} className="w-100" />
                         ) : hasError ? (
@@ -80,18 +80,24 @@ const TripHistory: React.FC = () => {
                                     key={index}
                                     header={activeTab === "upcoming" && <strong>Booking ID: {trip.bookingId}</strong>}
                                     description={
-                                        <div className="container">
+                                        <div className="container-fluid px-4" >
                                             <div className="row">
-                                                <div className="col"><strong>Pickup Point</strong></div>
-                                                <div className="col"><strong>Destination</strong></div>
-                                                <div className="col"><strong>Trip Date</strong></div>
-                                                <div className="col"><strong>Bus Number</strong></div>
-                                                <div className="col"><strong>Seat Number</strong></div>
+                                                <div className="col" ><strong>Departure Location</strong></div>
+                                                <div className="col" ><strong>Boarding Point</strong></div>
+                                                <div className="col" ><strong>Arrival Location</strong></div>
+                                                <div className="col" ><strong>Drop-off Point</strong></div>
+                                                <div className="col" ><strong>Journey Date</strong></div>
+                                                <div className="col" ><strong>Ticket ID</strong></div>
+                                                <div className="col" ><strong>Bus Number</strong></div>
+                                                <div className="col " ><strong>Seat Number</strong></div>
                                             </div>
                                             <div className="row">
                                                 <div className="col">{trip.pickupPoint || "N/A"}</div>
+                                                <div className="col">{trip.pickupStop || "N/A"}</div>
                                                 <div className="col">{trip.reachingPoint || "N/A"}</div>
+                                                <div className="col">{trip.droppingStop || "N/A"}</div>
                                                 <div className="col">{trip.tripDate ? new Date(trip.tripDate).toLocaleDateString() : "N/A"}</div>
+                                                <div className="col">{trip.ticketId || "N/A"}</div>
                                                 <div className="col">{trip.busNumber || "N/A"}</div>
                                                 <div className="col">{trip.seatNumber || "N/A"}</div>
                                             </div>

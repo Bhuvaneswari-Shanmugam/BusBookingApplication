@@ -12,9 +12,7 @@ const ProfileLayout: React.FC = () => {
         const token = sessionStorage.getItem('token');
         if (token) {
             const decodedToken = jwtDecode<DecodedToken>(token);
-            console.log("UserID from Profile Layout:", decodedToken.userId);
             setUserId(decodedToken.userId || null);
-            console.log("id:", userId);
         }
     }, []);
 
@@ -26,6 +24,7 @@ const ProfileLayout: React.FC = () => {
                     <ProfileSidebar userId={userId || ''} />
                 </div>
                 <div className="col-md-9">
+                
                     <Outlet />
                 </div>
             </div>

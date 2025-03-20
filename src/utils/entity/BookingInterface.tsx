@@ -8,6 +8,8 @@ export interface CreateBookingRequest {
   perSeatAmount: number;
   totalAmount: number;
   ticketId:string;
+  pickupStop:string;
+  droppingStop:string;
   
 }
 
@@ -18,4 +20,11 @@ export interface CreateBookingResponse {
 }
 export interface CreateBookingResponse {
   id: string; 
+}
+
+export interface ConfirmationModalProps {
+    show: boolean;
+    onHide: () => void;
+    onConfirm: () => void;
+    message: string;
 }

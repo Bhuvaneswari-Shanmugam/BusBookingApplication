@@ -31,7 +31,7 @@ export const TripApi = createApi({
       query: ({ page = 0, size = 10 }) => ({
         url: 'retrieve-all-trips',
         method: 'GET',
-        params: { page, size },
+        body: { page, size },
       }),
     }),
     updateTrip: builder.mutation({

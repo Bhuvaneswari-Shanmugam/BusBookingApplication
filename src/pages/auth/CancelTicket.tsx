@@ -1,16 +1,20 @@
 import React, { useState } from "react";
-import Input from "../../components/Input";
 import Button from "../../components/Button";
 import { colors } from "../../constants/Palette";
 import Card from "../../components/Card";
+import Input from "../../components/Input";
 import { useRetrievebookingByTicketIdQuery } from "../../redux/services/BookingApi";
 import { useCancetTicketMutation } from "../../redux/services/BookingApi";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { useNavigate } from "react-router-dom";
+import ConfirmationPopUpModal from "../../components/ConfirmationPopUpModal";
 
 const CancelTicket: React.FC = () => {
     const [text, setText] = useState<string>("");
     const [searched, setSearched] = useState<boolean>(false);
+    const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
+    const [ticketToDelete, setTicketToDelete] = useState<string | null>(null);
     const { data, error, isLoading, refetch } = useRetrievebookingByTicketIdQuery({ ticketId: text }, { skip: !searched });
     const [cancelTicket] = useCancetTicketMutation();
 
@@ -21,14 +25,27 @@ const CancelTicket: React.FC = () => {
         refetch();
     };
 
-    const handleDelete = async (id: string) => {
-        try {
-            await cancelTicket({ passengerId: id }).unwrap();
-            alert("Ticket cancelled successfully!");
-            refetch();
-        } catch (err) {
-            console.error("Failed to cancel ticket:", err);
-            alert("Failed to cancel ticket. Please try again.");
+    const openModal = (id: string) => {
+        setTicketToDelete(id);
+        setModalIsOpen(true);
+    };
+
+    const closeModal = () => {
+        setTicketToDelete(null);
+        setModalIsOpen(false);
+    };
+
+    const confirmDelete = async () => {
+        if (ticketToDelete) {
+            try {
+                await cancelTicket({ passengerId: ticketToDelete }).unwrap();
+                alert("Ticket cancelled successfully!");
+                refetch();
+                closeModal();
+            } catch (err) {
+                console.error("Failed to cancel ticket:", err);
+                alert("Failed to cancel ticket. Please try again.");
+            }
         }
     };
 
@@ -37,7 +54,7 @@ const CancelTicket: React.FC = () => {
             <div>
                 <div className="d-flex justify-content-center align-items-center mt-4">
                     <div style={{ textAlign: "center" }}>
-                        <input
+                        <Input
                             type="text"
                             value={text}
                             onChange={(e) => setText(e.target.value)}
@@ -60,10 +77,10 @@ const CancelTicket: React.FC = () => {
 
             {data && searched && data.data.length > 0 && (
                 data.data.map((ticket: any) => (
-                    <Card key={ticket.id} className="mt-4"
+                    <Card key={ticket.id} className="mt-4 "
                         description={
-                            <div className="d-flex justify-content-center">
-                                <div className="container">
+                            <div className="d-flex justify-content-center   ">
+                                <div className="container px-4">
                                     <div className="row">
                                         <div className="col"><strong>Name</strong></div>
                                         <div className="col"><strong>Age</strong></div>
@@ -85,7 +102,7 @@ const CancelTicket: React.FC = () => {
                                         <div className="col">{ticket["dropping point"]}</div>
                                         <div className="col">{new Date(ticket["pickup Time"]).toLocaleString()}</div>
                                         <div className="col text-right">
-                                            <FontAwesomeIcon icon={faTrash} onClick={() => handleDelete(ticket.id)} style={{ cursor: 'pointer', color: '#dc3545', fontSize: '24px' }} />
+                                            <FontAwesomeIcon icon={faTrash} onClick={() => openModal(ticket.id)} style={{ cursor: 'pointer', color: '#dc3545', fontSize: '24px' }} />
                                         </div>
                                     </div>
                                 </div>
@@ -94,6 +111,13 @@ const CancelTicket: React.FC = () => {
                     />
                 ))
             )}
+
+            <ConfirmationPopUpModal
+                show={modalIsOpen}
+                onHide={closeModal}
+                onConfirm={confirmDelete}
+                message="Are you sure you want to cancel this ticket?"
+            />
         </div>
     );
 };
