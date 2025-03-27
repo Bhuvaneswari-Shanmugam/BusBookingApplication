@@ -61,6 +61,7 @@ const TripDetailsModal: React.FC<TripDetailsModalProps> = ({
   const handleCloseOffcanvas = () => {
     setShowPassengerDetailsOffcanvas(false);
   };
+  
   { console.log(showPassengerDetailsOffcanvas) }
   return (
     <>

@@ -59,6 +59,7 @@ const SignIn: React.FC = () => {
         const { accessToken, refreshToken } = responseData.data;
         const decodedToken = jwtDecode<LoginJwtPayload>(accessToken);
 
+        localStorage.setItem('Token', accessToken)
         sessionStorage.setItem("Token", accessToken);
         sessionStorage.setItem("RefreshToken", refreshToken);
         sessionStorage.setItem("FirstName", decodedToken.firstName || "User");

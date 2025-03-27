@@ -12,7 +12,7 @@ import { useBooking } from "../../context/BookingProvider";
 import { Passenger } from "../../utils/entity/PassengerInterface";
 import { useCreateTicketMutation } from "../../redux/services/TicketApi";
 import { termsAndConditions } from "../../constants";
-import Button from "../../components/Button"
+import Button from "../../components/Button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 
@@ -22,12 +22,18 @@ const Ticket: React.FC = () => {
     const apiCalled = useRef(false);
 
     const { bookingDetails } = useBooking();
-    const { passengers } = usePassenger();
+    //const { passengerContext } = usePassenger();
 
-    const email = passengers.length > 0 ? passengers[0].email : '';
-    const phoneNumber = passengers.length > 0 ? passengers[0].phoneNumber : '';
-    const ticketId = passengers.length > 0 ? passengers[0].ticketId : '';
-    const busNumber = passengers.length > 0 ? passengers[0].busNumber : '';
+    const selectedDroppingPoints = JSON.parse(localStorage.getItem('selectedDroppingPoints') || 'N/A');
+    const selectedPickupPoints = JSON.parse( localStorage.getItem('selectedPickupPoints') || 'N/A');
+
+    const passengerContextData = JSON.parse(sessionStorage.getItem('passengerContextData') || '{}');
+    console.log("passengerContextData in ticket :", passengerContextData);
+
+    const email = passengerContextData?.email || '';
+    const phoneNumber = passengerContextData?.phoneNumber || '';
+    const ticketId = passengerContextData?.ticketId || '';
+    const busNumber = passengerContextData?.busNumber || '';
 
     const [ticketUrl, setTicketUrl] = useState<string>('');
     const [toastMessage, setToastMessage] = useState<string>('');
@@ -35,6 +41,8 @@ const Ticket: React.FC = () => {
     const [showToast, setShowToast] = useState<boolean>(false);
 
     const [createTicket] = useCreateTicketMutation();
+    const bookingData = JSON.parse(sessionStorage.getItem('bookingData') || '{}');
+    console.log("booking data in ticket : ", bookingData);
 
     useEffect(() => {
         const storeTicket = async () => {
@@ -78,13 +86,12 @@ const Ticket: React.FC = () => {
 
                 pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
                 pdf.save("ticket.pdf");
-                toast.success("Ticket downloaded successfully!");
+                setToastMessage("ticket downloaded successfully!");
                 setToastType('success');
                 setShowToast(true);
-
             }
         } catch (err) {
-            toast.error("Error while downloading ticket!");
+            setToastMessage("Error while downloading ticket");
             setToastType('error');
             setShowToast(true);
         }
@@ -134,16 +141,15 @@ const Ticket: React.FC = () => {
     };
 
     const fields = [
-        { key: 'from', label: 'From', value: bookingDetails?.bus.pickupPoint },
-        { key: 'to', label: 'To', value: bookingDetails?.bus.droppingPoint },
-        { key: 'date', label: 'Date', value: bookingDetails?.date },
+        { key: 'from', label: 'From', value: bookingData?.pickupPoint },
+        { key: 'to', label: 'To', value: bookingData?.destinationPoint },
+        { key: 'date', label: 'Date', value: bookingData?.pickupTime },
         { key: 'ticketid', label: 'Ticket Id', value: ticketId },
-        { key: 'boardingPoint', label: 'Boarding Point', value: bookingDetails?.bus.pickupPoint },
-        { key: 'busName', label: 'Bus Name', value: `${bookingDetails?.bus.name} ${bookingDetails?.bus.type}` },
-        { key: 'reportingTime', label: 'Reporting Time', value: bookingDetails?.bus.departureTime },
-        { key: 'departureTime', label: 'Departure Time', value: bookingDetails?.bus.departureTime },
-        { key: 'seatNumbers', label: 'Seat Numbers', value: bookingDetails?.currentSelectedSeats?.join(", ") || "N/A" },
-        { key: 'departurePoint', label: 'Departure Point', value: bookingDetails?.bus.droppingPoint },
+        { key: 'boardingPoint', label: 'Boarding Point', value: selectedPickupPoints || "N/A" },
+        { key: 'departurePoint', label: 'Departure Point', value: selectedDroppingPoints || "N/A" },
+        { key: 'seatNumbers', label: 'Seat Numbers', value: bookingData?.bookedSeats?.join(", ") || "N/A" },
+        { key: 'perSeatAmount', label: 'Per Seat Amount', value: bookingData?.perSeatAmount },
+        { key: 'totalAmount', label: 'Total Amount', value: bookingData?.totalAmount },
     ];
 
     const textStyle = { color: colors.secondary };
@@ -167,18 +173,16 @@ const Ticket: React.FC = () => {
                             <div className="d-flex align-items-center mb-3 ">
                                 <FontAwesomeIcon
                                     icon={faArrowLeft}
-                                    className="cursor-pointer mt-5" 
+                                    className="cursor-pointer mt-5"
                                     onClick={() => navigate(-1)}
                                     style={{ fontSize: "20px", color: "black" }}
                                 />
-                                <div className="ms-3"> 
+                                <div className="ms-3">
                                     <p className="mb-1 fw-bold text-start">Need help with your trip?</p>
                                     <p className="mb-1 mailto:text-start">bigtranzriders@gmail.com</p>
                                     <p className="mb-1 text-start">0522-2454444</p>
                                 </div>
                             </div>
-
-
                         </div>
                         <img src={logo} alt="logo" width="90px" height="90px" />
                     </div>
@@ -213,7 +217,6 @@ const Ticket: React.FC = () => {
                             <div key={index} className="text-center">
                                 <p className="mb-0">{field.label}</p>
                                 <h5 className="mb-1"><b>{field.value}</b></h5>
-
                             </div>
                         ))}
                     </div>
@@ -246,9 +249,9 @@ const Ticket: React.FC = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="" style={textStyle}>
-                                    {Array.isArray(passengers) &&
-                                        passengers.length > 0 &&
-                                        passengers[0].passengers.map((passenger: Passenger, index: number) => (
+                                    {Array.isArray(passengerContextData?.passengers) &&
+                                        passengerContextData.passengers.length > 0 &&
+                                        passengerContextData.passengers.map((passenger: Passenger, index: number) => (
                                             <tr key={index}>
                                                 <td style={textStyle}>{passenger.firstName} {passenger.lastName}</td>
                                                 <td style={textStyle}>{passenger.age}</td>
@@ -282,8 +285,6 @@ const Ticket: React.FC = () => {
                         </div>
                     </div>
 
-
-
                     <div className="text-center d-flex justify-content-center align-items-center mt-4">
                         <div>
                             <Button
@@ -304,7 +305,6 @@ const Ticket: React.FC = () => {
                                     event.preventDefault();
                                     generateAndSendPDF();
                                 }}
-
                             >
                                 Share PDF
                             </Button>

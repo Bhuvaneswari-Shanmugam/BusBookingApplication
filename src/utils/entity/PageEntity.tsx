@@ -43,7 +43,9 @@ export const defaultBusValues: Bus = {
   number: 0,
   pickupPoint: '',
   droppingPoint: '',
-  ratings: 0
+  ratings: 0,
+  busType: '',
+  busCategory: '',
 };
 
 
@@ -74,6 +76,8 @@ export interface Bus {
   droppingPoint: string;
   ratings:number;
   tripNumber?:number;
+  busType: string;
+  busCategory: string; 
 }
 
 export type  ContactDetail = {

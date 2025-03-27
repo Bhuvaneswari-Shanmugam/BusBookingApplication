@@ -10,6 +10,7 @@ export interface CreateBookingRequest {
   ticketId:string;
   pickupStop:string;
   droppingStop:string;
+  userEmail:string;
   
 }
 

@@ -164,7 +164,7 @@ const Filters: React.FC = () => {
     setSelectedPickupPoints(selected);
     setShowPickUpPoints(false);
     // Store in sessionStorage
-    sessionStorage.setItem('selectedPickupPoints', JSON.stringify(Array.from(selected)));
+    localStorage.setItem('selectedPickupPoints', JSON.stringify(Array.from(selected)));
     console.log('Selected Pickup Points:', selectedPickupPoints);
   };
 
@@ -172,7 +172,7 @@ const Filters: React.FC = () => {
     setSelectedDroppingPoints(selected);
     setShowDropOffPoints(false);
     // Store in sessionStorage
-    sessionStorage.setItem('selectedDroppingPoints', JSON.stringify(Array.from(selected)));
+    localStorage.setItem('selectedDroppingPoints', JSON.stringify(Array.from(selected)));
     console.log('Selected Dropping Points:', selectedDroppingPoints);
   };
 

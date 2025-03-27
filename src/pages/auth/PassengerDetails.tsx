@@ -3,6 +3,8 @@ import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { loadStripe } from '@stripe/stripe-js';
 import Button from "../../components/Button";
 import Input from "../../components/Input";
 import Form from "../../components/Form";
@@ -20,11 +22,13 @@ import { colors } from '../../constants/Palette';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 
+// Load Stripe with your publishable key
+const stripePromise = loadStripe('pk_test_51NDi2uSIeHGLmxdBXJaV2FhWJkT3MOwkff67QkcgQnjZCzZGnY6egJQ0jY7m9cRFMZXsAOT40U8JNVFAi4xyTClo00iZfLzxR9');
+
 const PassengerDetailsForm: React.FC = () => {
   const navigate = useNavigate();
   const { bookingDetails } = useBooking();
   const { setPassengerDetails } = usePassenger();
-  
 
   const bus: Bus = bookingDetails?.bus || ({} as Bus);
   const currentSelectedSeats = bookingDetails?.currentSelectedSeats || [];
@@ -36,11 +40,10 @@ const PassengerDetailsForm: React.FC = () => {
 
   const cleanPickupStop = bookingDetails?.pickupStop?.replace(/[\[\]"]+/g, "") || "";
   const cleanDroppingStop = bookingDetails?.droppingStop?.replace(/[\[\]"]+/g, "") || "";
-  
-
 
   const [loggedInEmail, setLoggedInEmail] = useState("");
   const [isEmailEditable, setIsEmailEditable] = useState(false);
+  const [userId, setUserId] = useState('');
   const [showEmail, setShowEmail] = useState(false);
   const [createBooking] = useCreateBookingMutation();
   const [toastMessage, setToastMessage] = useState<string>("");
@@ -88,6 +91,7 @@ const PassengerDetailsForm: React.FC = () => {
         console.log("userId from passengerdetails:", decoded.userId);
         setLoggedInEmail(decoded.email);
         setValue("email", decoded.email);
+        setUserId(decoded.userId);
       } catch (error) {
         console.error("Error decoding token:", error);
       }
@@ -122,15 +126,21 @@ const PassengerDetailsForm: React.FC = () => {
     const randomSixDigit = Math.floor(100000 + Math.random() * 900000);
     return `BT-${randomSixDigit}`;
   };
+
   const handleOnClick = () => {
     navigate('/buses');
   }
-
   const onSubmit: SubmitHandler<any> = async (data) => {
     try {
       const ticketNumber = generateTicketId();
-      const busNumber = bus.number;
-
+      const userEmail = data.email;
+      
+      // Ensure bus details exist before proceeding
+      if (!bus || !bus.number) {
+        throw new Error("Bus details are missing.");
+      }
+  
+      // **Step 1: Prepare Booking Data**
       const bookingData: CreateBookingRequest = {
         pickupPoint: bus.pickupPoint,
         destinationPoint: bus.droppingPoint,
@@ -139,41 +149,81 @@ const PassengerDetailsForm: React.FC = () => {
         busType: bus.type,
         bookedSeats: currentSelectedSeats,
         perSeatAmount: bus.expense,
-        totalAmount: currentSelectedSeats.length * bus.expense,
+        totalAmount: totalAmount,
         ticketId: ticketNumber,
         pickupStop: cleanPickupStop,
-        droppingStop:cleanDroppingStop,
-        
+        droppingStop: cleanDroppingStop,
+        userEmail: userEmail, // Ensure correct email assignment
       };
-
-      const bookingResponse = await createBooking(bookingData).unwrap();
-      console.log("Booking stored in context", bookingResponse);
-
+  
+      sessionStorage.setItem("bookingData", JSON.stringify(bookingData));
+  
+      await createBooking(bookingData).unwrap();
+  
+      // **Step 2: Prepare Passenger Details**
       const passengerContextData: PassengerData = {
         passengers: data.passengers.map((passenger: Passenger) => ({
           ...passenger,
         })),
-        email: data.email,
+        email: userEmail,
         phoneNumber: data.phoneNumber,
         ticketId: ticketNumber,
-        busNumber: busNumber,
+        busNumber: bus.number,
       };
-      setPassengerDetails(passengerContextData);
-      const passengerResponse = await createPassengerDetails(passengerContextData).unwrap();
-
-      setToastMessage("Booking and Passenger Details saved successfully!");
+  
+      sessionStorage.setItem("passengerContextData", JSON.stringify(passengerContextData));
+  
+      await createPassengerDetails(passengerContextData).unwrap();
+  
+      // Show success message
+      setToastMessage("Booking saved! Redirecting to payment...");
       setToastType("success");
       setShowToast(true);
-
-      navigate('/ticket');
+  
+      // **Step 3: Create Stripe Checkout Session**
+      const response = await axios.post(
+        "http://localhost:8082/stripe-payment/create-checkout-session",
+        {
+          amount: totalAmount * 100, // Convert to smallest currency unit
+          currency: "inr",
+          description: `Bus Ticket Booking for ${bus.number}`,
+          email: userEmail,
+          successUrl: "http://localhost:3000/ticket?session_id={CHECKOUT_SESSION_ID}",
+          cancelUrl: "http://localhost:3000/home",
+        }
+      );
+  
+      console.log("Stripe Session Response:", response.data);
+  
+      const { sessionId } = response.data;
+      if (!sessionId) throw new Error("Stripe session ID missing from response.");
+  
+      // Store Pending Booking Data
+      localStorage.setItem(
+        "pendingBooking",
+        JSON.stringify({
+          ticketId: ticketNumber,
+          userId: userId, // Ensure `userId` is properly retrieved before usage
+        })
+      );
+  
+      // **Step 4: Redirect to Stripe Checkout**
+      const stripe = await stripePromise;
+      if (!stripe) throw new Error("Stripe initialization failed.");
+  
+      const { error } = await stripe.redirectToCheckout({ sessionId });
+  
+      if (error) {
+        throw new Error("Payment failed. Please try again.");
+      }
     } catch (error: any) {
       console.error("Error:", error);
-      setToastMessage(error?.data?.message || "An error occurred while booking.");
+      setToastMessage(error?.response?.data?.message || "Payment failed. Try again.");
       setToastType("error");
       setShowToast(true);
     }
   };
-
+  
   return (
     <div className="d-flex justify-content-center align-items-center" style={{ width: "670px" }}>
       <Form onSubmit={handleSubmit(onSubmit)}>
@@ -266,16 +316,14 @@ const PassengerDetailsForm: React.FC = () => {
                   </div>
                 </div>
 
-                
-
                 {index === 0 && currentSelectedSeats.length > 1 && (
-                  <div className=" d-flex justify-content-end align-items-center form-check mt-3 " style={{marginLeft:'0px'}}>
+                  <div className=" d-flex justify-content-end align-items-center form-check mt-3 " style={{ marginLeft: '0px' }}>
                     <input
                       type="checkbox"
-                      className="form-check-input " style={{borderColor:colors.secondary}}
+                      className="form-check-input " style={{ borderColor: colors.secondary }}
                       checked={isSameDetails}
                       onChange={() => setIsSameDetails(!isSameDetails)
-                        
+
                       }
                     />
                     <label className="form-check-label">
@@ -354,7 +402,7 @@ const PassengerDetailsForm: React.FC = () => {
                 <p>(*Exclusive of Taxes)</p>
               </div>
 
-              <div className="d-flex justify-conent end  mt-3 mb-2 " style={{marginRight:'10px'}}>
+              <div className="d-flex justify-conent end  mt-3 mb-2 " style={{ marginRight: '10px' }}>
                 <div className=" me-3">
                   <Button type="submit" disabled={isLoading} style={{ color: 'white', backgroundColor: colors.pagecolor, border: colors.pagecolor }}>
                     PROCEED TO PAY

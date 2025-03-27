@@ -29,7 +29,7 @@ const ProfileLayout: React.FC = () => {
                 </div>
             </div>
         </div>
-    );
+    ); 
 };
 
 export default ProfileLayout;
