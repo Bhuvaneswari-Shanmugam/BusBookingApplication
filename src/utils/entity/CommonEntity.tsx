@@ -16,11 +16,12 @@ export interface DropdownProps {
 }
 
 export interface CheckboxProps {
-  label: string;
+  label: any;
   checked: boolean;
   type: 'checkbox' | 'radio';
   onChange: (checked: boolean) => void;
   name?: string;
+  id?: string;
 }
 
 export interface ToastProps {

@@ -4,6 +4,8 @@ import { colors } from "../constants/Palette";
 
 export type ButtonProps = {
   onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  onMouseEnter?: (event: React.MouseEvent<HTMLButtonElement>) => void;  
+  onMouseLeave?: (event: React.MouseEvent<HTMLButtonElement>) => void; 
   name?: string;
   children?: React.ReactNode; 
   type?: "button" | "submit" | "reset";
@@ -16,10 +18,11 @@ export type ButtonProps = {
   icon?: React.ReactNode;
   loading?: boolean;
 };
-
 const Button = ({
   className,
   type = "button",
+  onMouseEnter,
+  onMouseLeave,
   variant,
   size,
   name,
@@ -36,6 +39,8 @@ const Button = ({
     <BootstrapButton
       className={className}
       onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
       type={type}
       style={style}
       variant={variant}
@@ -58,5 +63,5 @@ const Button = ({
     </BootstrapButton>
   );
 };
-
 export default Button;
+ 

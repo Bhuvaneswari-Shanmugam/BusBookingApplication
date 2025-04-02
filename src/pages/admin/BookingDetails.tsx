@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useFetchAllBookingQuery } from '../../redux/services/BookingDetailApi';
-import { colors } from '../../constants/Palette';
+import Pagination from '../../components/Pagination';
 
 const AllBookingDetails = () => {
     const [page, setPage] = useState(0); 
@@ -20,6 +20,9 @@ const AllBookingDetails = () => {
             setPage((prev) => prev - 1);
         }
     };
+
+    // Adjust totalPages dynamically based on the response
+    const totalPages = data?.totalPages || 1; 
 
     const renderContent = () => {
         if (isLoading) {
@@ -78,23 +81,11 @@ const AllBookingDetails = () => {
                     </table>
                 </div>
 
-                <div className="d-flex justify-content-end my-3 bordeer-0" style={{ width: '85%', margin: 'auto' }}>
-                    <button
-                        className="btn  me-4 text-white"
-                        onClick={handlePrevPage}
-                        disabled={page === 0}
-                        style={{backgroundColor:colors.pagecolor}}
-                    >
-                        Previous
-                    </button>
-                    <button
-                        className="btn border-0 text-white "
-                        onClick={handleNextPage}
-                        disabled={data && data.data.length < size} 
-                        style={{backgroundColor:colors.pagecolor}}
-                    >
-                        Next
-                    </button>
+                <div className="d-flex justify-content-end my-3 border-0" style={{ width: '85%', margin: 'auto' }}>
+                    <Pagination 
+                        totalPages={totalPages} 
+                      
+                    />
                 </div>
 
             </div>

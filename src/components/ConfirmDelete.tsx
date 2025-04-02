@@ -1,42 +1,42 @@
 import React, { useState } from 'react';
-// import './DeletionConfirmationPopup.css';
+import Button from '../../src/components/Button';
+import { colors } from '../../src/constants/Palette';
+import Card from '../../src/components/Card';
 
 interface DeletionConfirmationPopupProps {
     onConfirm: () => void;
     onCancel: () => void;
 }
 
-const DeletionConfirmationPopup: React.FC<DeletionConfirmationPopupProps> = ({ onConfirm, onCancel }) => {
+const DeletionConfirmation: React.FC<DeletionConfirmationPopupProps> = ({ onConfirm, onCancel }) => {
     const [isOpen, setIsOpen] = useState(false);
 
-    const handleDeleteClick = () => {
+    const handleDeleteConfirmation = () => {
         setIsOpen(true);
-    };
-
-    const handleConfirmDelete = () => {
         onConfirm();
-        setIsOpen(false);
-    };
+    }
+    const handleCancelDeleteConfirmation = () => {
 
-    const handleCancelDelete = () => {
         onCancel();
         setIsOpen(false);
-    };
+    }
 
     return (
-        <div>
-            <button onClick={handleDeleteClick}>Delete Item</button>
-            {isOpen && (
-                <div className="popup">
+        <Card
+          className='w-25'
+            description={
+
+                <div className=" popup ">
                     <div className="popup-content">
                         <p>Are you sure you want to delete this item?</p>
-                        <button onClick={handleConfirmDelete}>Yes</button>
-                        <button onClick={handleCancelDelete}>No</button>
+                        <Button className="border-0 me-4" onClick={handleDeleteConfirmation} style={{ backgroundColor: colors.pagecolor }}>Yes</Button>
+                        <Button className="border-0" onClick={handleCancelDeleteConfirmation} style={{ backgroundColor: colors.pagecolor }}> No </Button>
                     </div>
                 </div>
-            )}
-        </div>
+
+            }/>
+
     );
 };
 
-export default DeletionConfirmationPopup;
+export default DeletionConfirmation;

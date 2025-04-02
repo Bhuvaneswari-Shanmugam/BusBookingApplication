@@ -270,13 +270,7 @@ const Filters = ({
         <DroppingPoints onSelectionChange={setSelectedDroppingPoints} onApply={handleDropOffPointSelect} />
       )}
 
-      <TripDetailsModal
-        bus={buses && buses.length > 0 ? buses[0] : {}}
-        selectedPickupPoints={selectedPickupPoints}
-        selectedDroppingPoints={selectedDroppingPoints}
-        onProceed={() => {}}
-        date={date}
-      />
+  
     </div>
   );
 };

@@ -10,7 +10,7 @@ const Checkbox: React.FC<CheckboxProps> = ({ label, checked, type, onChange, nam
       <label style={{ display: 'flex', alignItems: 'center', gap: space.extraLarge }}>
         <input
           type={type}
-          name={type === 'radio' ? name : undefined} 
+          name={type === 'radio' ? name : undefined}
           checked={checked}
           onChange={(event: React.ChangeEvent<HTMLInputElement>) => onChange(event.target.checked)}
           className="form-check-input"
@@ -24,5 +24,4 @@ const Checkbox: React.FC<CheckboxProps> = ({ label, checked, type, onChange, nam
     </div>
   );
 };
-
 export default Checkbox;

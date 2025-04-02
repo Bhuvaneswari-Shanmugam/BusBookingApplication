@@ -10,16 +10,19 @@ import ProtectedRoute from './routes/Index';
 import Home from './pages/Home';
 import MissMatch from './pages/MissMatch';
 import Profile from './pages/profile';
+import CancelTicket from './pages/auth/cancelTicket';
 import ProfileLayout from './components/ProfileLayout';
+import TripHistory from './pages/profile/tripHistory';
 import TripDetailsModal from './components/TripDetails';
 import { defaultBusValues } from './utils/entity/PageEntity';
 import { BookingProvider } from './context/BookingProvider';
-import TripInfo from './pages/admin/tripView';
+import TripInfo from './pages/admin/adminTripView';
 import AdminLayout from './pages/admin/AdminLayout';
 import CustomerDetails from './pages/admin/CustomerDetails';
 import BusDetails from './pages/admin/BusDetails';
 import AllBookingDetails from './pages/admin/BookingDetails';
 import MainBus from './pages/booking/MainBus';
+import Pagination from './components/Pagination'
 
 const App = () => {
   return (
@@ -30,6 +33,7 @@ const App = () => {
             <Route element={<Layout />}>
               <Route path="/" element={<Signin />} />
               <Route path="/signup" element={<Signup />} />
+             
             </Route>
 
 
@@ -53,11 +57,18 @@ const App = () => {
                <Route path="/all-booking-details" element={<AllBookingDetails />} />
               </Route>
             </Route>
+
+            <Route element={<ProfileLayout />}>
+
+{/* <Route path="/profile-layout" element={<ProfileWrapper />} /> */}
+             <Route path="/cancel-ticket" element={<CancelTicket />} />
+             <Route path="/trip-history" element={<TripHistory />} /> 
+</Route>
           </Routes>
         </BrowserRouter>
       </BookingProvider>
     </Provider>
-  );
+  )
 };
 
 export default App;

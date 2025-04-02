@@ -17,7 +17,6 @@ import { SigninResponse } from "../../utils/entity/loginInterface";
 import { LoginJwtPayload } from "../../utils/entity/loginInterface";
 import Card from '../../components/Card';
 import Toast from '../../components/Toast';
-
 const SignIn: React.FC = () => {
   const validationSchema = getLoginValidationSchema();
   const navigate = useNavigate();
@@ -35,35 +34,29 @@ const SignIn: React.FC = () => {
   const [toastMessage, setToastMessage] = useState<string>('');
   const [toastType, setToastType] = useState<'info' | 'success' | 'error'>('info');
   const [showToast, setShowToast] = useState<boolean>(false);
-
   const { register, handleSubmit, formState: { errors }, reset } = useForm({
     resolver: yupResolver(validationSchema),
   });
-
   const { register: registerResetPassword, handleSubmit: handleSubmitResetPassword, formState: { errors: resetPasswordErrors }, reset: resetResetPassword } = useForm({
     resolver: yupResolver(getResetPasswordValidationSchema()),
   });
-
   const { register: registerForgotPassword, handleSubmit: handleSubmitForgotPassword, formState: { errors: forgotPasswordErrors } } = useForm({
     resolver: yupResolver(getForgotPasswordValidationSchema()),
   });
-
   useEffect(() => {
     sessionStorage.clear();
   }, []);
-
   const onSubmit = async (data: Record<string, string>) => {
     try {
       const { data: responseData } = (await signin(data)) as { data: SigninResponse };
      if (responseData?.statusCode === 200) {
         const { accessToken, refreshToken } = responseData.data;
         const decodedToken = jwtDecode<LoginJwtPayload>(accessToken);
-
+        localStorage.setItem('Token', accessToken)
         sessionStorage.setItem("Token", accessToken);
         sessionStorage.setItem("RefreshToken", refreshToken);
         sessionStorage.setItem("FirstName", decodedToken.firstName || "User");
         sessionStorage.setItem("Role", decodedToken.role?.toUpperCase() || "GUEST");
-
         setToastMessage(responseData.message || "Login successful!");
         setToastType('success');
         setShowToast(true);
@@ -80,7 +73,6 @@ const SignIn: React.FC = () => {
       setShowToast(true);
     }
   };
-
   const handleForgotPassword = async () => {
     if (!email) {
       setToastMessage("Please enter your email address before requesting OTP.");
@@ -88,7 +80,6 @@ const SignIn: React.FC = () => {
       setShowToast(true);
       return;
     }
-
     try {
       const response = await sendOtp({ email }).unwrap();
         setToastMessage(response.message || "OTP sent successfully!");
@@ -102,7 +93,6 @@ const SignIn: React.FC = () => {
       setShowToast(true);
     }
   };
-
   const handleValidateOtp = async () => {
     if (OTP.length !== 6) {
       setToastMessage("OTP must be exactly 6 digits. Please try again.");
@@ -110,7 +100,6 @@ const SignIn: React.FC = () => {
       setShowToast(true);
       return;
     }
-
     try {
       const response = await validateOtp({ email, OTP }).unwrap();
       if (response.statusCode === 200) {
@@ -131,17 +120,14 @@ const SignIn: React.FC = () => {
       setShowToast(true);
     }
   };
-
   const handleResetPassword = async (data: { resetPassword: string; confirmPassword: string }) => {
     const { resetPassword, confirmPassword } = data;
-
     if (resetPassword !== confirmPassword) {
       setToastMessage("Passwords do not match. Please try again.");
       setToastType('error');
       setShowToast(true);
       return;
     }
-
     try {
       const response = await forgotPassword({ email, newPassword: resetPassword, confirmPassword: confirmPassword }).unwrap();
       if (response.statusCode === 200) {
@@ -163,20 +149,17 @@ const SignIn: React.FC = () => {
       setShowToast(true);
     }
   };
-
   return (
     <div >
-
       <Card
-      description={
+        description={
           <>
             {!forgotPasswordMode && !resetPasswordMode && !otpVerified && (
               <h3 className="p-4 d-flex justify-content-center">Login</h3>
             )}
-
             {!forgotPasswordMode && !resetPasswordMode && (
               <div className="" style={{ border: "none", boxShadow: "none" }}>
-                <Form onSubmit={handleSubmit(onSubmit)} className="d-flex flex-column align-items-center">
+                <Form onSubmit={handleSubmit(onSubmit)} className="d-flex flex-column align-items-center" style={{height:'220px' , width:'350px'}}>
                   <div className="mb-3 w-100">
                     <Input
                       {...register("email")}
@@ -196,11 +179,9 @@ const SignIn: React.FC = () => {
                       className="form-control"
                     />
                     <div className="float-start">
-
                       <span className="error text-danger">{errors.password?.message}</span>
                     </div>
                   </div>
-
                   <div className="text-end w-100">
                     <Button
                       type="button"
@@ -211,22 +192,19 @@ const SignIn: React.FC = () => {
                       Forgot Password?
                     </Button>
                   </div>
-                  <div className="justify-content-center mt-3 w-100">
+                  <div className="justify-content-center mt-3 w-100 mb-4">
                     <Button type="submit" className="btn w-100" disabled={isSigninLoading} style={{
                       backgroundColor: colors.pagecolor, borderColor: colors.pagecolor
-
                     }}>
                       {isSigninLoading ? "Signing In..." : "Sign In"}
                     </Button>
                   </div>
                 </Form>
-
                 <p className="text-center mt-3" >
                   Don't have an account? <Link to="/signup" style={{ color: colors.pagecolor, border: 'none' }}>Sign Up</Link>
                 </p>
               </div>
             )}
-
             {forgotPasswordMode && !otpVerified && (
               <div className="p-3" style={{ border: "none", boxShadow: "none" }}>
                 <h3 className="text-center">Forgot Password</h3>
@@ -238,7 +216,6 @@ const SignIn: React.FC = () => {
                     placeholder="Enter Email"
                     onChange={(e) => setEmail(e.target.value)}
                   />
-
                   {forgotPasswordErrors.email && (
                     <span className="error text-danger">{forgotPasswordErrors.email.message}</span>
                   )}
@@ -272,7 +249,6 @@ const SignIn: React.FC = () => {
                   {resetPasswordErrors.resetPassword && (
                     <div className="error text-danger float-left">{resetPasswordErrors.resetPassword.message}</div>
                   )}
-
                   <Input
                     type="password"
                     {...registerResetPassword("confirmPassword")}
@@ -282,7 +258,6 @@ const SignIn: React.FC = () => {
                   {resetPasswordErrors.confirmPassword && (
                     <div className="error text-danger float-left " style={{ float: "left" }}>{resetPasswordErrors.confirmPassword.message}</div>
                   )}
-
                   <Button
                     type="submit"
                     className="btn btn-primary my-2 w-100"
@@ -294,7 +269,6 @@ const SignIn: React.FC = () => {
                 </Form>
               </div>
             )}
-
           </>
         }
       />
@@ -316,7 +290,6 @@ const SignIn: React.FC = () => {
           </Button>
         </Modal.Body>
       </Modal>
-
       {showToast && (
         <Toast
           message={toastMessage}
@@ -328,5 +301,4 @@ const SignIn: React.FC = () => {
     </div>
   );
 };
-
-export default SignIn;
+export default SignIn; 

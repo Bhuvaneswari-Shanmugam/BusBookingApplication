@@ -8,6 +8,9 @@ export interface CreateBookingRequest {
     perSeatAmount: number;
     totalAmount: number;
     ticketId:string;
+    pickupStop:string;
+    droppingStop:string;
+    userEmail:string;
     
   }
   

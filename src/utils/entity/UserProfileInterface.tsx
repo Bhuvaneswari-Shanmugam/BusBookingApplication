@@ -8,3 +8,12 @@ export interface UserProfile {
     phoneNumber: string;
     address: string;
 }
+
+
+export interface ConfirmationModalProps {
+    show: boolean;
+    onHide: () => void;
+    onConfirm: () => void;
+    message: string;
+    
+    }

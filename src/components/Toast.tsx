@@ -9,10 +9,10 @@ const Toast: React.FC<ToastProps> = ({ message, type = 'info', duration = 3000, 
     return () => clearTimeout(timer);
   }, [duration, onClose]);
 
-  let toastClass = `toast show align-items-center border-0 ${type === 'success' ? 'text-bg-success' : type === 'error' ? 'text-bg-danger' : 'text-bg-light'}`;
+  let toastClass = `toast show  border-1 ${type === 'success' ? 'text-bg-success' : type === 'error' ? 'text-bg-danger' : 'text-bg-light'}`;
 
   return (
-    <div className="position-fixed top-50 end-0 p-3" style={{ transform: 'translateY(-50%)' }}>
+    <div className="position-absolute top-50 end-0  p-3" style={{ transform: 'translateY(-50%)' }}>
       <div className={toastClass} role="alert" aria-live="assertive" aria-atomic="true">
         <div className="d-flex">
           <div className="toast-body">
@@ -24,5 +24,4 @@ const Toast: React.FC<ToastProps> = ({ message, type = 'info', duration = 3000, 
     </div>
   );
 };
-
 export default Toast;

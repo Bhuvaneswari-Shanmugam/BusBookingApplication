@@ -11,6 +11,7 @@ export interface DecodedToken {
   iat: number;
   exp: number;
   firstName: string;
+  lastName : string;
   userId: string;
   Role: string;
 }
@@ -39,13 +40,14 @@ export interface LocationPickerProps {
 export interface TripDetailsModalProps {
   show?: boolean;
   onClose?: () => void;
+  onChange?:()=>void;
   onProceed?: () => void;
   bus: Bus;
-  selectedSeats?: string[];
+  selectedSeats?: number[];
   totalPrice?: number;
   currentSelectedSeats?: string[];
-  selectedPickupPoints?: Set<string>;
-  selectedDroppingPoints?: Set<string>;
+  selectedPickupPoint?: string;
+  selectedDroppingPoint?:string;
   date: string;
   bookingDetails?: BookingDetails;
   children?: React.ReactNode;
@@ -58,7 +60,7 @@ export interface PickUpPointsProps {
 }
 
 export interface Bus {
-  id: number;
+  id: string;
   name: string;
   busType: string;
   departureLocation: string;
@@ -80,6 +82,7 @@ export interface Bus {
 
 export interface BusCardProps {
   bus: Bus;
+  id?:string;
   from: string;
   to: string;
   date: string;
@@ -97,6 +100,7 @@ export interface BusCardProps {
     maleSeats: number[];
     availableSeats: number[];
   };
+  onProceedBooking?: (bus: any, selectedSeats: string[], date: string) => void;
 }
 
 export interface InputData {
@@ -232,10 +236,16 @@ export interface PassengerContextType {
   setPassengerDetails: (passenger: PassengerData) => void;
 }
 
-
+export interface PointSelection{
+  totalPrice:number;
+  bus:Bus;
+  currentSelectedSeats:number[];
+  date:string;
+  
+}
 
 export const defaultBusValues: Bus = {
-  id: 0,
+  id: '',
   name: '',
   busType: '',
   departureTime: '',
@@ -253,3 +263,4 @@ export const defaultBusValues: Bus = {
   ratings: 0,
   busCategory:''
 };
+

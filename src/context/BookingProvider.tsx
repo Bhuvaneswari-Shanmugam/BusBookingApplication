@@ -7,6 +7,8 @@ interface BookingDetails {
   currentSelectedSeats: number[];
   date: string;
   totalAmount: number;
+  droppingStop:string;
+  pickupStop:string;
 }
 
 interface BookingContextType {

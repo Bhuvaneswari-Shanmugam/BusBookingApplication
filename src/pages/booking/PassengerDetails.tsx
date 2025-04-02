@@ -3,6 +3,8 @@ import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { loadStripe } from '@stripe/stripe-js';
 import Button from "../../components/Button";
 import Input from "../../components/Input";
 import Form from "../../components/Form";
@@ -16,9 +18,15 @@ import { Passenger } from "../../utils/entity/PassengerInterface";
 import { CreateBookingRequest } from "../../utils/entity/BookingInterface";
 import { useBooking } from "../../context/BookingProvider";
 import { usePassenger } from "../../context/PassengerProvider";
-import {colors} from '../../constants/Palette';
+import { colors } from '../../constants/Palette';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import TripDetailsCard from "../../components/TripDetails";
 
-const PassengerDetailsForm: React.FC = () => {
+// Load Stripe with your publishable key
+const stripePromise = loadStripe('pk_test_51NDi2uSIeHGLmxdBXJaV2FhWJkT3MOwkff67QkcgQnjZCzZGnY6egJQ0jY7m9cRFMZXsAOT40U8JNVFAi4xyTClo00iZfLzxR9');
+
+const PassengerDetailsForm: React.FC<any> = ({handleCloseOffcanvas}:any) => {
   const navigate = useNavigate();
   const { bookingDetails } = useBooking();
   const { setPassengerDetails } = usePassenger();
@@ -28,28 +36,36 @@ const PassengerDetailsForm: React.FC = () => {
   const date = bookingDetails?.date || "";
   const totalAmount = currentSelectedSeats.length * bus.expense;
 
+   const [showTripCard, setShowTripCard] = useState(false);
+  const cleanPickupStop = bookingDetails?.pickupStop?.replace(/[\[\]"]+/g, "") || "";
+  const cleanDroppingStop = bookingDetails?.droppingStop?.replace(/[\[\]"]+/g, "") || "";
+
   const [loggedInEmail, setLoggedInEmail] = useState("");
   const [isEmailEditable, setIsEmailEditable] = useState(false);
+  const [userId, setUserId] = useState('');
+  const [showEmail, setShowEmail] = useState(false);
   const [createBooking] = useCreateBookingMutation();
   const [toastMessage, setToastMessage] = useState<string>("");
   const [toastType, setToastType] = useState<"info" | "success" | "error">("info");
   const [showToast, setShowToast] = useState<boolean>(false);
+  const [isSameDetails, setIsSameDetails] = useState(false);
 
   const {
     control,
     handleSubmit,
     setValue,
+    getValues,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(getPassengerDetailsValidationSchema),
     defaultValues: {
-      passengers: currentSelectedSeats.map((seat) => ({
-        firstName: "",
-        lastName: "",
-        age: 0,
-        gender: "",
-        seatNumber: seat,
-      })),
+  passengers: currentSelectedSeats.map((seat) => ({
+  firstName: "",
+  lastName: "",
+  age: 0,
+  gender: "",
+  seatNumber: seat,
+})),
       email: "",
       phoneNumber: "",
       busNumber: bus?.number || 0,
@@ -61,8 +77,7 @@ const PassengerDetailsForm: React.FC = () => {
       currentSelectedSeats.forEach((seat, index) => {
         setValue(`passengers.${index}.seatNumber`, seat);
       });
-      setValue("busNumber", bus?.number || 0); 
-      console.log("busNumber set to:", bus?.number); 
+      setValue("busNumber", bus?.number || 0);
     }
   }, [bookingDetails, currentSelectedSeats, setValue, bus?.number]);
 
@@ -71,17 +86,35 @@ const PassengerDetailsForm: React.FC = () => {
     if (token) {
       try {
         const decoded: DecodedToken = jwtDecode(token);
-        console.log("userId from passengerdetails:", decoded.userId);
         setLoggedInEmail(decoded.email);
         setValue("email", decoded.email);
+        setUserId(decoded.userId);
       } catch (error) {
         console.error("Error decoding token:", error);
       }
     }
   }, [setValue]);
 
+  useEffect(() => {
+    if (isSameDetails) {
+      const firstPassenger = getValues("passengers.0");
+      currentSelectedSeats.forEach((_, index) => {
+        if (index > 0) {
+          setValue(`passengers.${index}.firstName`, firstPassenger.firstName);
+          setValue(`passengers.${index}.lastName`, firstPassenger.lastName);
+          setValue(`passengers.${index}.age`, firstPassenger.age);
+          setValue(`passengers.${index}.gender`, firstPassenger.gender);
+        }
+      });
+    }
+  }, [isSameDetails, getValues, setValue, currentSelectedSeats]);
+
   const toggleEmailEdit = () => {
     setIsEmailEditable(!isEmailEditable);
+  };
+
+  const toggleShowEmail = () => {
+    setShowEmail(!showEmail);
   };
 
   const [createPassengerDetails, { isLoading }] = useCreatePassengerDetailsMutation();
@@ -91,58 +124,104 @@ const PassengerDetailsForm: React.FC = () => {
     return `BT-${randomSixDigit}`;
   };
 
-const onSubmit: SubmitHandler<any> = async (data) => {
-  try {
-    const ticketNumber = generateTicketId();
-    const busNumber = bus.number;
-
-    const bookingData: CreateBookingRequest = {
-      pickupPoint: bus.pickupPoint,
-      destinationPoint: bus.droppingPoint,
-      pickupTime: date,
-      busNumber: bus.number,
-      busType: bus.busType,
-      bookedSeats: currentSelectedSeats,
-      perSeatAmount: bus.expense,
-      totalAmount: currentSelectedSeats.length * bus.expense,
-      ticketId: ticketNumber,
-    };
-
-    console.log("Booking Data:", bookingData); // Debugging log
-
-    const bookingResponse = await createBooking(bookingData).unwrap();
-    console.log("Booking stored in context",bookingResponse);
-
-    const passengerContextData: PassengerData = {
-      passengers: data.passengers.map((passenger: Passenger) => ({
-        ...passenger,
-      })),
-      email: data.email,
-      phoneNumber: data.phoneNumber,
-      ticketId: ticketNumber,
-      busNumber: busNumber,
-    };
-    setPassengerDetails(passengerContextData);
-
-    console.log(passengerContextData)
-    const passengerResponse = await createPassengerDetails(passengerContextData).unwrap();
-    
-    console.log("passenger data storing in context: ", passengerContextData);
-
-    setToastMessage("Booking and Passenger Details saved successfully!");
-    setToastType("success");
-    setShowToast(true);
-
-    navigate('/ticket');
-  } catch (error: any) {
-    console.error("Error:", error);
-    setToastMessage(error?.data?.message || "An error occurred while booking.");
-    setToastType("error");
-    setShowToast(true);
-  }
-};
-
-
+  const handleOnClick = () => {
+   
+  };
+ 
+  const onSubmit: SubmitHandler<any> = async (data) => {
+    try {
+      const ticketNumber = generateTicketId();
+      const userEmail = data.email;
+      
+      // Ensure bus details exist before proceeding
+      if (!bus || !bus.number) {
+        throw new Error("Bus details are missing.");
+      }
+  
+      // *Step 1: Prepare Booking Data*
+      const bookingData: CreateBookingRequest = {
+        pickupPoint: bus.pickupPoint,
+        destinationPoint: bus.droppingPoint,
+        pickupTime: date,
+        busNumber: bus.number,
+        busType: bus.busType,
+        bookedSeats: currentSelectedSeats,
+        perSeatAmount: bus.expense,
+        totalAmount: totalAmount,
+        ticketId: ticketNumber,
+        pickupStop: cleanPickupStop,
+        droppingStop: cleanDroppingStop,
+        userEmail: userEmail, // Ensure correct email assignment
+      };
+  
+      sessionStorage.setItem("bookingData", JSON.stringify(bookingData));
+  
+      await createBooking(bookingData).unwrap();
+  
+      // *Step 2: Prepare Passenger Details*
+      const passengerContextData: PassengerData = {
+        passengers: data.passengers.map((passenger: Passenger) => ({
+          ...passenger,
+        })),
+        email: userEmail,
+        phoneNumber: data.phoneNumber,
+        ticketId: ticketNumber,
+        busNumber: bus.number,
+      };
+  
+      sessionStorage.setItem("passengerContextData", JSON.stringify(passengerContextData));
+  
+      await createPassengerDetails(passengerContextData).unwrap();
+  
+      // Show success message
+      setToastMessage("Booking saved! Redirecting to payment...");
+      setToastType("success");
+      setShowToast(true);
+  
+      // *Step 3: Create Stripe Checkout Session*
+      const response = await axios.post(
+        "http://localhost:8082/stripe-payment/create-checkout-session",
+        {
+          amount: totalAmount * 100, // Convert to smallest currency unit
+          currency: "inr",
+          description: `Bus Ticket Booking for ${bus.number}`,
+          email: userEmail,
+          successUrl: "http://localhost:3000/ticket?session_id={CHECKOUT_SESSION_ID}",
+          cancelUrl: "http://localhost:3000/home",
+        }
+      );
+  
+      console.log("Stripe Session Response:", response.data);
+  
+      const { sessionId } = response.data;
+      if (!sessionId) throw new Error("Stripe session ID missing from response.");
+  
+      // Store Pending Booking Data
+      localStorage.setItem(
+        "pendingBooking",
+        JSON.stringify({
+          ticketId: ticketNumber,
+          userId: userId, // Ensure `userId` is properly retrieved before usage
+        })
+      );
+  
+      // *Step 4: Redirect to Stripe Checkout*
+      const stripe = await stripePromise;
+      if (!stripe) throw new Error("Stripe initialization failed.");
+  
+      const { error } = await stripe.redirectToCheckout({ sessionId });
+  
+      if (error) {
+        throw new Error("Payment failed. Please try again.");
+      }
+    } catch (error: any) {
+      console.error("Error:", error);
+      setToastMessage(error?.response?.data?.message || "Payment failed. Try again.");
+      setToastType("error");
+      setShowToast(true);
+    }
+  };
+  
   return (
     <div className="d-flex justify-content-center align-items-center" style={{ width: "670px" }}>
       <Form onSubmit={handleSubmit(onSubmit)}>
@@ -220,13 +299,13 @@ const onSubmit: SubmitHandler<any> = async (data) => {
                       name={`passengers.${index}.seatNumber`}
                       render={({ field }) => (
                         <Input
-                            {...field}
-                            className="form-control"
-                            type="number"
-                            placeholder={`Seat Number: ${currentSelectedSeats[index]}`}
-                            disabled
-                            value={`Seat Number: ${currentSelectedSeats[index]}`}
-                          />
+                          {...field}
+                          className="form-control"
+                          type="number"
+                          placeholder={`Seat Number: ${currentSelectedSeats[index]}`}
+                          disabled
+                          value={`Seat Number: ${currentSelectedSeats[index]}`}
+                        />
                       )}
                     />
                     {errors.passengers?.[index]?.seatNumber && (
@@ -234,6 +313,22 @@ const onSubmit: SubmitHandler<any> = async (data) => {
                     )}
                   </div>
                 </div>
+
+                {index === 0 && currentSelectedSeats.length > 1 && (
+                  <div className=" d-flex justify-content-end align-items-center form-check mt-3 " style={{ marginLeft: '0px' }}>
+                    <input
+                      type="checkbox"
+                      className="form-check-input " style={{ borderColor: colors.secondary }}
+                      checked={isSameDetails}
+                      onChange={() => setIsSameDetails(!isSameDetails)
+
+                      }
+                    />
+                    <label className="form-check-label">
+                      Same details for all passengers
+                    </label>
+                  </div>
+                )}
               </div>
             ))}
 
@@ -249,16 +344,36 @@ const onSubmit: SubmitHandler<any> = async (data) => {
             </div>
 
             <div>
-              <div>
+              <div className="text-start mt-2 mb-3">
+                <p>
+                  <strong>Note:</strong> You will receive your ticket details on the provided email. Ensure
+                  accuracy. Once payment is confirmed, tickets will be available for download.
+                </p>
+              </div>
+              <div className="position-relative w-100">
                 <Controller
                   control={control}
                   name="email"
                   render={({ field }) => (
-                    <Input {...field} className="form-control" placeholder="Email" disabled={!isEmailEditable} />
+                    <Input
+                      {...field}
+                      className="form-control pe-5"
+                      type={showEmail ? "text" : "password"}
+                      placeholder="Email"
+                      readOnly={!isEmailEditable}
+                    />
                   )}
                 />
+                <FontAwesomeIcon
+                  icon={showEmail ? faEyeSlash : faEye}
+                  onClick={toggleShowEmail}
+                  className="position-absolute end-0 top-50 translate-middle-y me-3"
+                  style={{ cursor: "pointer" }}
+                />
+                {errors.email && <small className="text-danger">{errors.email?.message}</small>}
               </div>
-              <div className="mt-3">
+
+              <div className="mt-3 mb-4">
                 <Controller
                   control={control}
                   name="phoneNumber"
@@ -274,21 +389,7 @@ const onSubmit: SubmitHandler<any> = async (data) => {
                   <small className="text-danger">{errors.phoneNumber.message}</small>
                 )}
               </div>
-              <div className="d-flex justify-content-end mb-3">
-                <div className="d-flex justify-content-end"  >
-                  <Button onClick={toggleEmailEdit} className="mt-3" type="button" style={{color:'white' , backgroundColor:colors.pagecolor, border:colors.pagecolor}}>
-                    Change Email
-                  </Button>
-                </div>
-              </div>
-            </div>
-            <hr />
 
-            <div className="text-start mt-2">
-              <p>
-                <strong>Note:</strong> You will receive your ticket details on the provided email. Ensure
-                accuracy. Once payment is confirmed, tickets will be available for download.
-              </p>
             </div>
 
             <div className="d-flex justify-content-between">
@@ -299,10 +400,17 @@ const onSubmit: SubmitHandler<any> = async (data) => {
                 <p>(*Exclusive of Taxes)</p>
               </div>
 
-              <div className="mb-3" >
-                <Button type="submit" disabled={isLoading}  style={{color:'white' , backgroundColor:colors.pagecolor, border:colors.pagecolor}}>
-                  PROCEED TO PAY
-                </Button>
+              <div className="d-flex justify-conent end  mt-3 mb-2 " style={{ marginRight: '10px' }}>
+                <div className=" me-3">
+                  <Button type="submit" disabled={isLoading} style={{ color: 'white', backgroundColor: colors.pagecolor, border: colors.pagecolor }}>
+                    PROCEED TO PAY
+                  </Button>
+                </div>
+                <div>
+                  <Button type="button" onClick={handleCloseOffcanvas} style={{ color: 'white', backgroundColor: colors.secondary, border: colors.secondary }}>
+                    Cancel
+                  </Button>
+                </div>
               </div>
             </div>
 
@@ -317,6 +425,17 @@ const onSubmit: SubmitHandler<any> = async (data) => {
           </div>
         </div>
       </Form>
+    
+{showTripCard && (
+    <TripDetailsCard
+    show={showTripCard}
+    onClose={() => setShowTripCard(false)}
+    bus={bus}
+    currentSelectedSeats={currentSelectedSeats.map(String)}
+    
+    date={date}
+   />
+)}
     </div>
   );
 };

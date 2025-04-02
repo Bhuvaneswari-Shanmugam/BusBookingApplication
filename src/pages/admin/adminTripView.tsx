@@ -8,7 +8,8 @@ import Label from '../../components/Label';
 import { colors } from '../../constants/Palette';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 import { toast } from 'react-toastify';
-import DeletionConfirmationPopup from '../../components/ConfirmDelete';
+import DeletionConfirmation from '../../components/ConfirmDelete';
+import Pagination from '../../components/Pagination'
 
 interface TripData {
     tripNumber: string;
@@ -16,7 +17,7 @@ interface TripData {
     destinationPoint: string;
     pickupTime: string;
     reachingTime: string;
-    expense: string;
+  
 }
 
 interface Trip {
@@ -31,13 +32,14 @@ interface Trip {
 
 const TripInfo: React.FC = () => {
     const [selectedOption, setSelectedOption] = useState<'display' | 'create'>('display');
+    const [isOpen, setIsOpen]= useState(false);
     const [tripData, setTripData] = useState<TripData>({
         tripNumber: '',
         pickupPoint: '',
         destinationPoint: '',
         pickupTime: '',
         reachingTime: '',
-        expense: '',
+        
     });
     const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
     const [page, setPage] = useState<number>(0);
@@ -56,7 +58,6 @@ const TripInfo: React.FC = () => {
         const { name, value } = e.target;
         setTripData((prevData) => ({ ...prevData, [name]: value }));
     };
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -73,7 +74,7 @@ const TripInfo: React.FC = () => {
                 ...tripData,
                 pickupTime: formattedPickupTime,
                 reachingTime: formattedReachingTime,
-                expense: parseInt(tripData.expense),
+              
             };
 
             if (selectedTripId) {
@@ -93,11 +94,11 @@ const TripInfo: React.FC = () => {
                 destinationPoint: '',
                 pickupTime: '',
                 reachingTime: '',
-                expense: '',
+               
             });
             setSelectedTripId(null);
             setSelectedOption('display');
-            refetch(); // Refetch the trip details after creating or updating a trip
+            refetch(); 
         } catch (err) {
             console.error(err);
             toast.error('Failed to submit trip.');
@@ -106,6 +107,7 @@ const TripInfo: React.FC = () => {
 
     const handleDelete = async (trip: Trip) => {
         setTripToDelete(trip.id);
+        setIsOpen(true);
     };
 
     const confirmDelete = async () => {
@@ -114,7 +116,7 @@ const TripInfo: React.FC = () => {
                 await deleteTrip(tripToDelete).unwrap();
                 toast.success('Trip deleted successfully!');
                 setTripToDelete(null);
-                refetch(); // Refetch the trip details after deleting a trip
+                refetch(); 
             } catch (error) {
                 toast.error('Failed to delete trip. Please try again.');
             }
@@ -133,7 +135,7 @@ const TripInfo: React.FC = () => {
             destinationPoint: trip.destinationPoint,
             pickupTime: formatISO(new Date(trip.pickupTime)),
             reachingTime: formatISO(new Date(trip.reachingTime)),
-            expense: trip.expense.toString(),
+        
         });
         setSelectedTripId(trip.id);
     };
@@ -202,6 +204,7 @@ const TripInfo: React.FC = () => {
                                 placeholder='Enter Pickup Time'
                                 value={tripData.pickupTime ? tripData.pickupTime.slice(0, 16) : ''}
                                 onChange={handleChange}
+                                
                             />
                         </div>
                         <div className="mb-3 d-flex align-items-center">
@@ -215,18 +218,7 @@ const TripInfo: React.FC = () => {
                                 onChange={handleChange}
                             />
                         </div>
-                        <div className="mb-3 d-flex align-items-center">
-                            <Label htmlFor="expense" className="form-label me-2 w-auto">Expense</Label>
-                            <Input
-                                type="number"
-                                className="form-control"
-                                id="expense"
-                                name="expense"
-                                placeholder="Enter Expense"
-                                value={tripData.expense}
-                                onChange={handleChange}
-                            />
-                        </div>
+                       
                         <Button
                             type="button"
                             className="btn border-0 "
@@ -285,22 +277,11 @@ const TripInfo: React.FC = () => {
                             </table>
 
                             <div className="d-flex justify-content-end my-3" style={{ width: '80%', margin: 'auto' }}>
-                                <Button
-                                    className="btn btn-primary me-4 border-0"
-                                    onClick={handlePrevious}
-                                    disabled={page <= 0}
-                                    style={{ backgroundColor: colors.pagecolor }}
-                                >
-                                    Previous
-                                </Button>
-                                <Button
-                                    className="btn btn-primary border-0"
-                                    onClick={handleNext}
-                                    disabled={trips.length < size}
-                                    style={{ backgroundColor: colors.pagecolor }}
-                                >
-                                    Next
-                                </Button>
+                                {/* <Pagination 
+                                             totalPages={15} 
+                                             currentPage={currentPage} 
+                                             onPageChange={(page) => setCurrentPage(page)} 
+                                           /> */}
                             </div>
                         </div>
                     )}
@@ -319,8 +300,8 @@ const TripInfo: React.FC = () => {
                 </div>
             )}
             {renderContent()}
-            {tripToDelete && (
-                <DeletionConfirmationPopup onConfirm={confirmDelete} onCancel={cancelDelete} />
+            {tripToDelete && isOpen && (
+                <DeletionConfirmation onConfirm={confirmDelete} onCancel={cancelDelete} />
             )}
         </div>
     );

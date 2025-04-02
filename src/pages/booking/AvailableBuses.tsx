@@ -152,7 +152,7 @@ const AvailableBuses = () => {
 
         <div className="d-flex mt-4">
           <h5 className="fw-bold">Filters</h5>
-          <div className="col-lg-3">
+          <div className="col-sm-3">
             <Filters
               checkedState={checkedState}
               setCheckedState={setCheckedState}
@@ -167,7 +167,7 @@ const AvailableBuses = () => {
             />
           </div>
           <div className="col-md-8 col-lg-9">
-            <div className="d-flex mb-4 mt-2 align-items-center">
+            <div className="d-flex mb-4 mt-2 align-items-center ">
               <strong className="ms-3 ">{totalBusesCount} buses</strong> <span className="text-body-tertiary ms-2 mx-3">found</span>
               <strong className="ms-3">SORT BY:</strong>
               {sortOptions.map((option) => (
@@ -183,28 +183,29 @@ const AvailableBuses = () => {
               ))}
             </div>
 
-            <div className="row mt-2 ml-3">
+            <div className="row mt-2 ml-0 d-flex" style={{justifyContent: 'flex-end', width: '100%',marginLeft:'-230px' }}>
               {availableBuses.map((bus: Bus) => (
-                <BusCard
-                  key={bus.number}
-                  bus={bus}
-                  from={from}
-                  to={to}
-                  date={date}
-                  selectedBus={selectedBus}
-                  selectedSeats={selectedSeats}
-                  bookedSeats={bookedSeats[bus.id] || []}
-                  viewSeats={viewSeats}
-                  rows={rows}
-                  toggleSeatSelection={toggleSeatSelection}
-                  handleBusClick={handleBusClick}
-                  totalPrice={totalPrice}
-                  expense={bus.expense}
-                  genderSeats={genderSeats}
-                />
+                <div style={{}} key={bus.number}>
+                  <BusCard
+                    bus={bus}
+                    from={from}
+                    to={to}
+                    date={date}
+                    selectedBus={selectedBus}
+                    selectedSeats={selectedSeats}
+                    bookedSeats={bookedSeats[bus.id] || []}
+                    viewSeats={viewSeats}
+                    rows={rows}
+                    toggleSeatSelection={toggleSeatSelection}
+                    handleBusClick={handleBusClick}
+                    totalPrice={totalPrice}
+                    expense={bus.expense}
+                    genderSeats={genderSeats}
+                  />
+                </div>
               ))}
             </div>
-          </div>
+             </div>
         </div>
       </div>
     </div>

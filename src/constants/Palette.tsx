@@ -29,6 +29,7 @@ export const colors = {
     
     // Dark colors
     darkText: "#343a40",   
+    darkPageColor:"#A629C2",
     darkBackground: "#212529",  
     darkCardBackground: "#343a40", 
     darkBorder: "#444",  

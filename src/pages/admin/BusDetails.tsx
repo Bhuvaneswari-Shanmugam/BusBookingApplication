@@ -8,6 +8,8 @@ import Button from '../../components/Button';
 import { colors } from '../../constants/Palette';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 import Form from '../../components/Form';
+import DeletionConfirmation from '../../components/ConfirmDelete';
+import Pagination from '../../components/Pagination';
 
 const BusDetails = () => {
   const [currentPage, setCurrentPage] = useState(0);
@@ -16,6 +18,8 @@ const BusDetails = () => {
   const [createBus] = useCreateBusMutation();
   const [updateBus] = useUpdateBusMutation();
   const [deleteBus] = useDeleteBusMutation();
+  const [isOpen, setIsOpen] = useState(false);
+  const [busToDelete, setBusToDelete] = useState<string | null>(null);
   const [selectedOption, setSelectedOption] = useState('display');
   const [formData, setFormData] = useState({
     id: '',
@@ -31,6 +35,8 @@ const BusDetails = () => {
     droppingPoint: '',
     expense: '',
     ratings: '',
+    busCategory: '',
+    busRegistrationNumber: '',
   });
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -50,7 +56,7 @@ const BusDetails = () => {
       toast.success('Bus created successfully!');
       setSelectedOption('display');
       resetForm();
-      refetch(); 
+      refetch();
     } catch (error) {
       toast.error('Failed to create bus. Please try again.');
     } finally {
@@ -66,7 +72,7 @@ const BusDetails = () => {
       toast.success('Bus updated successfully!');
       setSelectedOption('display');
       resetForm();
-      refetch(); 
+      refetch();
     } catch (error) {
       toast.error('Failed to update bus. Please try again.');
     } finally {
@@ -89,19 +95,35 @@ const BusDetails = () => {
       droppingPoint: bus.droppingPoint,
       expense: bus.expense,
       ratings: bus.ratings,
+      busCategory: bus.category,
+      busRegistrationNumber: bus.busRegistrationNumber,
     });
     setSelectedOption('update');
   };
 
-  const handleDelete = async (bus: { id: string }) => {
-    const { id } = bus;
-    try {
-      await deleteBus({ id }).unwrap();
-      toast.success('Bus deleted successfully!');
-      refetch(); 
-    } catch (error) {
-      toast.error('Failed to delete bus. Please try again.');
+  const handleDelete = (bus: { id: string }) => {
+    setBusToDelete(bus.id);
+    setIsOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (busToDelete) {
+      try {
+        await deleteBus({ id: busToDelete }).unwrap();
+        toast.success('Bus deleted successfully!');
+        refetch();
+      } catch (error) {
+        toast.error('Failed to delete bus. Please try again.');
+      } finally {
+        setIsOpen(false);
+        setBusToDelete(null);
+      }
     }
+  };
+
+  const cancelDelete = () => {
+    setIsOpen(false);
+    setBusToDelete(null);
   };
 
   const resetForm = () => {
@@ -119,6 +141,8 @@ const BusDetails = () => {
       droppingPoint: '',
       expense: '',
       ratings: '',
+      busCategory: '',
+      busRegistrationNumber: ''
     });
   };
 
@@ -282,6 +306,7 @@ const BusDetails = () => {
                   />
                 </div>
 
+
                 <div className="d-flex flex-column flex-sm-row mb-3">
                   <Label htmlFor="expense" className="form-label me-2 label-width">Expense</Label>
                   <Input
@@ -296,6 +321,32 @@ const BusDetails = () => {
                     required
                   />
                 </div>
+                <div className="d-flex flex-column flex-sm-row mb-3">
+                  <Label htmlFor="RegistrationNumber" className="form-label me-2 label-width">Registration Number</Label>
+                  <Input
+                    type="text"
+                    className="form-control"
+                    value={formData.busRegistrationNumber}
+                    onChange={handleInputChange}
+                    placeholder="Enter Registration Number"
+                    required
+                  />
+                </div>
+
+                <div className="d-flex flex-column flex-sm-row mb-3">
+                  <Label htmlFor="BusCategory" className="form-label me-2 label-width">Bus Category</Label>
+                  <Input
+                    type="text"
+                    className="form-control"
+                    value={formData.busCategory}
+                    onChange={handleInputChange}
+                    placeholder="Enter Bus Category"
+                    required
+                  />
+                </div>
+
+
+
 
                 <div className="d-flex flex-column flex-sm-row mb-3">
                   <Label htmlFor="ratings" className="form-label me-2 label-width custom-margin border-2">Ratings</Label>
@@ -350,15 +401,15 @@ const BusDetails = () => {
       const busList = Array.isArray(busDetails) ? busDetails : busDetails.data || [];
 
       return (
-        <div>
-          <div>
+        <div className="">
+          <div >
             <div className="d-flex justify-content-end align-items-center ">
               <Button className="btn border-0" onClick={() => setSelectedOption('create')} style={{ backgroundColor: colors.pagecolor }}>
                 Create New Bus
               </Button>
             </div>
           </div>
-          <div className="table-responsive my-4 w-100" style={{ maxHeight: '400px', overflowY: 'auto' }} >
+          <div className=" table-responsive my-4 w-100" style={{ maxHeight: '400px', overflowY: 'auto' }} >
             <table className="table  table-hover table-bordered">
               <thead className="bg-primary text-white">
                 <tr>
@@ -370,7 +421,9 @@ const BusDetails = () => {
                   <th>Capacity</th>
                   <th>PickupPoint</th>
                   <th>Destination Point</th>
+                  <th>Bus Caategory</th>
                   <th>Actions</th>
+                 
                 </tr>
               </thead>
               <tbody>
@@ -380,10 +433,11 @@ const BusDetails = () => {
                     <td>{bus.number}</td>
                     <td>{bus.name}</td>
                     <td>{bus.tripNumber}</td>
-                    <td>{bus.type}</td>
+                    <td>{bus.busType}</td>
                     <td>{bus.capacity}</td>
                     <td>{bus.pickupPoint}</td>
                     <td>{bus.droppingPoint}</td>
+                    <td>{bus.busCategory}</td>
                     <td>
                       <div className='d-flex justify-content-center align-item-center'>
                         <FaEdit onClick={() => handleEdit(bus)} style={{ color: colors.pagecolor, marginRight: '10px' }} />
@@ -397,22 +451,10 @@ const BusDetails = () => {
           </div>
 
           <div className="d-flex justify-content-center align-items-center my-3" style={{ width: '100%' }}>
-            <Button
-              className="btn btn-primary me-4 border-0"
-              onClick={handlePrevPage}
-              disabled={currentPage <= 0}
-              style={{ backgroundColor: colors.pagecolor }}
-            >
-              Previous
-            </Button>
-            <Button
-              className="btn btn-primary border-0"
-              onClick={handleNextPage}
-              disabled={busList.length < pageSize}
-              style={{ backgroundColor: colors.pagecolor }}
-            >
-              Next
-            </Button>
+            <Pagination 
+              totalPages={15} 
+              
+            />
           </div>
         </div>
       );
@@ -425,6 +467,12 @@ const BusDetails = () => {
     <div className="card " style={{ width: '100%', maxWidth: '1200px', marginTop: '70px' }}>
       {renderContent()}
       <ToastContainer />
+      {isOpen && (
+        <DeletionConfirmation
+          onConfirm={confirmDelete}
+          onCancel={cancelDelete}
+        />
+      )}
     </div>
   );
 };

@@ -1,4 +1,3 @@
-// src/pages/booking/MainBus.tsx
 import React from 'react';
 import { BusFilterProvider } from '../../context/BusFilterProvider';
 import AvailableBuses from './AvailableBuses';

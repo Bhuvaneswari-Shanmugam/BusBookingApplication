@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { useFetchAllUsersQuery } from '../../redux/services/CustomerApi'
 import { CustomerInterface } from '../../utils/entity/AdminInterface';
-import { Button } from 'react-bootstrap';
-import { colors } from '../../constants/Palette';
+import Pagination from '../../components/Pagination'
 
 const CustomerDetails: React.FC = () => {
   const [page, setPage] = useState<number>(0);
@@ -12,8 +11,7 @@ const CustomerDetails: React.FC = () => {
     page,
     size,
   });
-  const handleNextPage = () => setPage((prev) => prev + 1);
-  const handlePrevPage = () => setPage((prev) => prev - 1);
+ 
 
   const renderContent = () => {
     if (isLoading) {
@@ -36,6 +34,7 @@ const CustomerDetails: React.FC = () => {
                 <th>Email</th>
                 <th>Gender</th>
                 <th>Age</th>
+                <th>Customer ID</th>
 
               </tr>
             </thead>
@@ -47,6 +46,7 @@ const CustomerDetails: React.FC = () => {
                   <td>{customer.email}</td>
                   <td>{customer.gender}</td>
                   <td>{customer.age}</td>
+                  <td>{customer.id}</td>
                 </tr>
               ))}
             </tbody>
@@ -54,15 +54,11 @@ const CustomerDetails: React.FC = () => {
         </div>
 
         <div className="d-flex justify-content-end my-3" style={{ width: '85%', margin: 'auto' }}>
-          <Button
-            className="btn btn-primary me-4 border-0"
-            onClick={handlePrevPage}
-            disabled={page === 0}
-            style={{backgroundColor:colors.pagecolor}}
-            >
-            Previous
-          </Button>
-          <Button className="btn btn-primary border-0" onClick={handleNextPage} style={{backgroundColor:colors.pagecolor}}>Next</Button>
+          <Pagination 
+            totalPages={15} 
+            
+          />
+          
         </div>
       </div>
     );
