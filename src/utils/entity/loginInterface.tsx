@@ -2,6 +2,7 @@ export interface LoginJwtPayload {
   firstName?: string;
   role?: string; 
   [key: string]: string | number | boolean | null | undefined | Record<string, string | number | boolean | null | undefined> | Array<string | number | boolean | null>;
+  userId ?: string;
 }
 
 export interface SigninResponse {

@@ -20,7 +20,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { ProfileProps, CustomJwtPayload } from '../../utils/entity/UserProfileInterface';
 
 
-const Profile: React.FC<ProfileProps> = ({ userId }) => {
+const Profile: React.FC<ProfileProps> = ({ userId }) => {    
     const navigate = useNavigate();
     const aboutCardRef = useRef<HTMLDivElement>(null);
     const [toastMessage, setToastMessage] = useState<string>('');

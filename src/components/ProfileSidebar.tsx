@@ -13,6 +13,7 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ userId }) => {
     const [activeItem, setActiveItem] = useState<string>('profile');
     const navigate = useNavigate();
 
+    console.log("userid in sidebar :",userId);
     useEffect(() => {
         if (activeItem === 'home') {
             navigate('/home');
@@ -24,8 +25,8 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ userId }) => {
             navigate('/trip-history');
         } else if (activeItem === 'cancel-ticket') {
             navigate('/cancel-ticket');
-        } else if (activeItem === 'show-ticket') {
-            navigate('/show-ticket');
+        } else if (activeItem === 'show-my-tickets') {
+            navigate('/show-my-tickets',{ state: { userId } });
         } else if (activeItem === 'payment-history') {
             navigate('/payment-history');
         }
@@ -77,21 +78,13 @@ const ProfileSidebar: React.FC<ProfileSidebarProps> = ({ userId }) => {
                     <div className="text-center p-3">
                         <Button
                             className="w-100 text-start border-0 bg-transparent"
-                            style={{ color: activeItem === 'show-ticket' ? colors.darkorchid : 'black' }}
-                            onClick={() => setActiveItem('show-ticket')}
+                            style={{ color: activeItem === 'show-my-tickets' ? colors.darkorchid : 'black' }}
+                            onClick={() => setActiveItem('show-my-tickets')}
                         >
                             <FontAwesomeIcon icon={faList} className="mx-2" /> Show My Ticket
                         </Button>
                     </div>
-                    <div className="text-center p-3">
-                        <Button
-                            className="w-100 text-start border-0 bg-transparent"
-                            style={{ color: activeItem === 'payment-history' ? colors.darkorchid : 'black' }}
-                            onClick={() => setActiveItem('payment-history')}
-                        >
-                            <FontAwesomeIcon icon={faCreditCard} className="mx-2" /> Payment History
-                        </Button>
-                    </div>
+                   
                     <div className="text-center p-3">
                         <Button
                             className="w-100 text-start border-0 bg-transparent"

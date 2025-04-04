@@ -64,6 +64,7 @@ const SignIn: React.FC = () => {
         sessionStorage.setItem("RefreshToken", refreshToken);
         sessionStorage.setItem("FirstName", decodedToken.firstName || "User");
         sessionStorage.setItem("Role", decodedToken.role?.toUpperCase() || "GUEST");
+        // sessionStorage.setItem("userId" , decodedToken.userId || "");
 
         setToastMessage(responseData.message || "Login successful!");
         setToastType('success');

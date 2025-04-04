@@ -12,11 +12,13 @@ const ProfileLayout: React.FC = () => {
         const token = sessionStorage.getItem('token');
         if (token) {
             const decodedToken = jwtDecode<DecodedToken>(token);
-            setUserId(decodedToken.userId || null);
+            setUserId(decodedToken.userId);
+            console.log("userId in profile layout : ", userId);
         }
     }, []);
 
     return (
+        
         <div className="container mt-5 100-vh" >
             <Header />
             <div className="row">

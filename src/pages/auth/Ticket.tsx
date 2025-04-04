@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import 'react-toastify/dist/ReactToastify.css';
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
@@ -15,65 +15,130 @@ import { termsAndConditions } from "../../constants";
 import Button from "../../components/Button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import axios from "axios";
 
 const Ticket: React.FC = () => {
     const ticketRef = useRef<HTMLDivElement | null>(null);
+    const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
+    const [ticketUrl, setTicketUrl] = useState<string>('');
+    const [toastMessage, setToastMessage] = useState<string>('');
+    const [toastType, setToastType] = useState<'info' | 'success' | 'error'>('info');
+    const [showToast, setShowToast] = useState<boolean>(false);
+    const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
+
     const navigate = useNavigate();
     const apiCalled = useRef(false);
 
     const { bookingDetails } = useBooking();
-    //const { passengerContext } = usePassenger();
+    const [createTicket] = useCreateTicketMutation();
+    const location = useLocation();
 
     const selectedDroppingPoints = JSON.parse(localStorage.getItem('selectedDroppingPoints') || 'N/A');
-    const selectedPickupPoints = JSON.parse( localStorage.getItem('selectedPickupPoints') || 'N/A');
-
-    const passengerContextData = JSON.parse(sessionStorage.getItem('passengerContextData') || '{}');
-    console.log("passengerContextData in ticket :", passengerContextData);
+    const selectedPickupPoints = JSON.parse(localStorage.getItem('selectedPickupPoints') || 'N/A');
+    const passengerContextData = JSON.parse(localStorage.getItem('passengersData') || '{}');
+    const bookingData = JSON.parse(localStorage.getItem('bookingData') || '{}');
 
     const email = passengerContextData?.email || '';
     const phoneNumber = passengerContextData?.phoneNumber || '';
     const ticketId = passengerContextData?.ticketId || '';
     const busNumber = passengerContextData?.busNumber || '';
 
-    const [ticketUrl, setTicketUrl] = useState<string>('');
-    const [toastMessage, setToastMessage] = useState<string>('');
-    const [toastType, setToastType] = useState<'info' | 'success' | 'error'>('info');
-    const [showToast, setShowToast] = useState<boolean>(false);
+    const uploadPdf = async (pdfBlob: Blob) => {
+        const formData = new FormData();
+        formData.append("file", pdfBlob, `${ticketId}.pdf`);
 
-    const [createTicket] = useCreateTicketMutation();
-    const bookingData = JSON.parse(sessionStorage.getItem('bookingData') || '{}');
-    console.log("booking data in ticket : ", bookingData);
+        try {
+            const response = await fetch("http://localhost:8080/email/upload", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (response.ok) {
+                alert("Ticket uploaded successfully to AWS!");
+            } else {
+                alert("Ticket upload failed. Please try again.");
+            }
+        } catch (error) {
+            console.error("Upload failed:", error);
+        }
+    };
 
     useEffect(() => {
-        const storeTicket = async () => {
+        const processTicket = async () => {
             if (apiCalled.current) return;
             apiCalled.current = true;
 
             try {
+                // Step 1: Store the Ticket
                 if (ticketRef.current) {
+                    console.log("Capturing ticket element...");
                     const canvas = await html2canvas(ticketRef.current);
                     const imgData = canvas.toDataURL("image/png");
                     const pdf = new jsPDF("p", "mm", "a4");
                     const pdfWidth = pdf.internal.pageSize.getWidth();
                     const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
+                    console.log("Adding image to PDF...");
                     pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-                    const pdfBlob = pdf.output("blob");
-                    const blobUrl = URL.createObjectURL(pdfBlob);
+                    const ticketPdf = pdf.output("blob");
+                    setPdfBlob(ticketPdf);
+                    const blobUrl = URL.createObjectURL(ticketPdf);
 
                     const ticketUrl = blobUrl.slice(5);
-
                     setTicketUrl(ticketUrl);
 
+                    console.log("Storing ticket with URL:", ticketUrl);
                     await createTicket({ ticketUrl: ticketUrl, ticketId: ticketId }).unwrap();
+                    setToastMessage("Ticket stored successfully!");
+                    setToastType('success');
+                    setShowToast(true);
+                } else {
+                    console.error("ticketRef.current is null");
+                }
+
+                // Step 2: Fetch Payment Details
+                const queryParams = new URLSearchParams(location.search);
+                const sessionId = queryParams.get('session_id');
+
+                if (sessionId) {
+                    console.log('Session ID method called:', sessionId);
+                    const response = await axios.post(`http://localhost:8082/stripe-payment/payment-details/${sessionId}`);
+                    console.log('Payment details response:', response.data);
+
+                    if (response.data && response.data.status) {
+                        setPaymentStatus(response.data.status);
+                        setToastMessage("Payment details received!");
+                        setToastType('success');
+                        setShowToast(true);
+                    } else {
+                        console.error('Payment details response does not contain status');
+                    }
+                } else {
+                    console.error('Session ID is not available');
                 }
             } catch (err) {
-                console.log("error storing ticket : ", err);
+                console.error("Error processing ticket:", err);
+                setToastMessage("Error processing ticket");
+                setToastType('error');
+                setShowToast(true);
             }
         };
 
-        storeTicket();
-    }, [ticketId, createTicket]);
+        processTicket();
+    }, [location.search, ticketId, createTicket]);
+
+    useEffect(() => {
+        const uploadTicket = async () => {
+            if (pdfBlob && paymentStatus === 'succeeded') {
+                console.log("PDF Blob is available. Proceeding with upload...");
+                await uploadPdf(pdfBlob);
+            } else {
+                console.log("PDF Blob is not available or payment was not successful. Payment Status:", paymentStatus);
+            }
+        };
+
+        uploadTicket();
+    }, [pdfBlob, paymentStatus]);
 
     const downloadTicket = async () => {
         try {
@@ -85,8 +150,9 @@ const Ticket: React.FC = () => {
                 const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
                 pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-                pdf.save("ticket.pdf");
-                setToastMessage("ticket downloaded successfully!");
+                pdf.save(`ticket_${ticketId}.pdf`);
+
+                setToastMessage("Ticket downloaded successfully!");
                 setToastType('success');
                 setShowToast(true);
             }
@@ -95,9 +161,9 @@ const Ticket: React.FC = () => {
             setToastType('error');
             setShowToast(true);
         }
-    }
+    };
 
-    const generateAndSendPDF = async () => {
+    const emailTicket = async () => {
         if (ticketRef.current) {
             const canvas = await html2canvas(ticketRef.current);
             const imgData = canvas.toDataURL("image/png");
@@ -114,7 +180,7 @@ const Ticket: React.FC = () => {
             formData.append("email", email);
             formData.append("subject", "Your Ticket");
             formData.append("body", "Here is your bus ticket.");
-            formData.append("file", pdfBlob, "ticket.pdf");
+            formData.append("file", pdfBlob, `ticket_${ticketId}.pdf`);
 
             try {
                 const response = await fetch("http://localhost:8080/email/send-file", {
@@ -303,7 +369,7 @@ const Ticket: React.FC = () => {
                                 style={{ backgroundColor: colors.pagecolor, fontSize: "16px" }}
                                 onClick={(event) => {
                                     event.preventDefault();
-                                    generateAndSendPDF();
+                                    emailTicket();
                                 }}
                             >
                                 Share PDF

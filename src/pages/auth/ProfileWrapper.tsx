@@ -33,7 +33,9 @@ const ProfileWrapper: React.FC = () => {
       navigate('/home'); 
     }
   }, [navigate]);
-
+  sessionStorage.setItem("userId",userId as string);
+  console.log(userId + "useridsssss");
+  
   if (!userId) {
     return <p>Loading...</p>;
   }

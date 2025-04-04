@@ -24,6 +24,7 @@ import CustomerDetails from './pages/admin/CustomerDetails';
 import BusDetails from './pages/admin/BusDetails';
 import TripInfo from './pages/admin/TripView';
 import AllBookingDetails from './pages/admin/BookingDetails';
+import ShowTickets from './pages/ShowTickets';
 
 const App = () => {
   return (
@@ -48,6 +49,7 @@ const App = () => {
                 <Route path="/profile-layout" element={<ProfileWrapper />} />
                 <Route path="/cancel-ticket" element={<CancelTicket />} />
                 <Route path="/trip-history" element={<TripHistory />} />
+                <Route path="/show-my-tickets" element={<ShowTickets />} />
               </Route>
 
               <Route element={<ProtectedRoute />}>
