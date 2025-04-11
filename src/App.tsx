@@ -11,9 +11,9 @@ import Home from './pages/Home';
 import MissMatch from './pages/MissMatch';
 import Profile from './pages/profile';
 import CancelTicket from './pages/auth/cancelTicket';
-import ProfileLayout from './components/ProfileLayout';
+import ProfileLayout from './pages/profile/ProfileLayout';
 import TripHistory from './pages/profile/tripHistory';
-import TripDetailsModal from './components/TripDetails';
+import TripDetailsModal from './pages/booking/TripDetails';
 import { defaultBusValues } from './utils/entity/PageEntity';
 import { BookingProvider } from './context/BookingProvider';
 import TripInfo from './pages/admin/adminTripView';
@@ -21,8 +21,10 @@ import AdminLayout from './pages/admin/AdminLayout';
 import CustomerDetails from './pages/admin/CustomerDetails';
 import BusDetails from './pages/admin/BusDetails';
 import AllBookingDetails from './pages/admin/BookingDetails';
+import ProfileWrapper from './pages/auth/ProfileWrapper';
 import MainBus from './pages/booking/MainBus';
-import Pagination from './components/Pagination'
+import ShowTickets from './pages/auth/ShowTickets';
+
 
 const App = () => {
   return (
@@ -33,42 +35,40 @@ const App = () => {
             <Route element={<Layout />}>
               <Route path="/" element={<Signin />} />
               <Route path="/signup" element={<Signup />} />
-             
+              
+
             </Route>
-
-
             <Route element={<ProtectedRoute />}>
               <Route path="*" element={<MissMatch />} />
               <Route path="/home" element={<Home />} />
-              <Route path="/profile/:id" element={<Profile />} />
               <Route path="/ticket" element={<Ticket />} />
               <Route path="/profile-layout" element={<ProfileLayout />} />
               <Route path="/trip-details" element={<TripDetailsModal bus={defaultBusValues} date="" />} />
-              <Route path="/passenger-details" element={<PassengerDetailsForm />} />
+              <Route path="/passenger-details" element={<PassengerDetailsForm  />} />
               <Route path="/buses" element={<MainBus />} />
             </Route>
 
             <Route element={<ProtectedRoute />}>
               <Route element={<AdminLayout />}>
                 <Route path="/admin" element={<CustomerDetails />} />
-                <Route path="/customer-details" element={<CustomerDetails/>} />
+                <Route path="/customer-details" element={<CustomerDetails />} />
                 <Route path="/bus-details" element={<BusDetails />} />
                 <Route path="/trip-info" element={<TripInfo />} />
-               <Route path="/all-booking-details" element={<AllBookingDetails />} />
+                <Route path="/all-booking-details" element={<AllBookingDetails />} />
               </Route>
             </Route>
 
-            <Route element={<ProfileLayout />}>
-
-{/* <Route path="/profile-layout" element={<ProfileWrapper />} /> */}
-             <Route path="/cancel-ticket" element={<CancelTicket />} />
-             <Route path="/trip-history" element={<TripHistory />} /> 
-</Route>
+            
+              <Route element={<ProfileLayout />}>
+                <Route path="/profile-layout" element={<ProfileWrapper />} />
+                <Route path="/cancel-ticket" element={<CancelTicket />} />
+                <Route path="/show-my-tickets" element={<ShowTickets />} />
+                <Route path="/trip-history" element={<TripHistory />} />
+              </Route>
           </Routes>
         </BrowserRouter>
       </BookingProvider>
     </Provider>
   )
 };
-
 export default App;

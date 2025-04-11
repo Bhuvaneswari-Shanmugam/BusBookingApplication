@@ -10,6 +10,11 @@ import { FaEdit, FaTrash } from 'react-icons/fa';
 import Form from '../../components/Form';
 import DeletionConfirmation from '../../components/ConfirmDelete';
 import Pagination from '../../components/Pagination';
+import { busFormFields } from '../../constants/adminConstants';
+import { BusValidationSchema } from '../../utils/schema/AdminValidationSchema';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import PointsTable from './PointsTable';
 
 const BusDetails = () => {
   const [currentPage, setCurrentPage] = useState(0);
@@ -19,40 +24,81 @@ const BusDetails = () => {
   const [updateBus] = useUpdateBusMutation();
   const [deleteBus] = useDeleteBusMutation();
   const [isOpen, setIsOpen] = useState(false);
+  const [page, setPage] = useState<number>(0);
   const [busToDelete, setBusToDelete] = useState<string | null>(null);
   const [selectedOption, setSelectedOption] = useState('display');
+  const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm({
+    resolver: yupResolver(BusValidationSchema)
+  });
+
   const [formData, setFormData] = useState({
     id: '',
     number: '',
     tripNumber: '',
-    type: '',
+    busType: '',
     capacity: '',
     name: '',
     departureTime: '',
     pickupPoint: '',
     duration: '',
     arrivalTime: '',
-    droppingPoint: '',
+    droppingPoints: '',
     expense: '',
     ratings: '',
     busCategory: '',
     busRegistrationNumber: '',
+    busPickupPoints: [],
+    busDestinationPoints: [{}]
   });
+
+  const [boardingPoints, setBoardingPoints] = useState([{ location: '', time: '' }]);
+  const [droppingPoints, setDroppingPoints] = useState([{ location: '', time: '' }]);
+
   const [isProcessing, setIsProcessing] = useState(false);
+  const totalPages = Math.ceil((busDetails.total || 0) / pageSize);
+
+  const handlePageChange = (selectedItem: { selected: number }) => {
+    setPage(selectedItem.selected);
+    setCurrentPage(selectedItem.selected);
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value,
+      [name]: value
     });
   };
 
-  const handleCreateBus = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handlePointsChange = (index: number, field: string, value: string, setPoints: React.Dispatch<React.SetStateAction<{ location: string; time: string }[]>>) => {
+    setPoints((prevPoints) => {
+      const newPoints = [...prevPoints];
+      newPoints[index][field] = value;
+      return newPoints;
+    });
+  };
+
+  const handleAddPoint = (setPoints: React.Dispatch<React.SetStateAction<{ location: string; time: string }[]>>) => {
+    setPoints((prevPoints) => [...prevPoints, { location: '', time: '' }]);
+  };
+
+  const handleRemovePoint = (index: number, setPoints: React.Dispatch<React.SetStateAction<{ location: string; time: string }[]>>) => {
+    setPoints((prevPoints) => {
+      const newPoints = [...prevPoints];
+      newPoints.splice(index, 1);
+      return newPoints;
+    });
+  };
+
+  const handleCreateBus = async (data: any) => {
     setIsProcessing(true);
     try {
-      await createBus(formData).unwrap();
+      const busData = {
+        ...data,
+        busPickupPoints: boardingPoints,
+        busDestinationPoints: droppingPoints
+      };
+      await createBus(busData).unwrap();
       toast.success('Bus created successfully!');
       setSelectedOption('display');
       resetForm();
@@ -64,11 +110,15 @@ const BusDetails = () => {
     }
   };
 
-  const handleUpdateBus = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleUpdateBus = async (data: any) => {
     setIsProcessing(true);
     try {
-      await updateBus({ id: formData.id, busData: formData }).unwrap();
+      const busData = {
+        ...data,
+        busPickupPoints: boardingPoints,
+        busDestinationPoints: droppingPoints
+      };
+      await updateBus({ id: formData.id, ...busData }).unwrap();
       toast.success('Bus updated successfully!');
       setSelectedOption('display');
       resetForm();
@@ -85,19 +135,23 @@ const BusDetails = () => {
       id: bus.id,
       number: bus.number,
       tripNumber: bus.tripNumber,
-      type: bus.type,
+      busType: bus.busType,
       capacity: bus.capacity,
       name: bus.name,
       departureTime: bus.departureTime,
       pickupPoint: bus.pickupPoint,
       duration: bus.duration,
       arrivalTime: bus.arrivalTime,
-      droppingPoint: bus.droppingPoint,
+      droppingPoints: bus.droppingPoints,
       expense: bus.expense,
       ratings: bus.ratings,
-      busCategory: bus.category,
+      busCategory: bus.busCategory,
       busRegistrationNumber: bus.busRegistrationNumber,
+      busPickupPoints: bus.busPickupPoints || [],
+      busDestinationPoints: bus.busDestinationPoints || []
     });
+    setBoardingPoints(bus.busPickupPoints || []);
+    setDroppingPoints(bus.busDestinationPoints || []);
     setSelectedOption('update');
   };
 
@@ -131,264 +185,133 @@ const BusDetails = () => {
       id: '',
       number: '',
       tripNumber: '',
-      type: '',
+      busType: '',
       capacity: '',
       name: '',
       departureTime: '',
       pickupPoint: '',
       duration: '',
       arrivalTime: '',
-      droppingPoint: '',
+      droppingPoints: '',
       expense: '',
       ratings: '',
       busCategory: '',
-      busRegistrationNumber: ''
+      busRegistrationNumber: '',
+      busPickupPoints: [],
+      busDestinationPoints: []
     });
-  };
-
-  const handleNextPage = () => {
-    setCurrentPage((prevPage) => prevPage + 1);
-  };
-
-  const handlePrevPage = () => {
-    setCurrentPage((prevPage) => prevPage - 1);
+    setBoardingPoints([{ location: '', time: '' }]);
+    setDroppingPoints([{ location: '', time: '' }]);
+    reset();
   };
 
   const renderContent = () => {
     if (selectedOption === 'create' || selectedOption === 'update') {
       const isUpdatingMode = selectedOption === 'update';
       return (
-        <div>
-          <h2 className='mt-7'>{isUpdatingMode ? 'Update Bus' : 'Create New Bus'}</h2>
-          <Form onSubmit={isUpdatingMode ? handleUpdateBus : handleCreateBus}>
+        <div className="card mt-3">
+          <Form className='' onSubmit={handleSubmit(isUpdatingMode ? handleUpdateBus : handleCreateBus)}>
             <div className="row mt-5">
               <div className="col-md-6">
-                <div className="d-flex flex-column flex-sm-row mb-3">
-                  <Label htmlFor="busNumber" className="form-label me-2 label-width">Bus Number</Label>
-                  <Input
-                    type="text"
-                    className="form-control"
-                    id="busNumber"
-                    name="number"
-                    value={formData.number}
-                    onChange={handleInputChange}
-                    placeholder="Enter Bus Number"
-                    required
-                  />
-                </div>
-
-                <div className="d-flex flex-column flex-sm-row mb-3">
-                  <Label htmlFor="tripNumber" className="form-label me-2 label-width ">Trip Number</Label>
-                  <Input
-                    type="text"
-                    className="form-control"
-                    id="tripNumber"
-                    name="tripNumber"
-                    value={formData.tripNumber}
-                    onChange={handleInputChange}
-                    placeholder="Enter Trip Number"
-                    required
-                  />
-                </div>
-
-                <div className="d-flex flex-column flex-sm-row mb-3">
-                  <Label htmlFor="type" className="form-label me-2 label-width">Bus Type</Label>
-                  <Input
-                    type="text"
-                    className="form-control"
-                    id="type"
-                    name="type"
-                    value={formData.type}
-                    onChange={handleInputChange}
-                    placeholder="Enter Bus Type"
-                    required
-                  />
-                </div>
-
-                <div className="d-flex flex-column flex-sm-row mb-3">
-                  <Label htmlFor="capacity" className="form-label me-2 label-width">Capacity</Label>
-                  <Input
-                    type="number"
-                    className="form-control me-2"
-                    id="capacity"
-                    name="capacity"
-                    value={formData.capacity}
-                    onChange={handleInputChange}
-                    placeholder="Enter Capacity"
-                    min="1"
-                    required
-                  />
-                </div>
-
-                <div className="d-flex flex-column flex-sm-row mb-3">
-                  <Label htmlFor="name" className="form-label me-2 label-width">Bus Name</Label>
-                  <Input
-                    type="text"
-                    className="form-control me-2"
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    placeholder="Enter Bus Name"
-                    required
-                  />
-                </div>
-
-                <div className="d-flex flex-column flex-sm-row mb-3">
-                  <Label htmlFor="departureTime" className="form-label me-2 label-width">Departure Time</Label>
-                  <Input
-                    type="text"
-                    className="form-control me-2"
-                    id="departureTime"
-                    name="departureTime"
-                    placeholder="Enter  Departure Time"
-                    value={formData.departureTime}
-                    onChange={handleInputChange}
-                    required
-                  />
+                {busFormFields.slice(0, 6).map((field) => (
+                  <div className="mb-3" key={field.name}>
+                    <div className="d-flex align-items-center">
+                      <div className="col-md-4 text-md-end pe-2">
+                        <Label htmlFor={field.name} className="form-label">{field.label}</Label>
+                      </div>
+                      <div className="col-md-8">
+                        <Input
+                          {...register(field.name)}
+                          type={field.type}
+                          className="form-control"
+                          id={field.name}
+                          name={field.name}
+                          value={formData[field.name]}
+                          onChange={handleInputChange}
+                          placeholder={`Enter ${field.label}`}
+                        />
+                      </div>
+                    </div>
+                    {errors[field.name] && (
+                      <span className="error text-danger mt-2">{errors[field.name]?.message}</span>
+                    )}
+                  </div>
+                ))}
+                <div className="d-flex align-items-center">
+                  <Label htmlFor='Boarding Point' className="text-start me-5">Boarding Point</Label>
+                  <div className="col-md-8" style={{ marginLeft: '30px' }}>
+                    <PointsTable
+                      points={boardingPoints}
+                      onAddPoint={() => handleAddPoint(setBoardingPoints)}
+                      onRemovePoint={(index) => handleRemovePoint(index, setBoardingPoints)}
+                      onChange={(index, field, value) => handlePointsChange(index, field, value, setBoardingPoints)}
+                      title="Boarding Points"
+                    />
+                  </div>
                 </div>
               </div>
 
               <div className="col-md-6">
-                <div className="d-flex flex-column flex-sm-row mb-3">
-                  <Label htmlFor="pickupPoint" className="form-label me-2 label-width">Pickup Point</Label>
-                  <Input
-                    type="text"
-                    className="form-control"
-                    id="pickupPoint"
-                    name="pickupPoint"
-                    value={formData.pickupPoint}
-                    onChange={handleInputChange}
-                    placeholder="Enter Pickup Point"
-                    required
-                  />
-                </div>
-
-                <div className="d-flex flex-column flex-sm-row mb-3">
-                  <Label htmlFor="duration" className="form-label me-2 label-width">Duration</Label>
-                  <Input
-                    type="text"
-                    className="form-control"
-                    id="duration"
-                    name="duration"
-                    value={formData.duration}
-                    onChange={handleInputChange}
-                    placeholder="Enter Duration"
-                    required
-                  />
-                </div>
-
-                <div className="d-flex flex-column flex-sm-row mb-3">
-                  <Label htmlFor="arrivalTime" className="form-label me-2 label-width">Arrival Time</Label>
-                  <Input
-                    type="text"
-                    className="form-control"
-                    placeholder="Enter the Arrival Time"
-                    id="arrivalTime"
-                    name="arrivalTime"
-                    value={formData.arrivalTime}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-
-                <div className="d-flex flex-column flex-sm-row mb-3">
-                  <Label htmlFor="droppingPoint" className="form-label me-2 label-width">Dropping Point</Label>
-                  <Input
-                    type="text"
-                    className="form-control"
-                    id="droppingPoint"
-                    name="droppingPoint"
-                    value={formData.droppingPoint}
-                    onChange={handleInputChange}
-                    placeholder="Enter Dropping Point"
-                    required
-                  />
-                </div>
-
-
-                <div className="d-flex flex-column flex-sm-row mb-3">
-                  <Label htmlFor="expense" className="form-label me-2 label-width">Expense</Label>
-                  <Input
-                    type="number"
-                    className="form-control"
-                    id="expense"
-                    name="expense"
-                    value={formData.expense}
-                    onChange={handleInputChange}
-                    placeholder="Enter Expense"
-                    min="0"
-                    required
-                  />
-                </div>
-                <div className="d-flex flex-column flex-sm-row mb-3">
-                  <Label htmlFor="RegistrationNumber" className="form-label me-2 label-width">Registration Number</Label>
-                  <Input
-                    type="text"
-                    className="form-control"
-                    value={formData.busRegistrationNumber}
-                    onChange={handleInputChange}
-                    placeholder="Enter Registration Number"
-                    required
-                  />
-                </div>
-
-                <div className="d-flex flex-column flex-sm-row mb-3">
-                  <Label htmlFor="BusCategory" className="form-label me-2 label-width">Bus Category</Label>
-                  <Input
-                    type="text"
-                    className="form-control"
-                    value={formData.busCategory}
-                    onChange={handleInputChange}
-                    placeholder="Enter Bus Category"
-                    required
-                  />
-                </div>
-
-
-
-
-                <div className="d-flex flex-column flex-sm-row mb-3">
-                  <Label htmlFor="ratings" className="form-label me-2 label-width custom-margin border-2">Ratings</Label>
-                  <Input
-                    type="number"
-                    className="form-control"
-                    id="ratings"
-                    name="ratings"
-                    value={formData.ratings}
-                    onChange={handleInputChange}
-                    placeholder="Enter Ratings"
-                    min="3"
-                    max="6"
-                    step="2"
-                    required
-                  />
+                {busFormFields.slice(6).map((field) => (
+                  <div className="mb-3" key={field.name}>
+                    <div className="d-flex align-items-center">
+                      <div className="col-md-4 text-start pe-2">
+                        <Label htmlFor={field.name} className="form-label text-start">{field.label}</Label>
+                      </div>
+                      <div className="col-md-8">
+                        <Input
+                          {...register(field.name)}
+                          type={field.type}
+                          className="form-control"
+                          id={field.name}
+                          name={field.name}
+                          value={formData[field.name]}
+                          onChange={handleInputChange}
+                          placeholder={`Enter ${field.label}`}
+                        />
+                      </div>
+                    </div>
+                    {errors[field.name] && (
+                      <span className="error text-danger mt-2">{errors[field.name]?.message}</span>
+                    )}
+                  </div>
+                ))}
+                <div className="d-flex align-items-center">
+                  <Label htmlFor='Dropping Point' className='me-5'>Dropping Point</Label>
+                  <div className="col-md-8" style={{ marginLeft: '30px' }}>
+                    <PointsTable
+                      points={droppingPoints}
+                      onAddPoint={() => handleAddPoint(setDroppingPoints)}
+                      onRemovePoint={(index) => handleRemovePoint(index, setDroppingPoints)}
+                      onChange={(index, field, value) => handlePointsChange(index, field, value, setDroppingPoints)}
+                      title="Dropping Points"
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="d-flex justify-content-center flex-column flex-sm-row">
-              <Button
-                type="button"
-                className="btn border-0 me-2"
-                style={{ backgroundColor: colors.pagecolor }}
-                onClick={() => {
-                  setSelectedOption('display');
-                  resetForm();
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                className="btn me-4 border-0"
-                style={{ backgroundColor: colors.pagecolor }}
-                disabled={isProcessing}
-              >
-                {isProcessing ? 'Processing...' : isUpdatingMode ? 'Update' : 'Create'}
-              </Button>
+              <div className="d-flex justify-content-center mt-4">
+                <Button
+                  type="button"
+                  className="btn border-0 me-2"
+                  style={{ backgroundColor: colors.pagecolor }}
+                  onClick={() => {
+                    setSelectedOption('display');
+                    resetForm();
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="btn me-4 border-0"
+                  style={{ backgroundColor: colors.pagecolor }}
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? 'Processing...' : isUpdatingMode ? 'Update' : 'Create'}
+                </Button>
+              </div>
             </div>
-
           </Form>
         </div>
       );
@@ -401,16 +324,16 @@ const BusDetails = () => {
       const busList = Array.isArray(busDetails) ? busDetails : busDetails.data || [];
 
       return (
-        <div className="">
-          <div >
-            <div className="d-flex justify-content-end align-items-center ">
+        <div className="card mt-5">
+          <div>
+            <div className="d-flex justify-content-end align-items-center">
               <Button className="btn border-0" onClick={() => setSelectedOption('create')} style={{ backgroundColor: colors.pagecolor }}>
                 Create New Bus
               </Button>
             </div>
           </div>
-          <div className=" table-responsive my-4 w-100" style={{ maxHeight: '400px', overflowY: 'auto' }} >
-            <table className="table  table-hover table-bordered">
+          <div className="table-responsive my-4 w-100" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+            <table className="table table-hover table-bordered">
               <thead className="bg-primary text-white">
                 <tr>
                   <th>S.No</th>
@@ -419,11 +342,11 @@ const BusDetails = () => {
                   <th>Trip Number</th>
                   <th>Type</th>
                   <th>Capacity</th>
-                  <th>PickupPoint</th>
+                  <th>Pickup Point</th>
                   <th>Destination Point</th>
-                  <th>Bus Caategory</th>
+                  <th>Bus Category</th>
+                  <th>Registration Number</th>
                   <th>Actions</th>
-                 
                 </tr>
               </thead>
               <tbody>
@@ -436,43 +359,33 @@ const BusDetails = () => {
                     <td>{bus.busType}</td>
                     <td>{bus.capacity}</td>
                     <td>{bus.pickupPoint}</td>
-                    <td>{bus.droppingPoint}</td>
+                    <td>{bus.droppingPoints}</td>
                     <td>{bus.busCategory}</td>
+                    <td>{bus.busRegistrationNumber}</td>
                     <td>
-                      <div className='d-flex justify-content-center align-item-center'>
-                        <FaEdit onClick={() => handleEdit(bus)} style={{ color: colors.pagecolor, marginRight: '10px' }} />
-                        <FaTrash onClick={() => handleDelete(bus)} style={{ color: colors.danger, cursor: 'pointer' }} />
-                      </div>
+                      <FaEdit onClick={() => handleEdit(bus)} style={{ color: colors.pagecolor, cursor: 'pointer' }} />
+                      <FaTrash onClick={() => handleDelete(bus)} style={{ color: colors.danger, cursor: 'pointer', marginLeft: '10px' }} />
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-
-          <div className="d-flex justify-content-center align-items-center my-3" style={{ width: '100%' }}>
-            <Pagination 
-              totalPages={15} 
-              
-            />
-          </div>
+          <Pagination pageCount={totalPages} onPageChange={handlePageChange} initialPage={page} />
         </div>
       );
     }
 
-    return <p>Please select an option to proceed.</p>;
+    return null;
   };
 
   return (
-    <div className="card " style={{ width: '100%', maxWidth: '1200px', marginTop: '70px' }}>
+    <div className="container py-5">
       {renderContent()}
-      <ToastContainer />
       {isOpen && (
-        <DeletionConfirmation
-          onConfirm={confirmDelete}
-          onCancel={cancelDelete}
-        />
+        <DeletionConfirmation onConfirm={confirmDelete} onCancel={cancelDelete} />
       )}
+      <ToastContainer />
     </div>
   );
 };

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import Button from '../components/Button';
-import { colors } from '../constants/Palette';
-import Checkbox from './CheckBox';
-import { PointSelection } from '../utils/entity/PageEntity';
-import TripDetailsCard from './TripDetails';
-import { useLazyGetBoardingPointQuery, useLazyGetDroppingPointQuery } from '../redux/services/BusApi';
+import Checkbox from '../../components/CheckBox';
+import Button from '../../components/Button';
+import { colors } from '../../constants/Palette';
+import TripDetailsCard from '../../pages/booking/TripDetails';
+import { useLazyGetBoardingPointQuery, useLazyGetDroppingPointQuery } from '../../redux/services/BusApi';
+import { PointSelection } from '../../utils/entity/PageEntity';
 
 const PointSelectionCard: React.FC<PointSelection> = ({
   totalPrice,
@@ -12,21 +12,25 @@ const PointSelectionCard: React.FC<PointSelection> = ({
   currentSelectedSeats = [],
   date,
 }) => {
-  const [selectedBoardingPoint, setSelectedBoardingPoint] = useState<any[]>([]);
-  const [selectedDroppingPoint, setSelectedDroppingPoint] = useState<any[]>([]);
+  const [selectedBoardingPoint, setSelectedBoardingPoint] = useState<any>(null);
+  const [selectedDroppingPoint, setSelectedDroppingPoint] = useState<any>(null);
   const [triggerBoardingPoint, { data: pickupPoints, error: boardingError, isLoading: boardingLoading }] = useLazyGetBoardingPointQuery();
   const [triggerDroppingPoint, { data: droppingPoints, error: droppingError, isLoading: droppingLoading }] = useLazyGetDroppingPointQuery();
   const [showTripCard, setShowTripCard] = useState(false);
+
   const [activeTab, setActiveTab] = useState('boarding');
-  const [selectedPickupPoint, setSelectedPickupPoint]=useState("");
-  const [selectedDestinationPoint, setSelectedDesinationPoint]=useState("");
+  const [pickupPoint, setPickupPoint] = useState("");
+  const [droppingPoint, setDroppingPoint] = useState("");
+  const [isBoardingSelected, setIsBoardingSelected] = useState(false);
+  const [isDroppingSelected, setIsDroppingSelected] = useState(false);
+
   totalPrice = bus?.expense * (currentSelectedSeats?.length ?? 0);
 
   const handleBoardingPoint = async () => {
     if (bus?.number) {
       const response = await triggerBoardingPoint(bus.number);
       if (response?.data) {
-        setSelectedBoardingPoint(response.data.data);
+        setSelectedBoardingPoint(null); 
       }
     }
   };
@@ -35,43 +39,33 @@ const PointSelectionCard: React.FC<PointSelection> = ({
     if (bus?.number) {
       const response = await triggerDroppingPoint(bus.number);
       if (response?.data) {
-        setSelectedDroppingPoint(response.data.data);
+        setSelectedDroppingPoint(null); 
       }
     }
   };
 
   const handleContinue = () => {
-    setShowTripCard(true);
+    if (isBoardingSelected && isDroppingSelected) {
+      setShowTripCard(true);
+    } else {
+      alert("Please select both boarding and dropping points.");
+    }
   };
 
   useEffect(() => {
     handleBoardingPoint();
   }, []);
 
-  const handleBoardingChange = (checked: boolean, point: any) => {
-    console.log(checked, point);
-    console.log(selectedBoardingPoint);
-    console.log(selectedPickupPoint);
-    
-    if (checked) {
-      setSelectedBoardingPoint([{ location: point.location, time: point.time }]);
-      setSelectedPickupPoint(point.location);
-      console.log(selectedPickupPoint);
-    } else {
-      setSelectedBoardingPoint([]);
-    }
+  const handleBoardingChange = (point: any) => {
+    setSelectedBoardingPoint(point);
+    setPickupPoint(point.location);
+    setIsBoardingSelected(true);
   };
 
-
-  const handleDroppingChange = (checked: boolean, point: any) => {
-    console.log(selectedDroppingPoint);
-    console.log(selectedDestinationPoint);
-    if (checked) {
-      setSelectedDroppingPoint([{ location: point.location, time: point.time }]);
-      setSelectedDesinationPoint(point.location);
-    } else {
-      setSelectedDroppingPoint([]);
-    }
+  const handleDroppingChange = (point: any) => {
+    setSelectedDroppingPoint(point);
+    setDroppingPoint(point.location);
+    setIsDroppingSelected(true);
   };
 
   if (showTripCard) {
@@ -82,8 +76,8 @@ const PointSelectionCard: React.FC<PointSelection> = ({
         bus={bus}
         currentSelectedSeats={currentSelectedSeats.map(String)}
         date={date}
-        selectedPickupPoint={selectedPickupPoint}
-        selectedDroppingPoint={selectedDestinationPoint}
+        selectedPickupPoint={pickupPoint}
+        selectedDroppingPoint={droppingPoint}
       />
     );
   }
@@ -100,7 +94,9 @@ const PointSelectionCard: React.FC<PointSelection> = ({
             setActiveTab('boarding');
             handleBoardingPoint();
           }}
-        >BOARDING POINT</Button>
+        >
+          BOARDING POINT
+        </Button>
         <Button
           className={`btn btn-outline-primary w-50 mt-${activeTab === 'dropping' ? 'active' : ''}  border-0`}
           style={{ color: activeTab === 'dropping' ? 'darkorchid' : 'inherit', background: 'none' }}
@@ -126,22 +122,20 @@ const PointSelectionCard: React.FC<PointSelection> = ({
             {boardingLoading ? (
               <p>Loading...</p>
             ) : (
-              Array.isArray(selectedBoardingPoint) &&
-              selectedBoardingPoint.map((point: any, index: number) => (
-                <div key={point.location} style={{ marginBottom: '10px' }}>
-                  <Checkbox
-                    label={
-                      <span>
-                        <span className="fw-bold me-4">{point.time}</span>
-                        <span className="me-4">{point.location}</span>
-                      </span>
-                    }
-                    checked={selectedBoardingPoint.some((selected) => selected.location === point.location)}
-                     type="radio"
-                    name="boarding-location"
-                    onChange={(checked) => handleBoardingChange(checked, point)}
-                  />
-                </div>
+              pickupPoints?.data?.map((point: any, index: number) => (
+                <Checkbox
+                  key={point.location}
+                  label={
+                    <span>
+                      <span className="fw-bold me-4">{point.time}</span>
+                      <span className="me-4">{point.location}</span>
+                    </span>
+                  }
+                  checked={selectedBoardingPoint?.location === point.location}
+                  type="radio"
+                  onChange={() => handleBoardingChange(point)}
+                  name="boarding-location"
+                />
               ))
             )}
           </div>
@@ -151,33 +145,30 @@ const PointSelectionCard: React.FC<PointSelection> = ({
             {droppingLoading ? (
               <p>Loading...</p>
             ) : (
-              Array.isArray(selectedDroppingPoint) &&
-              selectedDroppingPoint.map((point: any, index: number) => (
-                <div key={point.location} style={{ marginBottom: '10px' }}>
-                  <Checkbox
-                    label={
-                      <span>
-                        <span className="fw-bold me-4">{point.time}</span>
-                        <span className=" me-4">{point.location}</span>
-                      </span>
-                    }
-                    checked={selectedDroppingPoint.some((selected) => selected.location === point.location)}
-                    type="radio"
-                    name="dropping-location"
-                    onChange={(checked) => handleDroppingChange(checked, point)}
-                    
-                  />
-                </div>
+              droppingPoints?.data?.map((point: any, index: number) => (
+                <Checkbox
+                  key={point.location}
+                  label={
+                    <span>
+                      <span className="fw-bold me-4">{point.time}</span>
+                      <span className="me-4">{point.location}</span>
+                    </span>
+                  }
+                  checked={selectedDroppingPoint?.location === point.location}
+                  type="radio"
+                  onChange={() => handleDroppingChange(point)}
+                  name="dropping-location"
+                />
               ))
             )}
           </div>
         )}
       </div>
       <div>
-        <hr className='mt-3'></hr>
-        <div className="d-flex justify-content-between" >
-          <span >Total Amount</span>
-          <span className='fw-bold'>{`₹${totalPrice}`}</span>
+        <hr className="mt-3"></hr>
+        <div className="d-flex justify-content-between">
+          <span>Total Amount</span>
+          <span className="fw-bold">{`₹${totalPrice}`}</span>
         </div>
         <Button
           className="pay-button btn text-white border-0 w-100 mt-3"
@@ -192,6 +183,3 @@ const PointSelectionCard: React.FC<PointSelection> = ({
 };
 
 export default PointSelectionCard;
-
-
-

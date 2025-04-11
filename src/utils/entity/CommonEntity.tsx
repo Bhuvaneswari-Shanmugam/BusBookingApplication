@@ -1,4 +1,6 @@
 import React from 'react';
+import { ToastOptions } from 'react-toastify';
+import {colors} from '../../constants/Palette'
 
 
 interface DropDownStyle {
@@ -49,4 +51,11 @@ export interface LayoutProps {
   NavbarComponent?: React.ComponentType;
   FooterComponent?: React.ComponentType;
 }
+
+
+export type ToastType = 'success' | 'error' | 'info' | 'warning';
+export interface ToastContextProps {
+  showToast: (message: string, type: ToastType, duration?: number, options?: ToastOptions) => void;
+}
+
 

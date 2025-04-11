@@ -11,6 +11,8 @@ export interface CreateBookingRequest {
     pickupStop:string;
     droppingStop:string;
     userEmail:string;
+    bookingStatus:string;
+    bookedDate:string;
     
   }
   
@@ -19,3 +21,5 @@ export interface CreateBookingRequest {
     message: string;
     data: any;
   }
+
+  

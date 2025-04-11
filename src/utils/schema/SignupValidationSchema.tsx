@@ -19,7 +19,7 @@ export const getSignupValidationSchema = () => {
         role: Yup.string()
              .required("Role is required")
             .oneOf(['ADMIN', 'CUSTOMER'], "Role must be either Admin or Customer"),
-        termsAccepted: Yup.bool().required('Terms and conditions are required').oneOf([true], 'You must accept the terms and conditions'),
-    
-    });
+            termsAccepted: Yup.bool().oneOf([true], 'You must accept the terms and conditions').required('You must accept the terms and conditions'),
+
+            });
 };

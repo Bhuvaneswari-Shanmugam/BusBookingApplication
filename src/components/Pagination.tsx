@@ -1,109 +1,61 @@
-import React, { useState } from 'react';
-import { Pagination as BootstrapPagination } from 'react-bootstrap';
-import { colors } from '../constants/Palette';
+import React from 'react';
+import ReactPaginate from 'react-paginate';
+
 
 interface PaginationProps {
-    totalPages: number;
+  pageCount: number;
+  onPageChange: (selectedItem: { selected: number }) => void;
+  initialPage: number;
+
 }
 
-const Pagination = ({ totalPages }: PaginationProps) => {
-    const [currentPage, setCurrentPage] = useState(5); // Set default currentPage as 5 for demonstration
-    const visiblePages = 3; // Number of pages to show before and after the current page
-
-    // Calculate the start and end page based on the current page
-    const startPage = Math.max(currentPage - 1, 1); // Ensures we start from 7 or similar when at page 5
-    const endPage = Math.min(currentPage + 1, totalPages); // Ensures we show up to 9
-
-    const handlePageChange = (page: number) => {
-        setCurrentPage(page);
-    };
-
-    const renderPageNumbers = () => {
-        const pageNumbers = [];
-        const totalNumbers = visiblePages * 2 + 2; // Total number of visible page numbers with ellipses
-
-        if (totalPages <= totalNumbers) {
-            // If total pages are less than or equal to the total numbers we can show, just show them all
-            for (let i = 1; i <= totalPages; i++) {
-                pageNumbers.push(
-                    <BootstrapPagination.Item
-                        key={i}
-                        active={i === currentPage}
-                        onClick={() => handlePageChange(i)}
-                    >
-                        {i}
-                    </BootstrapPagination.Item>
-                );
-            }
-        } else {
-            // Show the first set of pages
-            for (let i = 1; i <= visiblePages; i++) {
-                pageNumbers.push(
-                    <BootstrapPagination.Item
-                        key={i}
-                        active={i === currentPage}
-                        onClick={() => handlePageChange(i)}
-                    >
-                        {i}
-                    </BootstrapPagination.Item>
-                );
-            }
-            pageNumbers.push(<BootstrapPagination.Ellipsis key="ellipsis-start" />);
-
-            // Show pages around the current page
-            for (let i = startPage; i <= endPage; i++) {
-                pageNumbers.push(
-                    <BootstrapPagination.Item
-                        key={i}
-                        active={i === currentPage}
-                        onClick={() => handlePageChange(i)}
-                    >
-                        {i}
-                    </BootstrapPagination.Item>
-                );
-            }
-
-            // Add the second ellipsis if necessary
-            if (endPage < totalPages - 1) {
-                pageNumbers.push(<BootstrapPagination.Ellipsis key="ellipsis-end" />);
-            }
-
-            // Show the last set of pages
-            for (let i = totalPages - visiblePages + 1; i <= totalPages; i++) {
-                pageNumbers.push(
-                    <BootstrapPagination.Item
-                        key={i}
-                        active={i === currentPage}
-                        onClick={() => handlePageChange(i)}
-                    >
-                        {i}
-                    </BootstrapPagination.Item>
-                );
-            }
+const Pagination: React.FC<PaginationProps> = ({ pageCount, onPageChange, initialPage }) => {
+  return (
+    <div className="pagination">
+      <ReactPaginate
+        initialPage={initialPage}
+        pageCount={pageCount}
+        marginPagesDisplayed={1}
+        pageRangeDisplayed={3}
+        onPageChange={onPageChange}
+        containerClassName="pagination justify-content-center"
+        pageClassName="page-item"
+        previousClassName="page-item"
+        previousLinkClassName="page-link"
+        nextClassName="page-item"
+        nextLinkClassName="page-link"
+        breakClassName="page-item"
+        breakLinkClassName="page-link"
+        activeClassName="active"
+        breakLabel={<span style={{ color: "#9932CC" }}>...</span>}
+        nextLabel={<span style={{ backgroundColor: "#9932CC", color: "white", padding: "5px 10px", borderRadius: "5px" }}> &gt;</span>}
+        previousLabel={<span style={{ backgroundColor: "#9932CC", color: "white", padding: "5px 10px", borderRadius: "5px" }}>&lt; </span>}
+        pageLinkClassName="page-link"
+        renderOnZeroPageCount={null}
+      />
+      <style>{`
+           .pagination .page-link{
+           color:"white";
+           padding: 5px 10px;
+           border-radius:5px;
+           backgroundColor:"#9932CC"
+           border:"none";
+           }
+           .pagination .page-link:hover{
+              backgroundColor:"#9932CC";
+              color:"white";
+              border:"none";
         }
+           .pagination .active .page-link {
+          background-color:#9932CC;
+          color:"white";
+      }
+           `
+      }
 
-        return pageNumbers;
-    };
-
-    return (
-        <BootstrapPagination>
-            <BootstrapPagination.Prev
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                style={{ backgroundColor: colors.pagecolor, color: colors.pagecolor }}
-            >
-                ‹Previous
-            </BootstrapPagination.Prev>
-            {renderPageNumbers()}
-            <BootstrapPagination.Next
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                style={{ backgroundColor: colors.pagecolor, color: colors.pagecolor }}
-            >
-                ›
-            </BootstrapPagination.Next>
-        </BootstrapPagination>
-    );
+      </style>
+    </div>
+  );
 };
 
 export default Pagination;

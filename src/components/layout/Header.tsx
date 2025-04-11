@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Link } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
@@ -13,8 +12,9 @@ interface HeaderProps {
     aboutCardRef?: React.RefObject<HTMLDivElement | null>;
     contactCardRef?: React.RefObject<HTMLDivElement | null>;
     serviceCardRef?: React.RefObject<HTMLDivElement | null>;
+    homeCardRef?:React.RefObject<HTMLDivElement | null>;
 }
-const Header: React.FC<HeaderProps> = ({ aboutCardRef, contactCardRef, serviceCardRef }) => {
+const Header: React.FC<HeaderProps> = ({ aboutCardRef, contactCardRef, serviceCardRef, homeCardRef}) => {
     const navigate = useNavigate();
     const location = useLocation();
     const [firstName, setFirstName] = useState("User");
@@ -75,20 +75,20 @@ const Header: React.FC<HeaderProps> = ({ aboutCardRef, contactCardRef, serviceCa
                                 {["Home", "About", "Services", "Contact"].map((item) => (
                                     <li key={item} className="mx-3">
                                         {item === "Home" ? (
-                                            <Link
-                                                className="nav-link"
-                                                to="/home"
-                                                onMouseEnter={() => setHover((prev) => ({ ...prev, home: true }))}
-                                                onMouseLeave={() => setHover((prev) => ({ ...prev, home: false }))}
-                                                onClick={() => setActiveItem("home")}
+                                            <Button
+                                                className="nav-link mx-3 btn"
+                                                onMouseEnter={() => setHover((prev) => ({ ...prev, [item.toLocaleLowerCase()]: true }))}
+                                                onMouseLeave={() => setHover((prev) => ({ ...prev, [item.toLocaleLowerCase()]: false }))}
+                                                onClick={() => handleNavClick(item, item==="Home" ? homeCardRef : item === "home"? homeCardRef : homeCardRef)}
                                                 style={{
-                                                    color: hover.home || activeItem === "home" ? colors.darkPageColor : colors.secondary,
+                                                    background: "none",
+                                                    color: hover[item.toLocaleLowerCase()]|| activeItem === item.toLowerCase() ? colors.darkPageColor : colors.secondary,
                                                     fontWeight: "400",
                                                     textDecoration: "none",
                                                 }}
                                             >
                                                 {item}
-                                            </Link>
+                                            </Button>
                                         ) : (
                                             <Button
                                                 className="nav-link mx-3 btn"

@@ -5,7 +5,6 @@ import Input from '../../components/Input';
 import { colors } from '../../constants/Palette';
 import PickUpPoints from './PickUpPoints';
 import DroppingPoints from '../filters/DroppingPoints';
-import TripDetailsModal from '../../components/TripDetails';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Filters = ({

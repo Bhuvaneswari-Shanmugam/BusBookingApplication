@@ -78,6 +78,7 @@ export interface Bus {
   droppingPoint: string;
   ratings: number;
   tripNumber?: number;
+  busRegistrationNumber?:string;
 }
 
 export interface BusCardProps {
@@ -108,7 +109,6 @@ export interface InputData {
   destinationPoint: string;
   pickupDate: string | null;
 }
-
 
 
 export interface PassengerField {
@@ -261,6 +261,7 @@ export const defaultBusValues: Bus = {
   pickupPoint: '',
   droppingPoint: '',
   ratings: 0,
-  busCategory:''
+  busCategory:'',
+  busRegistrationNumber:''
 };
 

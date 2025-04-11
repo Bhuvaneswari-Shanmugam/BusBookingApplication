@@ -16,7 +16,8 @@ import { colors } from "../../constants/Palette";
 import { SigninResponse } from "../../utils/entity/loginInterface";
 import { LoginJwtPayload } from "../../utils/entity/loginInterface";
 import Card from '../../components/Card';
-import Toast from '../../components/Toast';
+import { useToast } from "../../components/NewToast";
+
 const SignIn: React.FC = () => {
   const validationSchema = getLoginValidationSchema();
   const navigate = useNavigate();
@@ -31,9 +32,6 @@ const SignIn: React.FC = () => {
   const [newPasswordData, setNewPasswordData] = useState({ newPassword: "", confirmPassword: "" });
   const [forgotPasswordMode, setForgotPasswordMode] = useState(false);
   const [resetPasswordMode, setResetPasswordMode] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string>('');
-  const [toastType, setToastType] = useState<'info' | 'success' | 'error'>('info');
-  const [showToast, setShowToast] = useState<boolean>(false);
   const { register, handleSubmit, formState: { errors }, reset } = useForm({
     resolver: yupResolver(validationSchema),
   });
@@ -43,13 +41,17 @@ const SignIn: React.FC = () => {
   const { register: registerForgotPassword, handleSubmit: handleSubmitForgotPassword, formState: { errors: forgotPasswordErrors } } = useForm({
     resolver: yupResolver(getForgotPasswordValidationSchema()),
   });
+
+  const { showToast } = useToast();
+
   useEffect(() => {
     sessionStorage.clear();
   }, []);
+
   const onSubmit = async (data: Record<string, string>) => {
     try {
       const { data: responseData } = (await signin(data)) as { data: SigninResponse };
-     if (responseData?.statusCode === 200) {
+      if (responseData?.statusCode === 200) {
         const { accessToken, refreshToken } = responseData.data;
         const decodedToken = jwtDecode<LoginJwtPayload>(accessToken);
         localStorage.setItem('Token', accessToken)
@@ -57,100 +59,75 @@ const SignIn: React.FC = () => {
         sessionStorage.setItem("RefreshToken", refreshToken);
         sessionStorage.setItem("FirstName", decodedToken.firstName || "User");
         sessionStorage.setItem("Role", decodedToken.role?.toUpperCase() || "GUEST");
-        setToastMessage(responseData.message || "Login successful!");
-        setToastType('success');
-        setShowToast(true);
+        showToast(responseData.message || "Login successful!", 'success');
         navigate(decodedToken.role === "ROLE_ADMIN" ? "/admin" : "/home");
         reset();
       } else {
-        setToastMessage(responseData.message || "Login failed. Please try again.");
-        setToastType('error');
-        setShowToast(true);
+        showToast(responseData.message || "Login failed. Please try again.", 'error');
       }
     } catch (error) {
-      setToastMessage("An error occurred during submission. Please try again.");
-      setToastType('error');
-      setShowToast(true);
+      showToast("An error occurred during submission. Please try again.", 'error');
     }
   };
+
   const handleForgotPassword = async () => {
     if (!email) {
-      setToastMessage("Please enter your email address before requesting OTP.");
-      setToastType('error');
-      setShowToast(true);
+      showToast("Please enter your email address before requesting OTP.", 'error');
       return;
     }
     try {
       const response = await sendOtp({ email }).unwrap();
-        setToastMessage(response.message || "OTP sent successfully!");
-        setToastType('success');
-        setShowToast(true);
-        setOtpModalVisible(true);
-    
+      showToast(response.message || "OTP sent successfully!", 'success');
+      setOtpModalVisible(true);
     } catch (error) {
-      setToastMessage("An error occurred while sending OTP. Please try again.");
-      setToastType('error');
-      setShowToast(true);
+      showToast("An error occurred while sending OTP. Please try again.", 'error');
     }
   };
+
   const handleValidateOtp = async () => {
     if (OTP.length !== 6) {
-      setToastMessage("OTP must be exactly 6 digits. Please try again.");
-      setToastType('error');
-      setShowToast(true);
+      showToast("OTP must be exactly 6 digits. Please try again.", 'error');
       return;
     }
     try {
       const response = await validateOtp({ email, OTP }).unwrap();
       if (response.statusCode === 200) {
-        setToastMessage("OTP validated successfully. Please reset your password.");
-        setToastType('success');
-        setShowToast(true);
+        showToast("OTP validated successfully. Please reset your password.", 'success');
         setOtpVerified(true);
         setOtpModalVisible(false);
         setResetPasswordMode(true);
       } else {
-        setToastMessage(response.message || "Invalid OTP. Please try again.");
-        setToastType('error');
-        setShowToast(true);
+        showToast(response.message || "Invalid OTP. Please try again.", 'error');
       }
     } catch (error) {
-      setToastMessage("An error occurred while validating OTP. Please try again.");
-      setToastType('error');
-      setShowToast(true);
+      showToast("An error occurred while validating OTP. Please try again.", 'error');
     }
   };
+
   const handleResetPassword = async (data: { resetPassword: string; confirmPassword: string }) => {
     const { resetPassword, confirmPassword } = data;
     if (resetPassword !== confirmPassword) {
-      setToastMessage("Passwords do not match. Please try again.");
-      setToastType('error');
-      setShowToast(true);
+      showToast("Passwords do not match. Please try again.", 'error');
       return;
     }
     try {
       const response = await forgotPassword({ email, newPassword: resetPassword, confirmPassword: confirmPassword }).unwrap();
       if (response.statusCode === 200) {
-        setToastMessage("Password reset successful. You can now log in.");
-        setToastType('success');
-        setShowToast(true);
+        showToast("Password reset successful. You can now log in.", 'success');
         setNewPasswordData({ newPassword: "", confirmPassword: "" });
         setOtpVerified(false);
         setForgotPasswordMode(false);
         setResetPasswordMode(false);
       } else {
-        setToastMessage(response.message || "Failed to reset password. Please try again.");
-        setToastType('error');
-        setShowToast(true);
+        showToast(response.message || "Failed to reset password. Please try again.", 'error');
       }
     } catch (error) {
-      setToastMessage("An error occurred while resetting the password. Please try again.");
-      setToastType('error');
-      setShowToast(true);
+      showToast("An error occurred while resetting the password. Please try again.", 'error');
     }
   };
+
   return (
-    <div >
+    <div>
       <Card
         description={
           <>
@@ -159,7 +136,7 @@ const SignIn: React.FC = () => {
             )}
             {!forgotPasswordMode && !resetPasswordMode && (
               <div className="" style={{ border: "none", boxShadow: "none" }}>
-                <Form onSubmit={handleSubmit(onSubmit)} className="d-flex flex-column align-items-center" style={{height:'220px' , width:'350px'}}>
+                <Form onSubmit={handleSubmit(onSubmit)} className="d-flex flex-column align-items-center" style={{ height: '220px', width: '350px' }}>
                   <div className="mb-3 w-100">
                     <Input
                       {...register("email")}
@@ -200,7 +177,7 @@ const SignIn: React.FC = () => {
                     </Button>
                   </div>
                 </Form>
-                <p className="text-center mt-3" >
+                <p className="text-center mt-3">
                   Don't have an account? <Link to="/signup" style={{ color: colors.pagecolor, border: 'none' }}>Sign Up</Link>
                 </p>
               </div>
@@ -256,7 +233,7 @@ const SignIn: React.FC = () => {
                     className="form-control my-2 w-100"
                   />
                   {resetPasswordErrors.confirmPassword && (
-                    <div className="error text-danger float-left " style={{ float: "left" }}>{resetPasswordErrors.confirmPassword.message}</div>
+                    <div className="error text-danger float-left">{resetPasswordErrors.confirmPassword.message}</div>
                   )}
                   <Button
                     type="submit"
@@ -290,15 +267,8 @@ const SignIn: React.FC = () => {
           </Button>
         </Modal.Body>
       </Modal>
-      {showToast && (
-        <Toast
-          message={toastMessage}
-          type={toastType}
-          duration={3000}
-          onClose={() => setShowToast(false)}
-        />
-      )}
     </div>
   );
 };
-export default SignIn; 
+
+export default SignIn;

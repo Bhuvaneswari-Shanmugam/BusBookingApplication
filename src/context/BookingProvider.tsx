@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { Bus } from '../utils/entity/PageEntity';
 
-// Define the type for booking details
+
 interface BookingDetails {
   bus: Bus;
   currentSelectedSeats: number[];
@@ -9,11 +9,14 @@ interface BookingDetails {
   totalAmount: number;
   droppingStop:string;
   pickupStop:string;
+  bookingStatus:string;
+ 
 }
 
 interface BookingContextType {
   bookingDetails: BookingDetails | null;
   setBookingDetails: React.Dispatch<React.SetStateAction<BookingDetails | null>>;
+  
 }
 
 // Create Context with an initial undefined value

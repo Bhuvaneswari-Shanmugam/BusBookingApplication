@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useFetchDroppingPointsQuery } from '../../redux/services/TripApi';
 import { useLocation } from 'react-router-dom';
-import LocationPicker from '../../components/LocationPicker';
+import LocationPicker from '../../pages/filters/LocationPicker';
+
 
 interface DroppingPointsProps {
   onSelectionChange: (selectedPoints: Set<string>) => void;  

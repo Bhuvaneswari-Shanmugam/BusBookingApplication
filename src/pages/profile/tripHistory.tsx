@@ -6,6 +6,8 @@ import { useRetrievePastBookingQuery, useRetrieveUpcomingBookingQuery, useDelete
 import Button from "../../components/Button";
 import Card from "../../components/Card";
 
+
+
 const TripHistory: React.FC = () => {
     const navigate = useNavigate();
     const { data: pastTrips, error: pastError, isLoading: pastLoading, refetch: refetchPast } = useRetrievePastBookingQuery();
@@ -30,15 +32,19 @@ const TripHistory: React.FC = () => {
             }
         }
     }, [activeTab, pastTrips, upcomingTrips]);
+
     const isLoading = activeTab === "booked" ? pastLoading : upcomingLoading;
     const hasError = activeTab === "booked" ? pastError : upcomingError;
+
     const handleBack = () => {
         navigate('/home');
     };
+
     return (
         <div className="d-flex flex-column" style={{ height: '100vh', marginTop: '30px' }}>
             <div className="text-center mt-4">
-                <div className="d-flex flex-column top-0 align-items-center" style={{ height: '100%', overflowY: 'auto' }}>
+                <div className="d-flex flex-column top-0 align-items-center" style={{ height: '100%', overflowY: 'auto'}}>
+
                     <div className="d-flex align-items-center my-4 w-100">
                         <FontAwesomeIcon icon={faArrowLeft} onClick={handleBack} style={{ cursor: 'pointer', marginRight: '10px' }} />
                         <div className="flex-grow-1 d-flex justify-content-center">
@@ -110,4 +116,5 @@ const TripHistory: React.FC = () => {
         </div>
     );
 };
+
 export default TripHistory;

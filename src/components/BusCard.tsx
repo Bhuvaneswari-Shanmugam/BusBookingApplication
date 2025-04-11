@@ -5,7 +5,7 @@ import Badge from './Badge';
 import { FaStar } from 'react-icons/fa';
 import seat from '../assets/seat.jpg';
 import Button from './Button';
-import PointSelectionCard from './selectionPoint';
+import PointSelectionCard from '../../src/pages/booking/selectionPoint';
 
 const BusCard: React.FC<BusCardProps> = ({
   bus,
@@ -46,7 +46,7 @@ const BusCard: React.FC<BusCardProps> = ({
   
 
   return (
-    <div key={bus.number} className="card p-4 mb-2 " style={{ width: '2200px' }}>
+    <div key={bus.number} className="card p-4 mb-2 " style={{ width: '2200px', maxWidth:'1330px' }}>
       <div className="card-content d-flex justify-content-between align-items-center">
         <div>
           <h5>{bus.name}</h5>

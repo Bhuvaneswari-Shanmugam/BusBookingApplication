@@ -30,10 +30,10 @@ export const BusApi = createApi({
       },
     }),
     createBus: builder.mutation({
-      query: ({ number, tripNumber, type, name, capacity, droppingPoint, expense, ratings, pickupPoint, duration, arrivalTime, departureTime }) => ({
+      query: ({ number, tripNumber, busType, name, capacity, droppingPoint, expense, ratings, pickupPoint,  arrivalTime, departureTime,busCategory, busRegistrationNumber, busPickupPoints, busDestinationPoints  }) => ({
         url: 'bus/create',
         method: 'POST',
-        body: { number, tripNumber, type, name, capacity, droppingPoint, expense, ratings, pickupPoint, duration, arrivalTime, departureTime },
+        body: { number, tripNumber, busType, name, capacity, droppingPoint, expense, ratings, pickupPoint, arrivalTime, departureTime, busCategory, busRegistrationNumber, busPickupPoints, busDestinationPoints},
       }),
     }),
     getAllBusDetails: builder.query({

@@ -24,6 +24,7 @@ const AvailableBuses = () => {
   const [rows, setRows] = useState<(number | null)[][]>([]);
   const [sortCriteria, setSortCriteria] = useState<{ sortBy: string; sortOrder: string }>({ sortBy: '', sortOrder: 'asc' });
 
+
   const { data: genderListData, isLoading: isGenderListLoading } = useRetrieveGenderListQuery(selectedBus?.number || '', {
     skip: !selectedBus?.number,
   });
@@ -144,8 +145,7 @@ const AvailableBuses = () => {
           <Button
             className="btn mt-5 ms-3 text-white border-0 p-2"
             style={{ backgroundColor: colors.pagecolor, height: '40px', borderRadius: '5px', width: '70px' }}
-            onClick={() => navigate('/home')}
-          >
+            onClick={() => navigate('/home', { state: { from: { from }, to: { to }, date: { date } } })}>
             Modify
           </Button>
         </div>
@@ -183,7 +183,7 @@ const AvailableBuses = () => {
               ))}
             </div>
 
-            <div className="row mt-2 ml-0 d-flex" style={{justifyContent: 'flex-end', width: '100%',marginLeft:'-230px' }}>
+            <div className="row mt-2 ml-0 d-flex" style={{ justifyContent: 'flex-end', width: '100%', marginLeft: '-230px' }}>
               {availableBuses.map((bus: Bus) => (
                 <div style={{}} key={bus.number}>
                   <BusCard
@@ -205,7 +205,7 @@ const AvailableBuses = () => {
                 </div>
               ))}
             </div>
-             </div>
+          </div>
         </div>
       </div>
     </div>

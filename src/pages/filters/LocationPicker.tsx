@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { LocationPickerProps } from '../utils/entity/PageEntity';
-import { colors } from '../constants/Palette';
-import Checkbox from './CheckBox';
-import Input from '../components/Input';
+import { LocationPickerProps } from '../../utils/entity/PageEntity';
+import { colors } from '../../constants/Palette';
+import Checkbox from '../../components/CheckBox';
+import Input from '../../components/Input';
 
 const LocationPicker: React.FC<LocationPickerProps> = ({
   title,

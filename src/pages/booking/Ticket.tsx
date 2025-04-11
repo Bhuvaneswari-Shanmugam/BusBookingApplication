@@ -1,72 +1,143 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import 'react-toastify/dist/ReactToastify.css';
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import { ToastContainer, toast } from 'react-toastify';
 import { colors } from "../../constants/Palette";
 import logo from '../../assets/images/logo.jpg';
-import { usePassenger } from "../../context/PassengerProvider";
 import Toast from "../../components/Toast";
 import { useBooking } from "../../context/BookingProvider";
 import { Passenger } from "../../utils/entity/PassengerInterface";
 import { useCreateTicketMutation } from "../../redux/services/TicketApi";
 import { termsAndConditions } from "../../constants/ticketConstants";
-import Button from "../../components/Button"
+import Button from "../../components/Button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import axios from "axios";
 
 const Ticket: React.FC = () => {
     const ticketRef = useRef<HTMLDivElement | null>(null);
-    const navigate = useNavigate();
-    const apiCalled = useRef(false);
-
-    const { bookingDetails } = useBooking();
-    const { passengers } = usePassenger();
-    console.log("passengers:", passengers);
-
-    const email = passengers.length > 0 ? passengers[0].email : '';
-    const phoneNumber = passengers.length > 0 ? passengers[0].phoneNumber : '';
-    const ticketId = passengers.length > 0 ? passengers[0].ticketId : '';
-    const busNumber = passengers.length > 0 ? passengers[0].busNumber : '';
-
+    const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
     const [ticketUrl, setTicketUrl] = useState<string>('');
     const [toastMessage, setToastMessage] = useState<string>('');
     const [toastType, setToastType] = useState<'info' | 'success' | 'error'>('info');
     const [showToast, setShowToast] = useState<boolean>(false);
+    const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
+    const { bookingDetails } = useBooking();
+    const navigate = useNavigate();
+    const apiCalled = useRef(false);
 
+   
     const [createTicket] = useCreateTicketMutation();
+    const location = useLocation();
+
+    const selectedDroppingPoints = JSON.parse(localStorage.getItem('selectedDroppingPoints') || 'N/A');
+    const selectedPickupPoints = JSON.parse(localStorage.getItem('selectedPickupPoints') || 'N/A');
+    const passengerContextData = JSON.parse(localStorage.getItem('passengersData') || '{}');
+    const bookingData = JSON.parse(localStorage.getItem('bookingData') || '{}');
+
+    const email = passengerContextData?.email || '';
+    const phoneNumber = passengerContextData?.phoneNumber || '';
+    const ticketId = passengerContextData?.ticketId || '';
+    const busNumber = passengerContextData?.busNumber || '';
+
+    const uploadPdf = async (pdfBlob: Blob) => {
+        const formData = new FormData();
+        formData.append("file", pdfBlob, `${ticketId}.pdf`);
+
+        try {
+            const response = await fetch("http://localhost:8080/email/ticket-upload", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (response.ok) {
+                alert("Ticket uploaded successfully to AWS!");
+            } else {
+                alert("Ticket upload failed. Please try again.");
+            }
+        } catch (error) {
+            console.error("Upload failed:", error);
+        }
+    };
 
     useEffect(() => {
-        const storeTicket = async () => {
+        const processTicket = async () => {
             if (apiCalled.current) return;
             apiCalled.current = true;
 
             try {
+                // Step 1: Store the Ticket
                 if (ticketRef.current) {
+                    console.log("Capturing ticket element...");
                     const canvas = await html2canvas(ticketRef.current);
                     const imgData = canvas.toDataURL("image/png");
                     const pdf = new jsPDF("p", "mm", "a4");
                     const pdfWidth = pdf.internal.pageSize.getWidth();
                     const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
+                    console.log("Adding image to PDF...");
                     pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-                    const pdfBlob = pdf.output("blob");
-                    const blobUrl = URL.createObjectURL(pdfBlob);
+                    const ticketPdf = pdf.output("blob");
+                    setPdfBlob(ticketPdf);
+                    const blobUrl = URL.createObjectURL(ticketPdf);
 
                     const ticketUrl = blobUrl.slice(5);
-
                     setTicketUrl(ticketUrl);
 
+                    console.log("Storing ticket with URL:", ticketUrl);
                     await createTicket({ ticketUrl: ticketUrl, ticketId: ticketId }).unwrap();
+                    setToastMessage("Ticket stored successfully!");
+                    setToastType('success');
+                    setShowToast(true);
+                } else {
+                    console.error("ticketRef.current is null");
+                }
+
+                // Step 2: Fetch Payment Details
+                const queryParams = new URLSearchParams(location.search);
+                const sessionId = queryParams.get('session_id');
+
+                if (sessionId) {
+                    console.log('Session ID method called:', sessionId);
+                    const response = await axios.post(`http://localhost:8082/stripe-payment/payment-details/${sessionId}`);
+                    console.log('Payment details response:', response.data);
+
+                    if (response.data && response.data.status) {
+                        setPaymentStatus(response.data.status);
+                        setToastMessage("Payment details received!");
+                        setToastType('success');
+                        setShowToast(true);
+                    } else {
+                        console.error('Payment details response does not contain status');
+                    }
+                } else {
+                    console.error('Session ID is not available');
                 }
             } catch (err) {
-                console.log("error storing ticket : ", err);
+                console.error("Error processing ticket:", err);
+                setToastMessage("Error processing ticket");
+                setToastType('error');
+                setShowToast(true);
             }
         };
 
-        storeTicket();
-    }, [ticketId, createTicket]);
+        processTicket();
+    }, [location.search, ticketId, createTicket]);
+
+    useEffect(() => {
+        const uploadTicket = async () => {
+            if (pdfBlob && paymentStatus === 'succeeded') {
+                console.log("PDF Blob is available. Proceeding with upload...");
+                await uploadPdf(pdfBlob);
+            } else {
+                console.log("PDF Blob is not available or payment was not successful. Payment Status:", paymentStatus);
+            }
+        };
+
+        uploadTicket();
+    }, [pdfBlob, paymentStatus]);
 
     const downloadTicket = async () => {
         try {
@@ -78,20 +149,20 @@ const Ticket: React.FC = () => {
                 const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
                 pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-                pdf.save("ticket.pdf");
-                toast.success("Ticket downloaded successfully!");
+                pdf.save(`ticket_${ticketId}.pdf`);
+
+                setToastMessage("Ticket downloaded successfully!");
                 setToastType('success');
                 setShowToast(true);
-
             }
         } catch (err) {
-            toast.error("Error while downloading ticket!");
+            setToastMessage("Error while downloading ticket");
             setToastType('error');
             setShowToast(true);
         }
-    }
+    };
 
-    const generateAndSendPDF = async () => {
+    const emailTicket = async () => {
         if (ticketRef.current) {
             const canvas = await html2canvas(ticketRef.current);
             const imgData = canvas.toDataURL("image/png");
@@ -108,7 +179,7 @@ const Ticket: React.FC = () => {
             formData.append("email", email);
             formData.append("subject", "Your Ticket");
             formData.append("body", "Here is your bus ticket.");
-            formData.append("file", pdfBlob, "ticket.pdf");
+            formData.append("file", pdfBlob, `ticket_${ticketId}.pdf`);
 
             try {
                 const response = await fetch("http://localhost:8080/email/send-file", {
@@ -135,16 +206,15 @@ const Ticket: React.FC = () => {
     };
 
     const fields = [
-        { key: 'from', label: 'From', value: bookingDetails?.bus.pickupPoint },
-        { key: 'to', label: 'To', value: bookingDetails?.bus.droppingPoint },
-        { key: 'date', label: 'Date', value: bookingDetails?.date },
-        { key: 'ticketid', label: 'Ticket No', value: bookingDetails?.bus.tripNumber },
-        { key: 'boardingPoint', label: 'Boarding Point', value: bookingDetails?.bus.pickupPoint },
-        { key: 'busName', label: 'Bus Name', value: `${bookingDetails?.bus.name} ${bookingDetails?.bus.busType}` },
-        { key: 'reportingTime', label: 'Reporting Time', value: bookingDetails?.bus.departureTime },
-        { key: 'departureTime', label: 'Departure Time', value: bookingDetails?.bus.departureTime },
-        { key: 'seatNumbers', label: 'Seat Numbers', value: bookingDetails?.currentSelectedSeats?.join(", ") || "N/A" },
-        { key: 'departurePoint', label: 'Departure Point', value: bookingDetails?.bus.droppingPoint },
+        { key: 'from', label: 'From', value: bookingData?.pickupPoint },
+        { key: 'to', label: 'To', value: bookingData?.destinationPoint },
+        { key: 'date', label: 'Date', value: bookingData?.pickupTime },
+        { key: 'ticketid', label: 'Ticket Id', value: ticketId },
+        { key: 'boardingPoint', label: 'Boarding Point', value: selectedPickupPoints || "N/A" },
+        { key: 'departurePoint', label: 'Departure Point', value: selectedDroppingPoints || "N/A" },
+        { key: 'seatNumbers', label: 'Seat Numbers', value: bookingData?.bookedSeats?.join(", ") || "N/A" },
+        { key: 'perSeatAmount', label: 'Per Seat Amount', value: bookingData?.perSeatAmount },
+        { key: 'totalAmount', label: 'Total Amount', value: bookingData?.totalAmount },
     ];
 
     const textStyle = { color: colors.secondary };
@@ -168,18 +238,16 @@ const Ticket: React.FC = () => {
                             <div className="d-flex align-items-center mb-3 ">
                                 <FontAwesomeIcon
                                     icon={faArrowLeft}
-                                    className="cursor-pointer mt-5" 
+                                    className="cursor-pointer mt-5"
                                     onClick={() => navigate(-1)}
                                     style={{ fontSize: "20px", color: "black" }}
                                 />
-                                <div className="ms-3"> 
+                                <div className="ms-3">
                                     <p className="mb-1 fw-bold text-start">Need help with your trip?</p>
-                                    <p className="mb-1 text-start">bigtranzriders@gmail.com</p>
+                                    <p className="mb-1 mailto:text-start">bigtranzriders@gmail.com</p>
                                     <p className="mb-1 text-start">0522-2454444</p>
                                 </div>
                             </div>
-
-
                         </div>
                         <img src={logo} alt="logo" width="90px" height="90px" />
                     </div>
@@ -212,9 +280,8 @@ const Ticket: React.FC = () => {
                     <div className="d-flex justify-content-between align-items-start mx-3">
                         {fields.filter(field => ['busName', 'reportingTime', 'departureTime'].includes(field.key)).map((field, index) => (
                             <div key={index} className="text-center">
-                                <p className="mb-0 fw-bold">{field.label}</p>
-                                <h5 className="mb-1">{field.value}</h5>
-
+                                <p className="mb-0">{field.label}</p>
+                                <h5 className="mb-1"><b>{field.value}</b></h5>
                             </div>
                         ))}
                     </div>
@@ -223,8 +290,8 @@ const Ticket: React.FC = () => {
                     <div className="d-flex justify-content-between align-items-center" style={{ margin: "0 30px" }}>
                         {fields.filter(field => ['boardingPoint', 'seatNumbers', 'departurePoint'].includes(field.key)).map((field, index) => (
                             <div key={index}>
-                                <p className="fw-bold">{field.label}</p>
-                                <h5>{field.value}</h5>
+                                <p>{field.label}</p>
+                                <h5 className="fw-bold">{field.value}</h5>
                             </div>
                         ))}
                     </div>
@@ -247,9 +314,9 @@ const Ticket: React.FC = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="" style={textStyle}>
-                                    {Array.isArray(passengers) &&
-                                        passengers.length > 0 &&
-                                        passengers[0].passengers.map((passenger: Passenger, index: number) => (
+                                    {Array.isArray(passengerContextData?.passengers) &&
+                                        passengerContextData.passengers.length > 0 &&
+                                        passengerContextData.passengers.map((passenger: Passenger, index: number) => (
                                             <tr key={index}>
                                                 <td style={textStyle}>{passenger.firstName} {passenger.lastName}</td>
                                                 <td style={textStyle}>{passenger.age}</td>
@@ -283,8 +350,6 @@ const Ticket: React.FC = () => {
                         </div>
                     </div>
 
-
-
                     <div className="text-center d-flex justify-content-center align-items-center mt-4">
                         <div>
                             <Button
@@ -303,9 +368,8 @@ const Ticket: React.FC = () => {
                                 style={{ backgroundColor: colors.pagecolor, fontSize: "16px" }}
                                 onClick={(event) => {
                                     event.preventDefault();
-                                    generateAndSendPDF();
+                                    emailTicket();
                                 }}
-
                             >
                                 Share PDF
                             </Button>

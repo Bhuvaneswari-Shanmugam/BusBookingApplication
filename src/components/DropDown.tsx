@@ -8,6 +8,9 @@ const DropDown: React.FC<DropdownProps> = ({ options, onChange, text, className,
       ...provided,
       color: 'black', 
     }),
+
+    
+    
     option: (provided: any, state: any) => ({
       ...provided,
       backgroundColor: state.isFocused ? '#B966E2' : 'white',

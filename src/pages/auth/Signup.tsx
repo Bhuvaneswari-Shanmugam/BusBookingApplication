@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Link, useNavigate } from 'react-router-dom';
@@ -13,40 +13,40 @@ import { SignupFormFields } from '../../constants/index';
 import { SignupFormInputs, SignupErrorResponse } from '../../utils/entity/SignupInterface';
 import { colors } from '../../constants/Palette';
 import Card from '../../components/Card';
-import Toast from '../../components/Toast';
 import Label from '../../components/Label';
+import { useToast } from '../../components/NewToast';
 import Checkbox from '../../components/CheckBox';
+
 const Signup: React.FC = () => {
     const validationSchema = getSignupValidationSchema();
     const navigate = useNavigate();
     const [signup, { isLoading }] = useSignupMutation();
-    const [toastMessage, setToastMessage] = useState<string>('');
-    const [toastType, setToastType] = useState<'info' | 'success' | 'error'>('info');
-    const [showToast, setShowToast] = useState<boolean>(false);
+    const { showToast } = useToast();
+
     const {
         register,
         handleSubmit,
         formState: { errors },
         reset,
+        setValue,
+        watch
     } = useForm<SignupFormInputs>({
         resolver: yupResolver(validationSchema),
     });
+
     const onSubmit = async (data: SignupFormInputs) => {
         try {
             const response = await signup(data).unwrap();
-            setToastMessage(response?.data?.message || 'Weve sent an email! Check your inbox to verify your email.');
-            setToastType('success');
-            setShowToast(true);
+            showToast(response?.data?.message || 'We have sent an email! Check your inbox to verify your email.', 'success');
             reset();
             // navigate('/');
         } catch (err) {
             const errorMessage =
                 (err as SignupErrorResponse)?.data?.message || 'Signup failed. Please try again.';
-            setToastMessage(errorMessage);
-            setToastType('error');
-            setShowToast(true);
+            showToast(errorMessage, 'error');
         }
     };
+
     return (
         <div className="container mt-5">
             <Card
@@ -62,9 +62,6 @@ const Signup: React.FC = () => {
                                             className="form-select w-100"
                                             id={field.id}
                                         >
-                                            {/* <option value="" disabled selected>
-                                                {field.placeholder}
-                                            </option> */}
                                             {field.options?.map((option, optIndex) => (
                                                 <option key={optIndex} value={option.value}>
                                                     {option.label}
@@ -79,20 +76,13 @@ const Signup: React.FC = () => {
                                     </>
                                 ) : field.isCheckbox ? (
                                     <div className="form-check w-100 ">
-                                        <div className="d-flex justify-content-start align-items-center gap-0">
-                                            <div style={{ borderColor: colors.pagecolor }}>
-                                                <Input
-                                                    {...register(field.name as keyof SignupFormInputs)}
-                                                    type={field.type}
-                                                    placeholder={field.placeholder}
-                                                    className="form-control w-100"
-                                                    id={field.id}
-                                                />                                          
-                                            </div>
-                                            <Label className="form-check-label ms-0" htmlFor={field.id}>
-                                                {field.label}
-                                            </Label>
-                                        </div>
+                                        <Checkbox
+                                            label={field.label}
+                                            checked={watch(field.name as keyof SignupFormInputs) as boolean}
+                                            type="checkbox"
+                                            onChange={(checked) => setValue(field.name as keyof SignupFormInputs, checked)}
+                                            name={field.name}
+                                        />
                                         <div className="float-start mb-2" style={{ marginLeft: "-22px" }} >
                                             <span className="error text-danger">
                                                 {errors[field.name as keyof SignupFormInputs]?.message}
@@ -137,15 +127,8 @@ const Signup: React.FC = () => {
                     </Form>
                 }
             />
-            {showToast && (
-                <Toast
-                    message={toastMessage}
-                    type={toastType}
-                    duration={3000}
-                    onClose={() => setShowToast(false)}
-                />
-            )}
         </div>
     );
 };
+
 export default Signup;

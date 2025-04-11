@@ -21,22 +21,24 @@ import { usePassenger } from "../../context/PassengerProvider";
 import { colors } from '../../constants/Palette';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-import TripDetailsCard from "../../components/TripDetails";
+import TripDetailsCard from "./TripDetails";
 
 // Load Stripe with your publishable key
 const stripePromise = loadStripe('pk_test_51NDi2uSIeHGLmxdBXJaV2FhWJkT3MOwkff67QkcgQnjZCzZGnY6egJQ0jY7m9cRFMZXsAOT40U8JNVFAi4xyTClo00iZfLzxR9');
 
-const PassengerDetailsForm: React.FC<any> = ({handleCloseOffcanvas}:any) => {
+const PassengerDetailsForm: React.FC<any> = ({handleCloseOffcanvas}) => {
   const navigate = useNavigate();
   const { bookingDetails } = useBooking();
   const { setPassengerDetails } = usePassenger();
-
+  const [showTripCard, setShowTripCard] = useState(false);
   const bus: Bus = bookingDetails?.bus || ({} as Bus);
   const currentSelectedSeats = bookingDetails?.currentSelectedSeats || [];
   const date = bookingDetails?.date || "";
   const totalAmount = currentSelectedSeats.length * bus.expense;
 
-   const [showTripCard, setShowTripCard] = useState(false);
+  console.log("passenger page pickup stop : ", bookingDetails?.pickupStop);
+  console.log("passenger page dropping stop :", bookingDetails?.droppingStop);
+
   const cleanPickupStop = bookingDetails?.pickupStop?.replace(/[\[\]"]+/g, "") || "";
   const cleanDroppingStop = bookingDetails?.droppingStop?.replace(/[\[\]"]+/g, "") || "";
 
@@ -44,6 +46,7 @@ const PassengerDetailsForm: React.FC<any> = ({handleCloseOffcanvas}:any) => {
   const [isEmailEditable, setIsEmailEditable] = useState(false);
   const [userId, setUserId] = useState('');
   const [showEmail, setShowEmail] = useState(false);
+
   const [createBooking] = useCreateBookingMutation();
   const [toastMessage, setToastMessage] = useState<string>("");
   const [toastType, setToastType] = useState<"info" | "success" | "error">("info");
@@ -56,21 +59,26 @@ const PassengerDetailsForm: React.FC<any> = ({handleCloseOffcanvas}:any) => {
     setValue,
     getValues,
     formState: { errors },
+    register
   } = useForm({
     resolver: yupResolver(getPassengerDetailsValidationSchema),
     defaultValues: {
-  passengers: currentSelectedSeats.map((seat) => ({
-  firstName: "",
-  lastName: "",
-  age: 0,
-  gender: "",
-  seatNumber: seat,
-})),
+      passengers: currentSelectedSeats.map((seat) => ({
+        firstName: "",
+        lastName: "",
+        gender: "",
+        seatNumber: seat,
+        
+      })),
       email: "",
       phoneNumber: "",
       busNumber: bus?.number || 0,
     },
+       
   });
+
+  const {onChange}=register("phoneNumber");
+
 
   useEffect(() => {
     if (bookingDetails && currentSelectedSeats.length > 0) {
@@ -78,6 +86,7 @@ const PassengerDetailsForm: React.FC<any> = ({handleCloseOffcanvas}:any) => {
         setValue(`passengers.${index}.seatNumber`, seat);
       });
       setValue("busNumber", bus?.number || 0);
+      console.log("busNumber set to:", bus?.number);
     }
   }, [bookingDetails, currentSelectedSeats, setValue, bus?.number]);
 
@@ -86,6 +95,7 @@ const PassengerDetailsForm: React.FC<any> = ({handleCloseOffcanvas}:any) => {
     if (token) {
       try {
         const decoded: DecodedToken = jwtDecode(token);
+        console.log("userId from passengerdetails:", decoded.userId);
         setLoggedInEmail(decoded.email);
         setValue("email", decoded.email);
         setUserId(decoded.userId);
@@ -124,24 +134,21 @@ const PassengerDetailsForm: React.FC<any> = ({handleCloseOffcanvas}:any) => {
     return `BT-${randomSixDigit}`;
   };
 
-  const handleOnClick = () => {
-   
-  };
- 
+  
   const onSubmit: SubmitHandler<any> = async (data) => {
     try {
       const ticketNumber = generateTicketId();
       const userEmail = data.email;
-      
-      // Ensure bus details exist before proceeding
+
+      // *Step 1: Ensure bus details exist*
       if (!bus || !bus.number) {
         throw new Error("Bus details are missing.");
       }
-  
-      // *Step 1: Prepare Booking Data*
+
+      // *Step 2: Prepare Booking Data*
       const bookingData: CreateBookingRequest = {
-        pickupPoint: bus.pickupPoint,
-        destinationPoint: bus.droppingPoint,
+        pickupPoint:  bus.pickupPoint,
+        destinationPoint:bus.droppingPoint,
         pickupTime: date,
         busNumber: bus.number,
         busType: bus.busType,
@@ -151,14 +158,19 @@ const PassengerDetailsForm: React.FC<any> = ({handleCloseOffcanvas}:any) => {
         ticketId: ticketNumber,
         pickupStop: cleanPickupStop,
         droppingStop: cleanDroppingStop,
-        userEmail: userEmail, // Ensure correct email assignment
+        userEmail: userEmail,
+        bookedDate:date,
+        bookingStatus:'pending',
+        
       };
-  
-      sessionStorage.setItem("bookingData", JSON.stringify(bookingData));
-  
+
+      localStorage.setItem("bookingData", JSON.stringify(bookingData));
+
       await createBooking(bookingData).unwrap();
-  
-      // *Step 2: Prepare Passenger Details*
+
+    
+
+      // *Step 3: Prepare Passenger Details*
       const passengerContextData: PassengerData = {
         passengers: data.passengers.map((passenger: Passenger) => ({
           ...passenger,
@@ -168,17 +180,17 @@ const PassengerDetailsForm: React.FC<any> = ({handleCloseOffcanvas}:any) => {
         ticketId: ticketNumber,
         busNumber: bus.number,
       };
-  
-      sessionStorage.setItem("passengerContextData", JSON.stringify(passengerContextData));
-  
+
+      localStorage.setItem("passengersData", JSON.stringify(passengerContextData));
+
       await createPassengerDetails(passengerContextData).unwrap();
-  
-      // Show success message
+
+      // *Step 4: Show success message*
       setToastMessage("Booking saved! Redirecting to payment...");
       setToastType("success");
       setShowToast(true);
-  
-      // *Step 3: Create Stripe Checkout Session*
+
+      // *Step 5: Create Stripe Checkout Session*
       const response = await axios.post(
         "http://localhost:8082/stripe-payment/create-checkout-session",
         {
@@ -188,29 +200,40 @@ const PassengerDetailsForm: React.FC<any> = ({handleCloseOffcanvas}:any) => {
           email: userEmail,
           successUrl: "http://localhost:3000/ticket?session_id={CHECKOUT_SESSION_ID}",
           cancelUrl: "http://localhost:3000/home",
+          ticketId: ticketNumber,
         }
       );
-  
+     
       console.log("Stripe Session Response:", response.data);
-  
+
       const { sessionId } = response.data;
-      if (!sessionId) throw new Error("Stripe session ID missing from response.");
-  
-      // Store Pending Booking Data
+      if (!sessionId) {
+        throw new Error("Stripe session ID missing from response.");
+      }
+
+      console.log("Session ID:", sessionId);
+      localStorage.setItem('SessionId', sessionId);
+
+      // *Step 6: Store payment details*
       localStorage.setItem(
-        "pendingBooking",
+        "paymentDetails",
         JSON.stringify({
           ticketId: ticketNumber,
-          userId: userId, // Ensure `userId` is properly retrieved before usage
+          userId: userId,
         })
       );
-  
-      // *Step 4: Redirect to Stripe Checkout*
+
+
+      // *Step 8: Redirect to Stripe Checkout*
       const stripe = await stripePromise;
-      if (!stripe) throw new Error("Stripe initialization failed.");
-  
+      if (!stripe) {
+        throw new Error("Stripe initialization failed.");
+      }
+
       const { error } = await stripe.redirectToCheckout({ sessionId });
-  
+
+
+
       if (error) {
         throw new Error("Payment failed. Please try again.");
       }
@@ -221,7 +244,8 @@ const PassengerDetailsForm: React.FC<any> = ({handleCloseOffcanvas}:any) => {
       setShowToast(true);
     }
   };
-  
+
+
   return (
     <div className="d-flex justify-content-center align-items-center" style={{ width: "670px" }}>
       <Form onSubmit={handleSubmit(onSubmit)}>
@@ -245,7 +269,7 @@ const PassengerDetailsForm: React.FC<any> = ({handleCloseOffcanvas}:any) => {
                       )}
                     />
                     {errors.passengers?.[index]?.firstName && (
-                      <small className="text-danger">{errors.passengers[index].firstName?.message}</small>
+                      <small className="error text-danger float-left " style={{ float: "left" }}>{errors.passengers[index].firstName?.message}</small>
                     )}
                   </div>
                   <div className="col-md-6">
@@ -257,7 +281,7 @@ const PassengerDetailsForm: React.FC<any> = ({handleCloseOffcanvas}:any) => {
                       )}
                     />
                     {errors.passengers?.[index]?.lastName && (
-                      <small className="text-danger">{errors.passengers[index].lastName?.message}</small>
+                      <small className="error text-danger float-left " style={{ float: "left" }}>{errors.passengers[index].lastName?.message}</small>
                     )}
                   </div>
                 </div>
@@ -267,11 +291,11 @@ const PassengerDetailsForm: React.FC<any> = ({handleCloseOffcanvas}:any) => {
                       control={control}
                       name={`passengers.${index}.age`}
                       render={({ field }) => (
-                        <Input {...field} className="form-control" type="number" placeholder="Age" />
+                        <Input {...field} className="form-control" type="text" inputMode="numeric" placeholder="Age" />
                       )}
                     />
                     {errors.passengers?.[index]?.age && (
-                      <small className="text-danger">{errors.passengers[index].age?.message}</small>
+                      <small className="error text-danger float-left " style={{ float: "left" }}>{errors.passengers[index].age?.message}</small>
                     )}
                   </div>
                   <div className="col-md-6">
@@ -288,7 +312,7 @@ const PassengerDetailsForm: React.FC<any> = ({handleCloseOffcanvas}:any) => {
                       </div>
                     ))}
                     {errors.passengers?.[index]?.gender && (
-                      <small className="text-danger">{errors.passengers[index].gender?.message}</small>
+                      <small className="text-danger " style={{ float: "left" }}>{errors.passengers[index].gender?.message}</small>
                     )}
                   </div>
                 </div>
@@ -302,6 +326,7 @@ const PassengerDetailsForm: React.FC<any> = ({handleCloseOffcanvas}:any) => {
                           {...field}
                           className="form-control"
                           type="number"
+                        
                           placeholder={`Seat Number: ${currentSelectedSeats[index]}`}
                           disabled
                           value={`Seat Number: ${currentSelectedSeats[index]}`}
@@ -309,7 +334,7 @@ const PassengerDetailsForm: React.FC<any> = ({handleCloseOffcanvas}:any) => {
                       )}
                     />
                     {errors.passengers?.[index]?.seatNumber && (
-                      <small className="text-danger">{errors.passengers[index].seatNumber?.message}</small>
+                      <small className="error text-danger float-left " style={{ float: "left" }}>{errors.passengers[index].seatNumber?.message}</small>
                     )}
                   </div>
                 </div>
@@ -320,9 +345,7 @@ const PassengerDetailsForm: React.FC<any> = ({handleCloseOffcanvas}:any) => {
                       type="checkbox"
                       className="form-check-input " style={{ borderColor: colors.secondary }}
                       checked={isSameDetails}
-                      onChange={() => setIsSameDetails(!isSameDetails)
-
-                      }
+                      onChange={() => setIsSameDetails(!isSameDetails)}
                     />
                     <label className="form-check-label">
                       Same details for all passengers
@@ -370,7 +393,7 @@ const PassengerDetailsForm: React.FC<any> = ({handleCloseOffcanvas}:any) => {
                   className="position-absolute end-0 top-50 translate-middle-y me-3"
                   style={{ cursor: "pointer" }}
                 />
-                {errors.email && <small className="text-danger">{errors.email?.message}</small>}
+                {errors.email && <small className="error text-danger float-left " style={{ float: "left" }}>{errors.email?.message}</small>}
               </div>
 
               <div className="mt-3 mb-4">
@@ -382,11 +405,13 @@ const PassengerDetailsForm: React.FC<any> = ({handleCloseOffcanvas}:any) => {
                       {...field}
                       className="form-control"
                       placeholder="Enter your phone number"
+                      inputMode="numeric"
+                      onChange={onChange}
                     />
                   )}
                 />
                 {errors.phoneNumber && (
-                  <small className="text-danger">{errors.phoneNumber.message}</small>
+                  <small className="error text-danger float-left " style={{ float: "left" }}>{errors.phoneNumber.message}</small>
                 )}
               </div>
 
@@ -407,7 +432,7 @@ const PassengerDetailsForm: React.FC<any> = ({handleCloseOffcanvas}:any) => {
                   </Button>
                 </div>
                 <div>
-                  <Button type="button" onClick={handleCloseOffcanvas} style={{ color: 'white', backgroundColor: colors.secondary, border: colors.secondary }}>
+                <Button type="button" onClick={handleCloseOffcanvas} style={{ color: 'white', backgroundColor: colors.secondary, border: colors.secondary }}>
                     Cancel
                   </Button>
                 </div>
@@ -425,8 +450,7 @@ const PassengerDetailsForm: React.FC<any> = ({handleCloseOffcanvas}:any) => {
           </div>
         </div>
       </Form>
-    
-{showTripCard && (
+      {showTripCard && (
     <TripDetailsCard
     show={showTripCard}
     onClose={() => setShowTripCard(false)}

@@ -15,7 +15,7 @@ export const BookingDetailsApi = createApi({
   endpoints: (builder) => ({
     fetchAllBooking: builder.query({
       query: ({ page=0, size=10 }) => ({
-        url: `retrieve?page=${page}&size=${size}`,
+        url: `booking/retrieve?page=${page}&size=${size}`,
         method: 'POST',
         body:{page,size}
       }),

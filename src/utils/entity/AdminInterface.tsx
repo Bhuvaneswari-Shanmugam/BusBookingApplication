@@ -15,3 +15,17 @@ export interface CustomerInterface {
     gender:string;
     age:number;
   }
+
+
+   interface Point {
+    location: string;
+    time: string;
+  }
+  
+ export interface PointsTableProps {
+    points: Point[];
+    title: string;
+    onAddPoint: () => void;
+    onRemovePoint: (index: number) => void;
+    onChange: (index: number, field: string, value: string) => void;
+  }

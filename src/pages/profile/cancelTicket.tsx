@@ -17,24 +17,24 @@ const CancelTicket: React.FC = () => {
     const [ticketToDelete, setTicketToDelete] = useState<string | null>(null);
     const { data, error, isLoading, refetch } = useRetrievebookingByTicketIdQuery({ ticketId: text }, { skip: !searched });
     const [cancelTicket] = useCancetTicketMutation();
- 
+
     console.log("tickets:", data);
- 
+
     const handleClick = () => {
         setSearched(true);
         refetch();
     };
- 
+
     const openModal = (id: string) => {
         setTicketToDelete(id);
         setModalIsOpen(true);
     };
- 
+
     const closeModal = () => {
         setTicketToDelete(null);
         setModalIsOpen(false);
     };
- 
+
     const confirmDelete = async () => {
         if (ticketToDelete) {
             try {
@@ -48,7 +48,7 @@ const CancelTicket: React.FC = () => {
             }
         }
     };
- 
+
     return (
         <div className="d-flex flex-column mt-5" style={{ height: '90vh', width: '900px' }}>
             <div>
@@ -74,7 +74,7 @@ const CancelTicket: React.FC = () => {
                 {isLoading && <p>Loading...</p>}
                 {error && <p>Error loading booking details</p>}
             </div>
- 
+
             {data && searched && data.data.length > 0 && (
                 data.data.map((ticket: any) => (
                     <Card key={ticket.id} className="mt-4 "
@@ -111,7 +111,7 @@ const CancelTicket: React.FC = () => {
                     />
                 ))
             )}
- 
+
             <ConfirmationPopUpModal
                 show={modalIsOpen}
                 onHide={closeModal}
@@ -121,5 +121,5 @@ const CancelTicket: React.FC = () => {
         </div>
     );
 };
- 
+
 export default CancelTicket;

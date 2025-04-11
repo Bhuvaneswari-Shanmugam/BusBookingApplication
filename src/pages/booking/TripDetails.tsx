@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from 'react-bootstrap';
-import { TripDetailsModalProps } from '../utils/entity/PageEntity';
-import { colors } from '../constants/Palette';
-import PassengerDetailsForm from '../pages/booking/PassengerDetails';
-import { useBooking } from '../context/BookingProvider';
+import { TripDetailsModalProps } from '../../utils/entity/PageEntity';
+import { colors } from '../../constants/Palette';
+import PassengerDetailsForm from '../../pages/booking/PassengerDetails';
+import { useBooking } from '../../context/BookingProvider';
 
 const TripDetailsCard: React.FC<TripDetailsModalProps> = ({
   show,
@@ -20,7 +20,8 @@ const TripDetailsCard: React.FC<TripDetailsModalProps> = ({
 
 
 
-useEffect(() => {}, [])
+
+  useEffect(() => { }, [])
 
   const handleProceed = () => {
     if (!currentSelectedSeats) {
@@ -32,9 +33,10 @@ useEffect(() => {}, [])
       currentSelectedSeats: currentSelectedSeats.map(Number),
       date,
       totalAmount: totalPrice,
-    droppingStop:'',
-    pickupStop:''
-  });
+      droppingStop: '',
+      pickupStop: '',
+      bookingStatus: ''
+    });
 
     setShowPassengerDetailsOffcanvas(true);
   };
@@ -48,7 +50,7 @@ useEffect(() => {}, [])
 
   return (
     <>
-      <div className="card bg-light w-100" style={{  flexShrink: 0, width:'100px' }}>
+      <div className="card bg-light w-100" style={{ flexShrink: 0, width: '100px' }}>
         <div className="d-flex">
           <h5 className="text-start mx-2 fw-bold">Boarding & Dropping</h5>
           <Button
@@ -74,8 +76,8 @@ useEffect(() => {}, [])
           <div className="d-flex justify-content-between">
             <h5 className='fw-bold'>Seat No.</h5>
             <h5 className="text-end mx-2">
-              {currentSelectedSeats?.length > 0 ? currentSelectedSeats.join(', ') : 'None'}
-            </h5>
+              {currentSelectedSeats?.length > 0
+                ? [...currentSelectedSeats].sort().join(', '): 'None'}</h5>
           </div>
           <hr />
           <div className="">
@@ -98,7 +100,7 @@ useEffect(() => {}, [])
       </div>
 
       {showPassengerDetailsOffcanvas && (
-        <div className="offcanvas offcanvas-end show" tabIndex={-1} id="offcanvasEnd" aria-labelledby="offcanvasEndLabel" style={{ zIndex: 1000, width:'700px' }}>
+        <div className="offcanvas offcanvas-end show" tabIndex={-1} id="offcanvasEnd" aria-labelledby="offcanvasEndLabel" style={{ zIndex: 1000, width: '700px' }}>
           <div className="offcanvas-header">
             <h4 className="offcanvas-title fw-bold" id="offcanvasEndLabel">
               Passenger Details
@@ -112,7 +114,7 @@ useEffect(() => {}, [])
             /> */}
           </div>
           <div className="offcanvas-body" style={{ overflowY: 'auto', maxHeight: '80vh' }}>
-            {bookingDetails && <PassengerDetailsForm handleCloseOffcanvas={handleCloseOffcanvas}/>}
+            {bookingDetails && <PassengerDetailsForm handleCloseOffcanvas={handleCloseOffcanvas} />}
           </div>
         </div>
       )}

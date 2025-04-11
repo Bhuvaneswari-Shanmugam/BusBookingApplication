@@ -18,6 +18,7 @@ import { colors } from '../constants/Palette';
 import { countryImages } from '../constants/index';
 import { Country } from '../constants/index';
 import { aboutContent } from '../constants';
+import { useLocation } from 'react-router-dom';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -28,9 +29,16 @@ const Home = () => {
   const [showToast, setShowToast] = useState<boolean>(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const contactCardRef = useRef<HTMLDivElement>(null);
-  const serviceCardRef= useRef<HTMLDivElement>(null);
-  const aboutCardRef=useRef<HTMLDivElement>(null);
+  const serviceCardRef = useRef<HTMLDivElement>(null);
+  const aboutCardRef = useRef<HTMLDivElement>(null);
+  const homeCardRef=useRef<HTMLDivElement>(null);
+  const location = useLocation();
 
+  const state = location.state as {
+    from?: string;
+    to?: string;
+    date?:string;
+  };
 
   const {
     control,
@@ -85,14 +93,16 @@ const Home = () => {
       searchContainerRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   };
-  
+
 
   return (
     <div>
-      <Header aboutCardRef={aboutCardRef}  serviceCardRef={serviceCardRef} contactCardRef={contactCardRef} />
+      <Header aboutCardRef={aboutCardRef} serviceCardRef={serviceCardRef} contactCardRef={contactCardRef}  homeCardRef={homeCardRef}/>
       <div className="home-container min-vh-100 w-100 position-relative overflow-hidden">
         <div className="button-container " style={{ fontSize: '70px' }}>
-          <h1 style={{ color: '#B966E2', fontSize: '70px' }}>
+          <h1
+           ref={homeCardRef}
+          style={{ color: '#B966E2', fontSize: '70px' }}>
             Reserve Your Bus
             <span className="ticket" style={{ color: '#B966E2' }}>
               Tickets
@@ -114,106 +124,110 @@ const Home = () => {
 
       <div ref={searchContainerRef} className="card search-container mt-4">
         <form onSubmit={handleSubmit(handleBookNowClick)}>
-        <div className="row g-3 d-flex align-items-center">
-  <div className="col-md-3 mb-3">
-    <Controller
-      name="pickupPoint"
-      control={control}
-      render={({ field }) => (
-        <DropDown
-          {...field}
-          className="drop-down"
-          options={locations}
-          text="Select Pickup Point"
-          style={{
-            select: {
-              width: '100%',  
-              height: '40px',
-              padding: '5px',
-              fontSize: '16px',
-              borderRadius: '5px',
-              border: '1px solid #B966E2',
-              color: '#333',
-              borderColor: colors.pagecolor,
-            },
-          }}
-        />
-      )}
-    />
-    <div className="float-start">
-      <span className="error text-danger">{errors.pickupPoint?.message}</span>
-    </div>
-  </div>
+          <div className="row g-3 d-flex align-items-center p-7" >
+            <div className="col-md-3 mb-3">
+              <Controller
+                name="pickupPoint"
+                control={control}
+                render={({ field }) => (
+                  <DropDown
+                    {...field}
+                    className="drop-down"
+                    options={locations}
+                    {...location.state.from}
+                    text="Select Pickup Point"
+                    style={{
+                      select: {
+                        width: '100%',
+                        height: '40px',
+                        padding: '5px',
+                        fontSize: '16px',
+                        borderRadius: '5px',
+                        border: '1px solid #B966E2',
+                        color: '#333',
+                        borderColor: colors.pagecolor,
+                        position:'fixed'
+                      },
+                    }}
+                  />
+                )}
+              />
+              <div className="float-start ">
+                <span className="error text-danger">{errors.pickupPoint?.message}</span>
+              </div>
+            </div>
 
-  <div className="col-md-3 mb-3">
-    <Controller
-      name="destinationPoint"
-      control={control}
-      render={({ field }) => (
-        <DropDown
-          {...field}
-          className="drop-down"
-          text="Select Destination Point"
-          options={locations}
-          style={{
-            select: {
-              width: '100%', 
-              height: '40px',
-              padding: '5px',
-              fontSize: '16px',
-              borderRadius: '5px',
-              border: '1px solid #B966E2',
-              color: '#333',
-              borderColor: colors.pagecolor,
-            },
-            
-          }}
-        />
-      )}
-    />
-    <div className="">
-      <span className="error text-danger">{errors.destinationPoint?.message}</span>
-    </div>
-  </div>
+            <div className="col-md-3 mb-3">
+              <Controller
+                name="destinationPoint"
+                control={control}
+                render={({ field }) => (
+                  <DropDown
+                    {...field}
+                    {...location.state.to}
+                    className="drop-down"
+                    text="Select Destination Point"
+                    options={locations}
+                    style={{
+                      select: {
+                        width: '100%',
+                        height: '40px',
+                        padding: '5px',
+                        fontSize: '16px',
+                        borderRadius: '5px',
+                        border: '1px solid #B966E2',
+                        color: '#333',
+                        borderColor: colors.pagecolor,
+                      },
 
-  <div className="col-md-2 mb-3">
-    <Controller
-      name="pickupDate"
-      control={control}
-      render={({ field }) => (
-        <Input
-          type="date"
-          className="form-control input-custom w-100"
-          style={{ borderColor: 'darkorchid' }}
-          {...field}
-          min={currentDate}
-          value={field.value || ''}
-        />
-      )}
-    />
-    <div className="float-start">
-      <span className="error text-danger">{errors.pickupDate?.message}</span>
-    </div>
-  </div>
+                    }}
+                  />
+                )}
+              />
+              <div className="">
+                <span className="error text-danger">{errors.destinationPoint?.message}</span>
+              </div>
+            </div>
 
-  <div className="col-md-3 mb-3">
-    <Button
-      className="search-btn w-75"
-      style={{
-        border: 'none',
-        borderRadius: '4px',
-        height: '40px',
-        backgroundColor: 'darkorchid',
-        color: 'white',
-        cursor: 'pointer',
-      }}
-      type="submit"
-      disabled={isLoading}
-    >
-      {isLoading ? 'Searching...' : 'Search'}
-    </Button>
-  </div>
-</div>
+            <div className="col-md-2 mb-3">
+              <Controller
+                name="pickupDate"
+                control={control}
+                {...location.state.date}
+                render={({ field }) => (
+                  <Input
+                    type="date"
+                    className="form-control input-custom w-100"
+                    style={{ borderColor: 'darkorchid' }}
+                    {...field}
+                    min={currentDate}
+                    value={field.value || ''}
+                  />
+                )}
+              />
+              <div className="float-start">
+                <span className="error text-danger">{errors.pickupDate?.message}</span>
+              </div>
+            </div>
+
+            <div className="col-md-3 mb-3">
+              <Button
+                className="search-btn w-75"
+                style={{
+                  border: 'none',
+                  borderRadius: '4px',
+                  height: '40px',
+                  backgroundColor: 'darkorchid',
+                  color: 'white',
+                  cursor: 'pointer',
+                }}
+                type="submit"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Searching...' : 'Search'}
+              </Button>
+            </div>
+          </div>
 
         </form>
       </div>
@@ -256,7 +270,7 @@ const Home = () => {
         <br></br>
         <div >
           <Card
-          ref={aboutCardRef}
+            ref={aboutCardRef}
             description={
               <>
                 <h4>ABOUT BIGSTANZ</h4>
@@ -264,10 +278,11 @@ const Home = () => {
                   <p key={index} className="card-text mb-3 text-start">{text}</p>
                 ))}
               </>
+              
             }
           />
         </div>
-        
+
         <Card
           ref={serviceCardRef}
           description={
@@ -308,19 +323,19 @@ const Home = () => {
             </div>
           </div>
         } />
-        
-        <Card 
-        ref={contactCardRef}
-        description={
-          <>
-            <h5>CONTACT US</h5>
-            {contactDetails.map((contact, index) => (
-              <p key={index} className={index === contactDetails.length - 1 ? 'mb-0' : 'mb-2'}>
-                {contact.icon} <span className="ml-2">{contact.label}: {contact.value}</span>
-              </p>
-            ))}
-          </>
-        } />
+
+        <Card
+          ref={contactCardRef}
+          description={
+            <>
+              <h5>CONTACT US</h5>
+              {contactDetails.map((contact, index) => (
+                <p key={index} className={index === contactDetails.length - 1 ? 'mb-0' : 'mb-2'}>
+                  {contact.icon} <span className="ml-2">{contact.label}: {contact.value}</span>
+                </p>
+              ))}
+            </>
+          } />
       </div>
       {showToast && (
         <Toast
